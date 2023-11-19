@@ -11,10 +11,13 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataBankController,
 	DataBiayaController,
 	DataCanvasController,
+	DataItemCanvasController,
 	DataExpiredBarangController,
 	DataItemPenjualanController,
 	DataReturnPenjualanController,
-	DataPemasukanController
+	DataPemasukanController,
+	DataItemHutangController,
+	DataHutangController
 };
 
 class CommonEnv {
@@ -50,6 +53,11 @@ class CommonEnv {
 			'controllers' => [DataCanvasController::class, 'index']
 		],
 		[
+			'endPoint' => '/data-item-canvas',
+			'method' => 'get',
+			'controllers' => [DataItemCanvasController::class, 'index']
+		],
+		[
 			'endPoint' => '/data-barang-expired',
 			'method' => 'get',
 			'controllers' => [DataExpiredBarangController::class, 'index']
@@ -68,6 +76,16 @@ class CommonEnv {
 			'endPoint' => '/data-pemasukan',
 			'method' => 'get',
 			'controllers' => [DataPemasukanController::class, 'index']
+		],
+		[
+			'endPoint' => '/data-item-hutang',
+			'method' => 'get',
+			'controllers' => [DataItemHutangController::class, 'index']
+		],
+		[
+			'endPoint' => '/data-hutang',
+			'method' => 'get',
+			'controllers' => [DataHutangController::class, 'index']
 		],
 	];
 
