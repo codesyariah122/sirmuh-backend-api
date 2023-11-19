@@ -94,4 +94,5 @@ class DataExpiredBarangController extends Controller
     {
         //
     }
+
 }

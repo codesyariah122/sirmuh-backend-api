@@ -13,7 +13,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataCanvasController,
 	DataExpiredBarangController,
 	DataItemPenjualanController,
-	DataReturnPenjualanController
+	DataReturnPenjualanController,
+	DataPemasukanController
 };
 
 class CommonEnv {
@@ -24,7 +25,7 @@ class CommonEnv {
 			'controllers' => [LoginController::class, 'logout']
 		],
 		[
-			'endPoint' => '/user-login',
+			'endPoint' => '/user-data',
 			'method' => 'get',
 			'controllers' => [UserDataController::class, 'index']
 		],
@@ -62,6 +63,11 @@ class CommonEnv {
 			'endPoint' => '/data-return-penjualan',
 			'method' => 'get',
 			'controllers' => [DataReturnPenjualanController::class, 'index']
+		],
+		[
+			'endPoint' => '/data-pemasukan',
+			'method' => 'get',
+			'controllers' => [DataPemasukanController::class, 'index']
 		],
 	];
 

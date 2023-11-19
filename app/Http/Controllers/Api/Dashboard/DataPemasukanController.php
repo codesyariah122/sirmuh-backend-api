@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\DataCanvas;
+use App\Models\Pemasukan;
 
-class DataCanvasController extends Controller
+class DataPemasukanController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,12 +16,12 @@ class DataCanvasController extends Controller
     public function index()
     {
         try {
-            $canvas = DataCanvas::paginate(10);
+            $pemasukan = Pemasukan::paginate(10);
 
             return response()->json([
               'success' => true,
-              'message' => 'List data canvas 💼',
-              'data' => $canvas
+              'message' => 'List data pemasukan 💵',
+              'data' => $pemasukan
           ], 200);
 
         } catch (\Throwable $th) {
@@ -53,10 +53,10 @@ class DataCanvasController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\DataCanvas  $dataCanvas
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(DataCanvas $dataCanvas)
+    public function show($id)
     {
         //
     }
@@ -64,10 +64,10 @@ class DataCanvasController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\DataCanvas  $dataCanvas
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(DataCanvas $dataCanvas)
+    public function edit($id)
     {
         //
     }
@@ -76,10 +76,10 @@ class DataCanvasController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\DataCanvas  $dataCanvas
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, DataCanvas $dataCanvas)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -87,10 +87,10 @@ class DataCanvasController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\DataCanvas  $dataCanvas
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(DataCanvas $dataCanvas)
+    public function destroy($id)
     {
         //
     }
