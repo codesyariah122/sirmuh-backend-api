@@ -9,6 +9,19 @@ php artisan migrate
 php artisan db:seed
 ```
 
+
+##### New Environment  
+```
+BROADCAST_DRIVER=pusher
+
+
+PUSHER_APP_ID=1595884
+PUSHER_APP_KEY=7a54d3bea70e636f64fa
+PUSHER_APP_SECRET=70b42427b18040eece39
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+```
+
 ***Check seeder***  
 for php artisan db:seed , check seeder file before start seeder process  
 
@@ -56,8 +69,8 @@ systemctl status sirmuh-api
 Nov 17 20:01:17 xyz-DreamSys systemd[1]: Started sirmuh-api.service.
 Nov 17 20:01:17 xyz-DreamSys start.sh[18206]: [Fri Nov 17 20:01:17 2023] PHP 8.2.12 Development Server (http://localhost:4041)
 
-```
-================================================================================
+```  
+========================================================================================
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
