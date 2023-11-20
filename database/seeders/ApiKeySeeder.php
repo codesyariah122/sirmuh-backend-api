@@ -16,7 +16,7 @@ class ApiKeySeeder extends Seeder
      */
     public function run()
     {
-        $user = User::whereName('owner sirmuh')->firstOrFail();
+        $user = User::whereName('Vicky Andriani')->firstOrFail();
         $token = new ApiKey;
         $token->user_id = $user->id;
         $token->token = Str::random(32);

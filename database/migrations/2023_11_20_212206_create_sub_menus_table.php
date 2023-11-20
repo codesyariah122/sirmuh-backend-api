@@ -13,8 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('hutang', function (Blueprint $table) {
-            $table->timestamp('deleted_at')->nullable();
+        Schema::create('sub_menus', function (Blueprint $table) {
+            $table->id();
+            $table->string('menu');
+            $table->string('link');
+            $table->string('icon');
+            $table->boolean('is_active')->nullable();
+            $table->json('roles');
+            $table->timestamps();
         });
     }
 
@@ -25,8 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('hutang', function (Blueprint $table) {
-            $table->dropColumn('deleted_at');
-        });
+        Schema::dropIfExists('sub_menus');
     }
 };

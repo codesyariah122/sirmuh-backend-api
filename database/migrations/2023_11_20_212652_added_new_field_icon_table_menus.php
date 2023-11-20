@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('pemasukan', function (Blueprint $table) {
-            $table->timestamp('deleted_at')->nullable();
+        Schema::table('menus', function (Blueprint $table) {
+            $table->string('icon')->after('menu')->nullable();
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('pemasukan', function (Blueprint $table) {
-            $table->dropColumn('deleted_at');
+        Schema::table('menus', function (Blueprint $table) {
+            $table->string('icon');
         });
     }
 };

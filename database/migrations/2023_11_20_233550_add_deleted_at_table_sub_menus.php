@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('itemcanvas', function (Blueprint $table) {
+        Schema::table('sub_menus', function (Blueprint $table) {
             $table->timestamp('deleted_at')->nullable();
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('itemcanvas', function (Blueprint $table) {
+        Schema::table('sub_menus', function (Blueprint $table) {
             $table->dropColumn('deleted_at');
         });
     }

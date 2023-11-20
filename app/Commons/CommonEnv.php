@@ -17,7 +17,9 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataReturnPenjualanController,
 	DataPemasukanController,
 	DataItemHutangController,
-	DataHutangController
+	DataHutangController,
+	DataMenuManagementController,
+	DataSubMenuManagementController
 };
 
 class CommonEnv {
@@ -86,6 +88,32 @@ class CommonEnv {
 			'endPoint' => '/data-hutang',
 			'method' => 'get',
 			'controllers' => [DataHutangController::class, 'index']
+		],
+
+		/**
+		 * Menu Management
+		 * */
+		// Main Menu
+		[
+			'endPoint' => '/data-menu',
+			'method' => 'get',
+			'controllers' => [DataMenuManagementController::class, 'index']
+		],
+		[
+			'endPoint' => '/data-menu',
+			'method' => 'resource',
+			'controllers' => DataMenuManagementController::class, 'index'
+		],
+		// Sub Menu
+		[
+			'endPoint' => '/data-sub-menu',
+			'method' => 'get',
+			'controllers' => [DataSubMenuManagementController::class, 'index']
+		],
+		[
+			'endPoint' => '/data-sub-menu',
+			'method' => 'resource',
+			'controllers' => DataSubMenuManagementController::class, 'index'
 		],
 	];
 
