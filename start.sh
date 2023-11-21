@@ -1,2 +1,2 @@
 #!/bin/bash
-php -S localhost:4041 -t public
+php -S 192.168.9.221:4041 server.php

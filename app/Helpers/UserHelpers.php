@@ -54,7 +54,7 @@ class UserHelpers
 
     public function adminEmail()
     {
-        $admin = User::where('roles', "ADMIN")
+        $admin = User::where('role', 1)
             ->where('email', env('MAIL_USERNAME'))
             ->where('status', 'ACTIVE')->first();
 

@@ -19,7 +19,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataItemHutangController,
 	DataHutangController,
 	DataMenuManagementController,
-	DataSubMenuManagementController
+	DataSubMenuManagementController,
+	DataWebFiturController
 };
 
 class CommonEnv {
@@ -102,7 +103,7 @@ class CommonEnv {
 		[
 			'endPoint' => '/data-menu',
 			'method' => 'resource',
-			'controllers' => DataMenuManagementController::class, 'index'
+			'controllers' => DataMenuManagementController::class
 		],
 		// Sub Menu
 		[
@@ -113,7 +114,19 @@ class CommonEnv {
 		[
 			'endPoint' => '/data-sub-menu',
 			'method' => 'resource',
-			'controllers' => DataSubMenuManagementController::class, 'index'
+			'controllers' => DataSubMenuManagementController::class
+		],
+
+		// Fitur Data
+		[
+			'endPoint' => '/data-total-trash',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class,  'totalTrash']
+		],
+		[
+			'endPoint' => '/data-total',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'totalData']
 		],
 	];
 

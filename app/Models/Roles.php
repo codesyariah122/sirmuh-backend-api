@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Roles extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+	use HasFactory;
+	use SoftDeletes;
+
+	public function users()
+	{
+		return $this->belongsToMany('App\Models\User');
+	}
 }
