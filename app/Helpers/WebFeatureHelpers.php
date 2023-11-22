@@ -25,10 +25,12 @@ class WebFeatureHelpers
             case 'OWNER':
             $total = User::whereNull('deleted_at')
             ->whereRole(1)
+            ->with('roles')
             ->get();
+
             return count($total);
             break;
-            case 'ADMIN`':
+            case 'ADMIN':
             $total = User::whereNull('deleted_at')
             ->whereRole(2)
             ->get();

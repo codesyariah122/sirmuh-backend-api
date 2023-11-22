@@ -2,12 +2,12 @@
 namespace App\Core;
 
 use Illuminate\Support\Facades\Route;
-use App\Commons\CommonEnv;
+use App\Commons\RouteSelection;
 
 class RoutingMiddleware {
-    public static function generates()
+    public static function insideAuth()
     {
-        $listRoutes = CommonEnv::getListRoutes();
+        $listRoutes = RouteSelection::getListRoutes();
 
         foreach ($listRoutes as $route) {
             Route::{$route['method']}($route['endPoint'], $route['controllers']);

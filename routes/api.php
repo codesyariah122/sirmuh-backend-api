@@ -6,7 +6,7 @@ use App\Core\RoutingMiddleware;
 
 Route::middleware(['auth:api', 'cors', 'json.response', 'session.expired'])->prefix('v1')->group(function () {
 
-    RoutingMiddleware::generates();
+    RoutingMiddleware::insideAuth();
 
 });
 

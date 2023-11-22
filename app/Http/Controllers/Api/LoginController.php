@@ -171,7 +171,13 @@ class LoginController extends Controller
             $removeToken = $request->user()->tokens()->delete();
             $delete_login = Login::whereUserId($user->id);
             $delete_login->delete();
+            $data_event = [
+                'type' => 'logout',
+                'notif' => "{$user->name}, telah keluar!",
+                'data' => $user
+            ];
 
+            event(new EventNotification($data_event));
             if ($removeToken) {
                 $userIsLogout = User::whereId($user->id)
                 ->select('users.id', 'users.name', 'users.email', 'users.is_login', 'users.expires_at', 'users.last_login')

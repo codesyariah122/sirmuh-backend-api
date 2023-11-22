@@ -23,7 +23,7 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataWebFiturController
 };
 
-class CommonEnv {
+class RouteSelection {
 	private static $listRoutes = [
 		[
 			'endPoint' => '/logout',

@@ -291,13 +291,12 @@ class DataWebFiturController extends Controller
             switch ($type) {
                 case "TOTAL_USER":
                 $totalData = User::whereNull('deleted_at')
-                ->where('role', '!=', 3)
                 ->get();
                 $totals = count($totalData);
                 $user_per_role = new WebFeatureHelpers;
+                $owner = $user_per_role->get_total_user('OWNER');
                 $admin = $user_per_role->get_total_user('ADMIN');
-                $author = $user_per_role->get_total_user('AUTHOR');
-                $user = $user_per_role->get_total_user('USER');
+                $kasir = $user_per_role->get_total_user('KASIR');
                 $user_online = $user_per_role->user_online();
                 $sendResponse = [
                     'type' => 'TOTAL_USER',
@@ -305,9 +304,8 @@ class DataWebFiturController extends Controller
                     'total' => $totals,
                     'users' => [
                         'user_online' => $user_online,
-                        'admin_dashboard' => $admin,
-                        'author' => $author,
-                        'user_donation' => $user,
+                        'admin' => $admin,
+                        'kasir' => $kasir
                     ]
                 ];
                 return $this->totalDataSendResponse($sendResponse);
