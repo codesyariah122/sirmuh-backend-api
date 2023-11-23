@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\{Hash, Validator, Http};
-use App\Models\{User, Login};
+use App\Models\{User, Login, Menu};
 use App\Events\{EventNotification};
 use Auth;
 
@@ -37,10 +37,10 @@ class LoginController extends Controller
             }
 
             $check_userRole = User::whereNull('deleted_at')
-            ->whereDoesntHave('roles', function($query) {
-                $query->where('roles.id', 3)
-                ->whereNull('roles.deleted_at');
-            })
+            // ->whereDoesntHave('roles', function($query) {
+            //     $query->where('roles.id', 3)
+            //     ->whereNull('roles.deleted_at');
+            // })
             ->where('email', $request->email)
             ->with('roles')
             ->get();
@@ -120,6 +120,11 @@ class LoginController extends Controller
                         ->with('logins')
                         ->get();
 
+                        $menus = Menu::whereJsonContains('roles', $userIsLogin[0]->role)
+                        ->with(['sub_menus' => function ($query) {
+                           $query->with('child_sub_menus');
+                        }])
+                        ->get();
 
                         $data_event = [
                             'type' => 'login',
@@ -135,6 +140,7 @@ class LoginController extends Controller
                             'success' => true,
                             'message' => 'Login Success!',
                             'data'    => $userIsLogin,
+                            'menus' => $menus,
                             'remember_token' => $user_login->remember_token
                         ]);
                     endif;

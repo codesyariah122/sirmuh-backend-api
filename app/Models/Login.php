@@ -15,4 +15,9 @@ class Login extends Model
     {
         return $this->belongsToMany('App\Models\User');
     }
+
+    public function sub_menus()
+    {
+    	return $this->belongsToMany('App\Models\SubMenu');
+    }
 }

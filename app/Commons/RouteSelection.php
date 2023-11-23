@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataHutangController,
 	DataMenuManagementController,
 	DataSubMenuManagementController,
+	DataChildSubMenuManagementController,
 	DataWebFiturController
 };
 
@@ -115,6 +116,17 @@ class RouteSelection {
 			'endPoint' => '/data-sub-menu',
 			'method' => 'resource',
 			'controllers' => DataSubMenuManagementController::class
+		],
+		// Child Sub Menu
+		[
+			'endPoint' => '/data-child-sub-menu',
+			'method' => 'get',
+			'controllers' => [DataChildSubMenuManagementController::class, 'index']
+		],
+		[
+			'endPoint' => '/data-child-sub-menu',
+			'method' => 'resource',
+			'controllers' => DataChildSubMenuManagementController::class
 		],
 
 		// Fitur Data

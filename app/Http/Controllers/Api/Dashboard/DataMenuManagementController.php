@@ -7,15 +7,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
-use App\Models\{Menu, Roles};
+use App\Models\{Menu, Roles, User};
 use App\Events\EventNotification;
+use Auth;
 
 class DataMenuManagementController extends Controller
 {
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (Gate::allows('data-menu')) return $next($request);
+            if ($request->route()->getActionMethod() === 'index') {
+                return $next($request);
+            }
+
+            if (Gate::allows('data-sub-menu')) {
+                return $next($request);
+            }
+
             return response()->json([
                 'error' => true,
                 'message' => 'Anda tidak memiliki cukup hak akses'
@@ -25,11 +33,16 @@ class DataMenuManagementController extends Controller
     public function index()
     {
         try {
-            $menus = Menu::whereNull('deleted_at')->get();
+            $userAuth = Auth::user();
+            $role = $userAuth->role;
+            $menus = Menu::whereNull('deleted_at')
+            ->whereJsonContains('roles', $role)
+            ->get();
             return response()->json([
                 'success' => true,
                 'message' => 'List of data menus 🗒️',
-                'data' => count($menus) > 0 ? $menus : null
+                'data' => count($menus) > 0 ? $menus : null,
+                'user' => $userAuth
             ]);
         } catch (\Exception $e) {
             return response()->json([

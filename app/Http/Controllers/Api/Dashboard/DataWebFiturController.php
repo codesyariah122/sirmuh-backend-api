@@ -14,7 +14,7 @@ use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Helpers\ContextData;
-use App\Models\{User, Roles, Bank};
+use App\Models\{User, Roles, Bank, Barang, ItemPenjualan};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use Image;
@@ -70,7 +70,7 @@ class DataWebFiturController extends Controller
 
                 case 'BANK_DATA':
                 $deleted = Bank::onlyTrashed()
-                    ->paginate(10);
+                ->paginate(10);
                 break;
 
                 default:
@@ -152,7 +152,7 @@ class DataWebFiturController extends Controller
 
                 case 'BANK_DATA':
                 $restored_bank = Bank::onlyTrashed()
-                    ->findOrFail($id);
+                ->findOrFail($id);
                 $restored_bank->restore();
                 $restored = Bank::findOrFail($id);
                 $name = $restored->name;
@@ -272,15 +272,12 @@ class DataWebFiturController extends Controller
 
     public function totalDataSendResponse($data)
     {
-        switch ($data['type']):
-            case 'TOTAL_USER':
-            return response()->json([
-                'message' => $data['message'],
-                'total' => $data['total'],
-                'data' => $data['users'],
-            ], 200);
-            break;
-        endswitch;
+        return response()->json([
+            'success' => true,
+            'message' => $data['message'],
+            'total' => $data['total'],
+            'data' => isset($data['data']) ? $data['data'] : null,
+        ], 200);
     }
 
     public function totalData(Request $request)
@@ -302,10 +299,34 @@ class DataWebFiturController extends Controller
                     'type' => 'TOTAL_USER',
                     'message' => 'Total data user',
                     'total' => $totals,
-                    'users' => [
+                    'data' => [
                         'user_online' => $user_online,
                         'admin' => $admin,
                         'kasir' => $kasir
+                    ]
+                ];
+                return $this->totalDataSendResponse($sendResponse);
+                break;
+
+                case "TOTAL_BARANG":
+                $totalData = Barang::whereNull('deleted_at')
+                ->get();
+
+                $maxQty =  DB::table('barang')
+                ->select('barang.nama', DB::raw('SUM(itempenjualan.qty) as total_qty'))
+                ->leftJoin('itempenjualan', 'barang.nama', '=', 'itempenjualan.nama_barang')
+                ->whereNull('barang.deleted_at')
+                ->whereNull('itempenjualan.deleted_at')
+                ->groupBy('barang.nama')
+                ->orderByDesc('total_qty')
+                ->first();
+                $totals = count($totalData);
+                $sendResponse = [
+                    'type' => 'TOTAL_BARANG',
+                    'message' => 'Total data barang',
+                    'total' => $totals,
+                    'data' => [
+                        $maxQty
                     ]
                 ];
                 return $this->totalDataSendResponse($sendResponse);

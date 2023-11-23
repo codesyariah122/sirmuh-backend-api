@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\{User, Menu};
 
 class UserDataController extends Controller
 {
@@ -21,6 +21,14 @@ class UserDataController extends Controller
             ->with('roles')
             ->with('logins')
             ->firstOrFail();
+            $menus = Menu::whereJsonContains('roles', $user_login->role)
+            ->with([
+                'sub_menus',
+                'sub_menus.child_sub_menus' => function ($query) use ($user_login) {
+                    $query->whereJsonContains('roles', $user_login->role);
+                }
+            ])
+            ->get();
 
             if (count($user_login->logins) === 0) {
                 return response()->json([
@@ -32,7 +40,8 @@ class UserDataController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User is login 🧑🏻‍💻',
-                'data' => $user_login
+                'data' => $user_login,
+                'menus' => $menus
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

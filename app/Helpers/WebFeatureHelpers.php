@@ -83,10 +83,9 @@ class WebFeatureHelpers
         foreach ($this->data as $data) :
             Gate::define($data, function ($user) {
                 $user_id = $user->id;
-                $roles = User::whereId($user_id)->with('roles')->get();
-                $role = json_decode($roles[0]->roles[0]->name);
-
-                return "OWNER" && "ADMIN" ? true :  false;
+                $rolesUser = User::whereId($user_id)->with('roles')->get();
+                $role = $rolesUser[0]->roles[0]->name;
+                return $role === "OWNER"  ? true :  false;
             });
         endforeach;
     }

@@ -13,8 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
+        Schema::create('child_sub_menus', function (Blueprint $table) {
+            $table->id();
+            $table->string('menu');
+            $table->string('link');
+            $table->json('roles')->nullable();
+            $table->timestamp('deleted_at')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -25,8 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('child_sub_menus');
     }
 };

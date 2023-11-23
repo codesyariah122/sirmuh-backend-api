@@ -11,10 +11,16 @@ class Menu extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected $table = "menus";
     protected $casts = ['roles' => 'array'];
 
     public function sub_menus()
     {
         return $this->belongsToMany('App\Models\SubMenu');
+    }
+
+    public function logins()
+    {
+    	return $this->belongsToMany('App\Models\Login');
     }
 }

@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
-use App\Models\{Menu, SubMenu};
+use App\Models\{ChildSubMenu, SubMenu, Menu};
 use App\Events\EventNotification;
 use Auth;
 
-class DataSubMenuManagementController extends Controller
+class DataChildSubMenuManagementController extends Controller
 {
+
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -31,17 +32,22 @@ class DataSubMenuManagementController extends Controller
         });
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         try {
             $userAuth = Auth::user();
             $role = $userAuth->role;
-            $menus = Menu::whereJsonContains('roles', $role)
-            ->with('sub_menus')
+            $menus = SubMenu::whereJsonContains('roles', $role)
+            ->with('child_sub_menus')
             ->get();
             return response()->json([
                 'success' => true,
-                'message' => 'List all data menus 🗂️',
+                'message' => 'List all data child sub menus 🗂️',
                 'data' => count($menus) > 0 ? $menus : null,
                 'user' => $userAuth
             ]);
@@ -72,45 +78,44 @@ class DataSubMenuManagementController extends Controller
             $validator = Validator::make($request->all(), [
                 'parent_menu' => 'required',
                 'menu' => 'required',
-                'icon' => 'required',
                 'roles' => 'required'
             ]);
+
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
 
-            $menu = Menu::whereId($request->parent_menu)->get();
+            $subMenu = SubMenu::whereId($request->parent_menu)->get();
 
-            // var_dump($menu[0]->id);
+
+            $sub_menu_id = $subMenu[0]->id;
+
+            // var_dump($sub_menu_id);
             // die;
 
-            $menu_id = $menu[0]->id;
-
-            $sub_menu = new SubMenu;
-            $sub_menu->menu = $request->menu;
-            $sub_menu->link = Str::slug($request->menu);
-            $sub_menu->icon = $request->icon;
-            $sub_menu->is_active = 1;
-            $sub_menu->roles = json_encode($request->roles);
-            $sub_menu->save();
-            $sub_menu->menus()->sync($menu_id);
+            $child_sub_menu = new ChildSubMenu;
+            $child_sub_menu->menu = $request->menu;
+            $child_sub_menu->link = Str::slug($request->menu);
+            $child_sub_menu->roles = json_encode($request->roles);
+            $child_sub_menu->save();
+            $child_sub_menu->sub_menus()->sync($sub_menu_id);
 
             $data_event = [
-                'type' => 'sub-menu',
-                'notif' => "{$sub_menu->menu}, berhasil ditambahkan! 🥳",
-                'data' => $sub_menu
+                'type' => 'child-sub-menu',
+                'notif' => "{$child_sub_menu->menu}, berhasil ditambahkan! 🥳",
+                'data' => $child_sub_menu
             ];
 
             event(new EventNotification($data_event));
 
-            $new_menu = Menu::whereId($menu_id)
-            ->with('sub_menus')
+            $new_child_sub_menu = SubMenu::whereId($sub_menu_id)
+            ->with('child_sub_menus')
             ->get();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Success Added New sub menu 🥳',
-                'data' => $new_menu
+                'message' => 'Success Added New child sub menu 🥳',
+                'data' => $new_child_sub_menu
             ]);
         } catch (\Throwable $th) {
             throw $th;
