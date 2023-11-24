@@ -311,22 +311,20 @@ class DataWebFiturController extends Controller
                 case "TOTAL_BARANG":
                 $totalData = Barang::whereNull('deleted_at')
                 ->get();
-
-                $maxQty =  DB::table('barang')
-                ->select('barang.nama', DB::raw('SUM(itempenjualan.qty) as total_qty'))
-                ->leftJoin('itempenjualan', 'barang.nama', '=', 'itempenjualan.nama_barang')
-                ->whereNull('barang.deleted_at')
-                ->whereNull('itempenjualan.deleted_at')
-                ->groupBy('barang.nama')
-                ->orderByDesc('total_qty')
-                ->first();
                 $totals = count($totalData);
+                $barangLimits = Barang::whereNull('deleted_at')
+                ->orderBy('toko')
+                // ->where('toko', 'NOT LIKE', '0.%') 
+                ->where('toko', 'LIKE', '-%')
+                ->limit(10)
+                ->select('kode', 'nama', 'satuan', 'toko')
+                ->get();
                 $sendResponse = [
                     'type' => 'TOTAL_BARANG',
                     'message' => 'Total data barang',
                     'total' => $totals,
                     'data' => [
-                        $maxQty
+                        'barang_limits' => $barangLimits
                     ]
                 ];
                 return $this->totalDataSendResponse($sendResponse);
