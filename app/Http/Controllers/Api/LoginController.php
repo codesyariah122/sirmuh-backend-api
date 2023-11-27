@@ -118,6 +118,7 @@ class LoginController extends Controller
                         $userIsLogin = User::whereId($user_login->id)
                         ->with('roles')
                         ->with('logins')
+                        ->with('karyawans')
                         ->get();
 
                         $menus = Menu::whereJsonContains('roles', $userIsLogin[0]->role)

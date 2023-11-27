@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\{User, Roles};
+use App\Models\{User, Roles, Karyawan};
 use App\Helpers\{WebFeatureHelpers};
 
 class UsersAdminTableSeeder extends Seeder
@@ -40,7 +40,16 @@ class UsersAdminTableSeeder extends Seeder
         $administrator->photo = 'thumbnail_images/users/' . $newAvatarName;
         $administrator->save();
         $roles = Roles::findOrFail(2);
+
+        $data_karyawan = new Karyawan;
+        $data_karyawan->kode = "ADM0001";
+        $data_karyawan->nama = $administrator->name;
+        $data_karyawan->level = $roles->name;
+        $data_karyawan->save();
+
         $administrator->roles()->sync($roles->id);
+        $administrator->karyawans()->sync($administrator->id);
+        
         $update_user_role = User::findOrFail($administrator->id);
         $update_user_role->role = $roles->id;
         $update_user_role->save();

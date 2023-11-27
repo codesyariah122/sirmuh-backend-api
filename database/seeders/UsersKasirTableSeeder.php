@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\{User, Roles};
+use App\Models\{User, Roles, Karyawan};
 use App\Helpers\{WebFeatureHelpers};
 
 class UsersKasirTableSeeder extends Seeder
@@ -25,9 +25,9 @@ class UsersKasirTableSeeder extends Seeder
     public function run()
     {
         $administrator = new User;
-        $administrator->name = "kasir sirmuh";
-        $administrator->email = "kasir@sirojulmuhtadin.com";
-        $administrator->password = Hash::make("Kasir@123123");
+        $administrator->name = ucwords("pak ikmal ramadhan");
+        $administrator->email = "ikmal@sirojulmuhtadin.com";
+        $administrator->password = Hash::make("Ikmal@123");
         $administrator->is_login = 0;
         $initial = $this->initials($administrator->name);
         $path = public_path().'/thumbnail_images/users/';
@@ -40,10 +40,19 @@ class UsersKasirTableSeeder extends Seeder
         $administrator->photo = 'thumbnail_images/users/' . $newAvatarName;
         $administrator->save();
         $roles = Roles::findOrFail(3);
+
+        $data_karyawan = new Karyawan;
+        $data_karyawan->kode = "IKMAL";
+        $data_karyawan->nama = $administrator->name;
+        $data_karyawan->level = $roles->name;
+        $data_karyawan->save();
+
         $administrator->roles()->sync($roles->id);
+        $administrator->karyawans()->sync($administrator->id);
+
         $update_user_role = User::findOrFail($administrator->id);
         $update_user_role->role = $roles->id;
         $update_user_role->save();
-        $this->command->info("User admin created successfully");
+        $this->command->info("User kasir created successfully");
     }
 }

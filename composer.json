@@ -11,8 +11,11 @@
         "laravel/passport": "^10.4",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "milon/barcode": "^10.0",
         "php-open-source-saver/jwt-auth": "1.4.2",
-        "pusher/pusher-php-server": "^7.2"
+        "picqer/php-barcode-generator": "^2.4",
+        "pusher/pusher-php-server": "^7.2",
+        "simplesoftwareio/simple-qrcode": "^4.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

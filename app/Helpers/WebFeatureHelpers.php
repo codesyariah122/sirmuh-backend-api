@@ -7,7 +7,10 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Gate;
-use App\Models\{User, Roles};
+use \Milon\Barcode\DNS1D;
+use \Milon\Barcode\DNS2D;
+use Illuminate\Support\Facades\File;
+use App\Models\{User, Roles, Login};
 
 class WebFeatureHelpers
 {
@@ -19,17 +22,16 @@ class WebFeatureHelpers
         $this->data = $data;
     }
 
+    public static function initials($name)
+    {
+        preg_match('/(?:\w+\. )?(\w+).*?(\w+)(?: \w+\.)?$/', $name, $result);
+        $initial = strtoupper($result[1][0] . $result[2][0]);
+        return $initial;
+    }
+
     public function get_total_user($role)
     {
         switch ($role):
-            case 'OWNER':
-            $total = User::whereNull('deleted_at')
-            ->whereRole(1)
-            ->with('roles')
-            ->get();
-
-            return count($total);
-            break;
             case 'ADMIN':
             $total = User::whereNull('deleted_at')
             ->whereRole(2)
@@ -43,6 +45,28 @@ class WebFeatureHelpers
             ->get();
             return count($total);
             break;
+
+            case 'GUDANG':
+            $total = User::whereNull('deleted_at')
+            ->whereRole(4)
+            ->get();
+            return count($total);
+            break;
+
+            case 'PRODUKSI':
+            $total = User::whereNull('deleted_at')
+            ->whereRole(5)
+            ->get();
+            return count($total);
+            break;
+
+            case 'KASIR_GUDANG':
+            $total = User::whereNull('deleted_at')
+            ->whereRole(6)
+            ->get();
+            return count($total);
+            break;
+
             default:
             return 0;
         endswitch;
@@ -85,9 +109,35 @@ class WebFeatureHelpers
                 $user_id = $user->id;
                 $rolesUser = User::whereId($user_id)->with('roles')->get();
                 $role = $rolesUser[0]->roles[0]->name;
-                return $role === "OWNER"  ? true :  false;
+                return $role === "MASTER" ? true :  false;
             });
         endforeach;
+    }
+
+    public function generateBarcode($data)
+    {
+        $generator = new BarcodeGeneratorHTML();
+        $barcodeHtml = $generator->getBarcode($data, $generator::TYPE_CODE_128);
+
+        return $barcodeHtml;
+    }
+
+
+    public function generateQrCode($data)
+    {
+        $qr = new DNS2D;
+
+        $base64QrCode = $qr->getBarcodePNG($data, 'QRCODE', 4, 4);
+
+        $binaryQrCode = base64_decode($base64QrCode);
+
+        $fileName = $data . '.png';
+
+        $filePath = public_path("qr-codes/{$fileName}");
+
+        File::put($filePath, $binaryQrCode);
+
+        return $filePath;
     }
 
 }

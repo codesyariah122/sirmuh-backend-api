@@ -4,13 +4,13 @@ namespace App\Core;
 use Illuminate\Support\Facades\Route;
 use App\Commons\RouteSelection;
 
-class RoutingMiddleware {
-    public static function insideAuth()
-    {
-        $listRoutes = RouteSelection::getListRoutes();
+class RoutingMiddleware extends RouteSelection {
 
-        foreach ($listRoutes as $route) {
-            Route::{$route['method']}($route['endPoint'], $route['controllers']);
-        }
-    }
+	public static function insideAuth()
+	{
+		$listRoutes = self::getListRoutes();
+		foreach ($listRoutes as $route) {
+			Route::{$route['method']}($route['endPoint'], $route['controllers']);
+		}
+	}
 }

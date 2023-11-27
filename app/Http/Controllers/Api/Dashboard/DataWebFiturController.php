@@ -294,6 +294,9 @@ class DataWebFiturController extends Controller
                 $owner = $user_per_role->get_total_user('OWNER');
                 $admin = $user_per_role->get_total_user('ADMIN');
                 $kasir = $user_per_role->get_total_user('KASIR');
+                $kasirGudang = $user_per_role->get_total_user('KASIR_GUDANG');
+                $gudang = $user_per_role->get_total_user('GUDANG');
+                $produksi = $user_per_role->get_total_user('PRODUKSI');
                 $user_online = $user_per_role->user_online();
                 $sendResponse = [
                     'type' => 'TOTAL_USER',
@@ -302,7 +305,10 @@ class DataWebFiturController extends Controller
                     'data' => [
                         'user_online' => $user_online,
                         'admin' => $admin,
-                        'kasir' => $kasir
+                        'kasir' => $kasir,
+                        'kasirGudang' => $kasirGudang,
+                        'gudang' => $gudang,
+                        'produksi' => $produksi
                     ]
                 ];
                 return $this->totalDataSendResponse($sendResponse);

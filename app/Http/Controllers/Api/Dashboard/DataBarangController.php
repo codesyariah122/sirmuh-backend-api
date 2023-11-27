@@ -4,25 +4,47 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Helpers\{WebFeatureHelpers};
+use App\Http\Resources\BarangCollection;
 use App\Models\{Barang};
 
-class DataBarangController extends Controller
+class DataBarangController extends Controller 
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+
+    private $feature_helpers;
+
+    public function __construct()
+    {
+        $this->feature_helpers = new WebFeatureHelpers;
+    }
+    public function index(Request $request)
     {
         try {
-            $barang = Barang::paginate(10);
+            $keywords = $request->query('keywords');
+            if($keywords) {
+                $barangs = Barang::whereNull('deleted_at')
+                ->select('kode', 'nama', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir')
+                ->where('nama', 'like', '%'.$keywords.'%')
+                ->orderByDesc('harga_toko')
+                ->paginate(10);
+            } else {
+                $barangs = Barang::whereNull('deleted_at')
+                ->select('kode', 'nama', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir')
+                ->orderByDesc('harga_toko')
+                ->paginate(10);
+            }
 
-            return response()->json([
-              'success' => true,
-              'message' => "List data barang 👷🏼",
-              'data' => $barang
-          ], 200);
+            foreach ($barangs as $item) {
+                $kodeBarcode = $item->kode_barcode;
+                $this->feature_helpers->generateQrCode($kodeBarcode);
+            }
+
+            return new BarangCollection($barangs);
 
         } catch (\Throwable $th) {
             throw $th;

@@ -2,11 +2,11 @@
 namespace App\Commons;
 
 use App\Http\Controllers\Api\{
-	LoginController, 
-	UserDataController
+	LoginController
 };
 
-use App\Http\Controllers\Api\Dashboard\{ 
+use App\Http\Controllers\Api\Dashboard\{
+	DataUserDataController,
 	DataBarangController,
 	DataBankController,
 	DataBiayaController,
@@ -25,17 +25,26 @@ use App\Http\Controllers\Api\Dashboard\{
 };
 
 class RouteSelection {
+
 	private static $listRoutes = [
 		[
 			'endPoint' => '/logout',
 			'method' => 'post',
 			'controllers' => [LoginController::class, 'logout']
 		],
+		// User data management
 		[
 			'endPoint' => '/user-data',
 			'method' => 'get',
-			'controllers' => [UserDataController::class, 'index']
+			'controllers' => [DataUserDataController::class, 'index']
 		],
+		[
+			'endPoint' => '/user-data',
+			'method' => 'resource',
+			'controllers' => DataUserDataController::class
+		],
+
+		// Data Barang Management
 		[
 			'endPoint' => '/data-barang',
 			'method' => 'get',
@@ -144,6 +153,36 @@ class RouteSelection {
 
 	public static function getListRoutes()
 	{
+		// $request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
+		// $request_method = isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : null;
+		// $parsed_url = parse_url($request_uri);
+
+		// $path_segments = explode('/', trim($parsed_url['path'], '/'));
+
+		// if (isset($path_segments)) {
+		// 	$endPoint = end($path_segments);
+
+		// 	$controllerClassName = '';
+
+		// 	if ($endPoint === 'data-total' || $endPoint === 'data-total-trash') {
+		// 		$controllerClassName = 'App\Http\Controllers\Api\Dashboard\\DataWebFiturController';
+		// 	} else {
+		// 		$convertedEndPoint = str_replace('-', '', ucwords($endPoint, '-'));
+		// 		$namespace = 'App\Http\Controllers\Api\Dashboard\\';
+		// 		$controllerClassName = $namespace . 'Data' . ucfirst($convertedEndPoint) . 'Controller';
+		// 		$methods = $request_method === 'get' ? 'get' : 'resource';
+		// 		$controllers = $request_method === 'get' ? [$controllerClassName, 'index'] : $controllerClassName;				
+		// 		self::$listRoutes[] = [
+		// 			'endPoint' => "/{$endPoint}",
+		// 			'method' => $methods,
+		// 			'controllers' => $controllers
+		// 		];
+		// 	}
+		// }
+
 		return self::$listRoutes;
 	}
+
+
+
 }
