@@ -22,7 +22,7 @@ class BarangCollection extends ResourceCollection
 
         return [
             'success' => true,
-            'message' => 'Bank lists !',
+            'message' => 'Data Lists 📋 !',
             'data' => $barangs
         ];
     }

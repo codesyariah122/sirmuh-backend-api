@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2.12",
+        "bacon/bacon-qr-code": "^2.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.19",
         "laravel/passport": "^10.4",

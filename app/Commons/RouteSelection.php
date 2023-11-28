@@ -50,6 +50,18 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataBarangController::class, 'index']
 		],
+		
+		[
+			'endPoint' => '/data-lists-category-barang',
+			'method' => 'get',
+			'controllers' => [DataBarangController::class, 'category_lists']
+		],
+		[
+			'endPoint' => '/data-barang',
+			'method' => 'resource',
+			'controllers' => DataBarangController::class
+		],
+		// End Data Barang Management
 		[
 			'endPoint' => '/data-bank',
 			'method' => 'get',

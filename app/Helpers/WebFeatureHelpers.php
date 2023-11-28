@@ -7,6 +7,9 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Picqer\Barcode\BarcodeGeneratorHTML;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 use \Milon\Barcode\DNS1D;
 use \Milon\Barcode\DNS2D;
 use Illuminate\Support\Facades\File;
@@ -116,26 +119,44 @@ class WebFeatureHelpers
 
     public function generateBarcode($data)
     {
-        $generator = new BarcodeGeneratorHTML();
-        $barcodeHtml = $generator->getBarcode($data, $generator::TYPE_CODE_128);
+        $generator = new BarcodeGeneratorPNG();
+        $barcodeFileName = $data . '_barcode.png';
+        $barcodeDirectory = 'barcodes';
 
-        return $barcodeHtml;
+        // Pastikan direktori sudah ada, jika tidak, buat direktori
+        if (!Storage::disk('public')->exists($barcodeDirectory)) {
+            Storage::disk('public')->makeDirectory($barcodeDirectory, 0777, true, true);
+        }
+
+        // Simpan barcode sebagai gambar PNG
+        $binaryBarcode = $generator->getBarcode($data, $generator::TYPE_CODE_128);
+        Storage::disk('public')->put("{$barcodeDirectory}/{$barcodeFileName}", $binaryBarcode);
+
+        return $binaryBarcode;
     }
 
 
     public function generateQrCode($data)
     {
         $qr = new DNS2D;
+        $frontendUrl = env("DASHBOARD_APP");
+        $url = url($frontendUrl . "/detail/{$data}");
 
-        $base64QrCode = $qr->getBarcodePNG($data, 'QRCODE', 4, 4);
+        $base64QrCode = $qr->getBarcodePNG($url, "QRCODE", 12, 12);
 
         $binaryQrCode = base64_decode($base64QrCode);
 
         $fileName = $data . '.png';
 
-        $filePath = public_path("qr-codes/{$fileName}");
+        $qrCodeDirectory = 'qrcodes';
 
-        File::put($filePath, $binaryQrCode);
+        if (!Storage::disk('public')->exists($qrCodeDirectory)) {
+            Storage::disk('public')->makeDirectory($qrCodeDirectory, 0777, true, true);
+        }
+
+        Storage::disk('public')->put("{$qrCodeDirectory}/{$fileName}", $binaryQrCode);
+
+        $filePath = storage_path("app/public/{$qrCodeDirectory}/{$fileName}");
 
         return $filePath;
     }

@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Barang extends Model
+class Kategori extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'barang';
+    protected $table = 'kategori';
     
-    public function kategoris()
+    public function barangs()
     {
-      return $this->belongsToMany("App\Models\Kategori");
+    	return $this->belongsToMany("App\Models\Barang");
     }
 }
