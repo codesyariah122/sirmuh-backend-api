@@ -72,7 +72,7 @@ class LoginController extends Controller
                             $dashboard = env('DASHBOARD_APP');
 
                             $data_event = [
-                                'type' => 'forbaiden',
+                                'type' => 'forbiden',
                                 'alert' => 'error',
                                 'notif' => "Seseorang, baru saja mencoba mengakses akun Anda!",
                                 'emailForbaiden' => $user[0]->email,
