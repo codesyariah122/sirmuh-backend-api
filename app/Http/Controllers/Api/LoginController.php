@@ -48,6 +48,7 @@ class LoginController extends Controller
             if(count($check_userRole) > 0) {
                 $user = User::whereNull('deleted_at')
                 ->where('email', $request->email)
+                ->with('logins')
                 ->get();
 
                 if (count($user) === 0) {
@@ -73,6 +74,7 @@ class LoginController extends Controller
                             $data_event = [
                                 'notif' => "Seseorang, baru saja mencoba mengakses akun Anda!",
                                 'emailForbaiden' => $user[0]->email,
+                                'token' => $user[0]->logins[0]->user_token_login
                             ];
 
                             $users = User::with('logins')
@@ -180,7 +182,7 @@ class LoginController extends Controller
             $delete_login->delete();
             $data_event = [
                 'type' => 'logout',
-                'notif' => "{$user->name}, telah keluar!",
+                'notif' => "{$user->name}, telah logout!",
                 'data' => $user
             ];
 

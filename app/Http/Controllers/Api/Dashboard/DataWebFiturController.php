@@ -73,6 +73,12 @@ class DataWebFiturController extends Controller
                 ->paginate(10);
                 break;
 
+                case 'DATA_BARANG':
+                $deleted = Barang::onlyTrashed()
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                ->paginate(10);
+                break;
+
                 default:
                 $deleted = [];
                 break;
@@ -162,11 +168,24 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_BARANG':
+                $restored_barang = Barang::onlyTrashed()
+                ->findOrFail($id);
+                $restored_barang->restore();
+                $restored = Barang::findOrFail($id);
+                $name = $restored->nama;
+                $data_event = [
+                    'type' => 'restored',
+                    'notif' => "Barang, {$name} has been restored!",
+                    'data' => $restored
+                ];
+                break;
+
                 default:
                 $restored = [];
             endswitch;
 
-            event(new DataManagementEvent($data_event));
+            event(new EventNotification($data_event));
 
             return response()->json([
                 'success' => true,
@@ -223,6 +242,26 @@ class DataWebFiturController extends Controller
 
                 break;
 
+                case 'DATA_BARANG':
+                $deleted = Barang::onlyTrashed()
+                ->findOrFail($id);
+
+                $file_path = $deleted->photo;
+                
+                if (Storage::disk('public')->exists($file_path)) {
+                    Storage::disk('public')->delete($file_path);
+                }
+
+                $deleted->suppliers()->forceDelete();
+                $deleted->forceDelete();
+
+                $message = "Data barang, {$deleted->nama} has permanently deleted !";
+                $data_event = [
+                    'type' => 'destroyed',
+                    'notif' => "Barang, {$deleted->nama} has permanently deleted!"
+                ];
+                break;
+
                 default:
                 $deleted = [];
             endswitch;
@@ -248,8 +287,8 @@ class DataWebFiturController extends Controller
         try {
             $type = $request->query('type');
             switch ($type) {
-                case 'USER_DATA':
-                $countTrash = User::onlyTrashed()
+                case 'DATA_BARANG':
+                $countTrash = Barang::onlyTrashed()
                 ->get();
                 break;
                 default:

@@ -8,13 +8,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Barang extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+	use HasFactory;
+	use SoftDeletes;
 
-    protected $table = 'barang';
-    
-    public function kategoris()
-    {
-      return $this->belongsToMany("App\Models\Kategori");
-    }
+	protected $table = 'barang';
+	
+	public function kategoris()
+	{
+		return $this->belongsToMany("App\Models\Kategori");
+	}
+
+	public function suppliers()
+	{
+		return $this->belongsToMany("App\Models\Supplier");
+	}
 }

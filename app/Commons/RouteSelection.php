@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\{
 use App\Http\Controllers\Api\Dashboard\{
 	DataUserDataController,
 	DataBarangController,
+	DataKategoriBarangController,
 	DataBankController,
 	DataBiayaController,
 	DataCanvasController,
@@ -62,6 +63,14 @@ class RouteSelection {
 			'controllers' => DataBarangController::class
 		],
 		// End Data Barang Management
+		// Data Kategori Barang
+		[
+			'endPoint' => '/data-kategori',
+			'method' => 'resource',
+			'controllers' => DataKategoriBarangController::class
+		],
+		//End Data Kategori Barang 
+
 		[
 			'endPoint' => '/data-bank',
 			'method' => 'get',
@@ -155,6 +164,21 @@ class RouteSelection {
 			'endPoint' => '/data-total-trash',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class,  'totalTrash']
+		],
+		[
+			'endPoint' => '/data-trash',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class,  'trash']
+		],
+		[
+			'endPoint' => '/data-trash/{id}',
+			'method' => 'put',
+			'controllers' => [DataWebFiturController::class,  'restoreTrash']
+		],
+		[
+			'endPoint' => '/data-trash/{id}',
+			'method' => 'delete',
+			'controllers' => [DataWebFiturController::class,  'deletePermanently']
 		],
 		[
 			'endPoint' => '/data-total',
