@@ -72,6 +72,7 @@ class LoginController extends Controller
                             $dashboard = env('DASHBOARD_APP');
 
                             $data_event = [
+                                'alert' => 'error',
                                 'notif' => "Seseorang, baru saja mencoba mengakses akun Anda!",
                                 'emailForbaiden' => $user[0]->email,
                                 'token' => $user[0]->logins[0]->user_token_login
@@ -130,6 +131,7 @@ class LoginController extends Controller
                         ->get();
 
                         $data_event = [
+                            'alert' => 'success',
                             'type' => 'login',
                             'email' => $user[0]->email,
                             'role' => $user[0]->role,
@@ -181,6 +183,7 @@ class LoginController extends Controller
             $delete_login = Login::whereUserId($user->id);
             $delete_login->delete();
             $data_event = [
+                'alert' => 'default',
                 'type' => 'logout',
                 'notif' => "{$user->name}, telah logout!",
                 'data' => $user

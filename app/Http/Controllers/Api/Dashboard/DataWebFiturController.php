@@ -112,9 +112,10 @@ class DataWebFiturController extends Controller
                 $name = $restored->name;
 
                 $data_event = [
+                    'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "{$name}, has been restored!",
-                    'data' => $restored
+                    'data' => $restored->deleted_at
                 ];
                 break;
 
@@ -150,9 +151,10 @@ class DataWebFiturController extends Controller
                 $name = $restored->name;
 
                 $data_event = [
+                    'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "{$name} has been restored!",
-                    'data' => $restored
+                    'data' => $restored->deleted_at
                 ];
                 break;
 
@@ -163,8 +165,10 @@ class DataWebFiturController extends Controller
                 $restored = Bank::findOrFail($id);
                 $name = $restored->name;
                 $data_event = [
+                    'alert' => 'info',
                     'type' => 'restored',
-                    'notif' => "Bank, {$name} has been restored!"
+                    'notif' => "Bank, {$name} has been restored!",
+                    'data' => $restored->deleted_at
                 ];
                 break;
 
@@ -175,9 +179,10 @@ class DataWebFiturController extends Controller
                 $restored = Barang::findOrFail($id);
                 $name = $restored->nama;
                 $data_event = [
+                    'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "Barang, {$name} has been restored!",
-                    'data' => $restored
+                    'data' => $restored->deleted_at
                 ];
                 break;
 
@@ -235,9 +240,10 @@ class DataWebFiturController extends Controller
 
 
                 $data_event = [
+                    'alert' => 'error',
                     'type' => 'destroyed',
                     'notif' => "User {$deleted->name} has permanently deleted!",
-                    'data' => $deleted
+                    'data' => $deleted->deleted_at
                 ];
 
                 break;
@@ -257,8 +263,10 @@ class DataWebFiturController extends Controller
 
                 $message = "Data barang, {$deleted->nama} has permanently deleted !";
                 $data_event = [
+                    'alert' => 'error',
                     'type' => 'destroyed',
-                    'notif' => "Barang, {$deleted->nama} has permanently deleted!"
+                    'notif' => "Barang, {$deleted->nama} has permanently deleted!",
+                    'data' => $deleted->deleted_at
                 ];
                 break;
 

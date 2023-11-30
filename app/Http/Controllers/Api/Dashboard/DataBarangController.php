@@ -262,6 +262,7 @@ class DataBarangController extends Controller
                 ->get();
 
                 $data_event = [
+                    'alert' => 'success',
                     'type' => 'add-data',
                     'notif' => "{$newBarang->nama}, baru saja ditambahkan 🤙!",
                     'data' => $newBarang->nama,
@@ -328,6 +329,7 @@ class DataBarangController extends Controller
         $delete_barang->delete();
 
         $data_event = [
+            'alert' => 'error',
             'type' => 'removed',
             'notif' => "{$delete_barang->nama}, has move to trash, please check trash!"
         ];

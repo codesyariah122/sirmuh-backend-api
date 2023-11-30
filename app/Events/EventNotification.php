@@ -34,7 +34,7 @@ class EventNotification implements ShouldBroadcast
     public function broadcastOn()
     {
         // return new PrivateChannel('channel-name');
-        return new Channel('dku-web');
+        return new Channel('sirmuh-pos');
     }
 
     public function broadcastWith()
