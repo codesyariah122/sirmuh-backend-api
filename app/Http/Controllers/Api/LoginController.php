@@ -72,6 +72,7 @@ class LoginController extends Controller
                             $dashboard = env('DASHBOARD_APP');
 
                             $data_event = [
+                                'type' => 'forbaiden',
                                 'alert' => 'error',
                                 'notif' => "Seseorang, baru saja mencoba mengakses akun Anda!",
                                 'emailForbaiden' => $user[0]->email,
@@ -80,6 +81,7 @@ class LoginController extends Controller
 
                             $users = User::with('logins')
                             ->with('roles')
+                            ->where('email', $request->email)
                             ->whereIsLogin($user[0]->is_login)
                             ->firstOrFail();
 
