@@ -25,7 +25,7 @@ class ForceJsonResponse
      */
     public function handle(Request $request, Closure $next)
     {
-        // $request->headers->set('Accept', 'application/json');
+        $request->headers->set('Accept', 'application/json');
         if ($request->headers->get('Authorization')) {
             $token = explode(' ', $request->headers->get('Authorization'))[1];
             $login_check = Login::whereUserTokenLogin($token)->get();

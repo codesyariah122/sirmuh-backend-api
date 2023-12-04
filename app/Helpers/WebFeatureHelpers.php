@@ -49,7 +49,7 @@ class WebFeatureHelpers
             return count($total);
             break;
 
-            case 'GUDANG':
+            case 'KASIR_GUDANG':
             $total = User::whereNull('deleted_at')
             ->whereRole(4)
             ->get();
@@ -63,7 +63,7 @@ class WebFeatureHelpers
             return count($total);
             break;
 
-            case 'KASIR_GUDANG':
+            case 'GUDANG':
             $total = User::whereNull('deleted_at')
             ->whereRole(6)
             ->get();

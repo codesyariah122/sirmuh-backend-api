@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Http\Request;
@@ -12,12 +13,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Helpers\ContextData;
-use App\Models\{User, Roles, Bank, Barang, ItemPenjualan};
+use App\Models\{User, Roles, Bank, Barang, ItemPenjualan, SatuanBeli, SatuanJual};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
+use App\Http\Resources\ResponseDataCollect;
 use Image;
+
 
 class DataWebFiturController extends Controller
 {
@@ -623,4 +625,26 @@ class DataWebFiturController extends Controller
         }
     }
 
+    public function satuanBeli(Request $request) {
+        try {
+            $keywords = $request->query('keywords');
+
+            if($keywords) {
+                $barangs = SatuanBeli::whereNull('deleted_at')
+                ->select('id', 'nama')
+                ->where('nama', 'like', '%'.$keywords.'%')
+                ->orderByDesc('id', 'DESC')
+                ->paginate(10);
+            } else {
+                $barangs =  SatuanBeli::whereNull('deleted_at')
+                ->select('id', 'nama')
+                ->orderByDesc('id', 'DESC')
+                ->paginate(10);
+            }
+
+            return new ResponseDataCollect($barangs);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

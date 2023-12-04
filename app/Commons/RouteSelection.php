@@ -185,6 +185,11 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'totalData']
 		],
+		[
+			'endPoint' => '/satuan-beli',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'satuanBeli']
+		]
 	];
 
 	public static function getListRoutes()
