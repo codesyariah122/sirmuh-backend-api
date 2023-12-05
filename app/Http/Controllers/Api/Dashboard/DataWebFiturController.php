@@ -647,4 +647,27 @@ class DataWebFiturController extends Controller
             throw $th;
         }
     }
+
+    public function satuanJual(Request $request) {
+        try {
+            $keywords = $request->query('keywords');
+
+            if($keywords) {
+                $barangs = SatuanJual::whereNull('deleted_at')
+                ->select('id', 'nama')
+                ->where('nama', 'like', '%'.$keywords.'%')
+                ->orderByDesc('id', 'DESC')
+                ->paginate(10);
+            } else {
+                $barangs =  SatuanJual::whereNull('deleted_at')
+                ->select('id', 'nama')
+                ->orderByDesc('id', 'DESC')
+                ->paginate(10);
+            }
+
+            return new ResponseDataCollect($barangs);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

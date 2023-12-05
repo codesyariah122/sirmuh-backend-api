@@ -22,7 +22,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataMenuManagementController,
 	DataSubMenuManagementController,
 	DataChildSubMenuManagementController,
-	DataWebFiturController
+	DataWebFiturController,
+	DataSupplierController
 };
 
 class RouteSelection {
@@ -159,6 +160,13 @@ class RouteSelection {
 			'controllers' => DataChildSubMenuManagementController::class
 		],
 
+		// Data supplier
+		[
+			'endPoint' => '/data-supplier',
+			'method' => 'resource',
+			'controllers' => DataSupplierController::class
+		],
+
 		// Fitur Data
 		[
 			'endPoint' => '/data-total-trash',
@@ -189,6 +197,11 @@ class RouteSelection {
 			'endPoint' => '/satuan-beli',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'satuanBeli']
+		],
+		[
+			'endPoint' => '/satuan-jual',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'satuanJual']
 		]
 	];
 

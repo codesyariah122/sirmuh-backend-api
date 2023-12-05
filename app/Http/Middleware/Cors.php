@@ -35,7 +35,8 @@ class Cors
                 return $response
                 ->header('Access-Control-Allow-Origin', '*')
                 ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Authorization');
+                ->header('Access-Control-Allow-Headers', 'Authorization')
+                ->header('Access-Control-Allow-Headers', 'Content-Type');
             } else {
                 // Jika $response null, Anda bisa mengembalikan respons yang sesuai
                 $userData = Auth::user();

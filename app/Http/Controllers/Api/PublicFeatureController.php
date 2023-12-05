@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Helpers\{WebFeatureHelpers};
-use App\Http\Resources\BarangCollection;
+use App\Http\Resources\ResponseDataCollect;
 use App\Models\{Barang};
 
 class PublicFeatureController extends Controller
@@ -18,8 +18,11 @@ class PublicFeatureController extends Controller
 
             switch($type) {
             	case "barang":
-            	$detailData = Barang::select('kode', 'nama', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir')
+            	$detailData = Barang::whereNull('deleted_at')
+                    ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir')
             		->whereKodeBarcode($query)
+                    ->with("kategoris")
+                    ->with('suppliers')
             		->get();
             	break;
 
@@ -27,7 +30,7 @@ class PublicFeatureController extends Controller
             	$detailData = [];
             }
 
-            return new BarangCollection($detailData);
+            return new ResponseDataCollect($detailData);
         } catch (\Throwable $th) {
             throw $th;
         }

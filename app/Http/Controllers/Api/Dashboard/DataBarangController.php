@@ -139,13 +139,24 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         try{
-            $validator = Validator::make($request->all(), [
-                'nama' => 'required',
+           $validator = Validator::make($request->all(), [
+            'nama' => 'required',
+            'kategori' => 'required',
+            'supplier' => 'required',
+            'satuanbeli' => 'required',
+            'hargabeli' => 'required',
+            'satuanjual' => 'required',
+            'hargajual' => 'required',
+            'isi' => 'required',
+            'stok' => 'required',
+            'photo' => 'image|mimes:jpg,png,jpeg|max:2048',
             ]);
+
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+
 
             $check_barang = Barang::whereNama($request->nama)->get();
 
@@ -194,19 +205,19 @@ class DataBarangController extends Controller
                 $newBarang->kategori = $kategoriBarang->kode;
             }
 
-            $checkSatuanBeli = SatuanBeli::where('nama', $request->satuan_beli)->count();
+            $checkSatuanBeli = SatuanBeli::where('nama', $request->satuanbeli)->count();
             if($checkSatuanBeli === 0) {
                 $newSatuanBeli = new SatuanBeli;
-                $newSatuanBeli->nama = $request->satuan_beli;
+                $newSatuanBeli->nama = $request->satuanbeli;
                 $newSatuanBeli->save();
                 $satuanBeliBarang = SatuanBeli::where('nama', $newSatuanBeli->nama)->first();
                 $newBarang->satuanbeli = $satuanBeliBarang->nama;
             } else {
-                $satuanBeliBarang = SatuanBeli::where('nama', $request->satuan_beli)->first();
+                $satuanBeliBarang = SatuanBeli::where('nama', $request->satuanbeli)->first();
                 $newBarang->satuanbeli = $satuanBeliBarang->nama;
             }
 
-            $checkSatuanJual = SatuanJual::where('nama', $request->satuan_jual)->count();
+            $checkSatuanJual = SatuanJual::where('nama', $request->satuanjual)->count();
             if($checkSatuanJual === 0) {
                 $newSatuanJual = new SatuanJual;
                 $newSatuanJual->nama = $request->satuan_jual;
@@ -214,22 +225,22 @@ class DataBarangController extends Controller
                 $satuanJualBarang = SatuanJual::where('nama', $newSatuanJual->nama)->first();
                 $newBarang->satuan = $satuanJualBarang->nama;
             } else {
-                $satuanJualBarang = SatuanJual::where('nama', $request->satuan_jual)->first();
+                $satuanJualBarang = SatuanJual::where('nama', $request->satuanjual)->first();
                 $newBarang->satuan = $satuanJualBarang->nama;
             }
 
 
-            if($request->ada_expired_date) {
+            if($request->ada_expired_date === "True") {
                 $newBarang->ada_expired_date = "True";
                 $newBarang->expired = $request->expired;
             } else {
                 $newBarang->ada_expired_date = "False";
-                $newBarang->expired = null;
+                $newBarang->expired = NULL;
             }
             $newBarang->isi = $request->isi;
             $newBarang->toko = $request->stok;
-            $newBarang->hpp = $request->harga_beli;
-            $newBarang->harga_toko = $request->harga_jual;
+            $newBarang->hpp = $request->hargabeli;
+            $newBarang->harga_toko = $request->hargajual;
             $newBarang->diskon = $request->diskon;
 
             $checkSupplier = Supplier::where('nama', $request->supplier)->count();
@@ -247,13 +258,17 @@ class DataBarangController extends Controller
             }
 
             $newBarang->kode_barcode = $newBarang->kode;
-            $newBarang->tgl_terakhir = Carbon::now()->format('Y-m-d');
+            $newBarang->tgl_terakhir = $request->tglbeli ? Carbon::createFromFormat('Y-m-d', $request->tglbeli)->format('Y-m-d') : Carbon::now()->format('Y-m-d');
 
             $newBarang->save();
 
             if ($newBarang) {
                 $supplierBarang = Supplier::where('nama', $request->supplier)->first();
-                $newBarang->suppliers()->sync($supplierBarang->id);
+                $kategoriBarang = Kategori::where('kode', $request->kategori)->first();
+                $supplierBarangIds = [$supplierBarang->id];
+                $kategoriBarangIds = [$kategoriBarang->id];
+                $newBarang->suppliers()->sync($supplierBarangIds, false);
+                $newBarang->kategoris()->sync($kategoriBarangIds, false);
 
 
                 $newBarangSaved = Barang::where('id', $newBarang->id)
@@ -276,6 +291,7 @@ class DataBarangController extends Controller
             }
 
         } catch (\Throwable $th) {
+            \Log::error($th);
             throw $th;
         }
     }

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\{Hash, Validator, Http};
 use App\Models\{User, Login, Menu};
-use App\Events\{EventNotification};
+use App\Events\{EventNotification, ForbidenLoginEvent, LogoutEvent};
 use Auth;
 
 class LoginController extends Controller
@@ -85,7 +85,7 @@ class LoginController extends Controller
                             ->whereIsLogin($user[0]->is_login)
                             ->firstOrFail();
 
-                            event(new EventNotification($data_event));
+                            event(new ForbidenLoginEvent($data_event));
 
                             return response()->json([
                                 'is_login' => true,
@@ -128,8 +128,8 @@ class LoginController extends Controller
 
                         $menus = Menu::whereJsonContains('roles', $userIsLogin[0]->role)
                         ->with(['sub_menus' => function ($query) {
-                           $query->with('child_sub_menus');
-                        }])
+                         $query->with('child_sub_menus');
+                     }])
                         ->get();
 
                         $data_event = [
@@ -184,14 +184,21 @@ class LoginController extends Controller
             $removeToken = $request->user()->tokens()->delete();
             $delete_login = Login::whereUserId($user->id);
             $delete_login->delete();
+
+            $userLogout = User::whereNull('deleted_at')
+                ->with('logins')
+                ->where('id', $user->id)
+                ->first();
+            
             $data_event = [
-                'alert' => 'default',
+                'alert' => 'info',
                 'type' => 'logout',
                 'notif' => "{$user->name}, telah logout!",
-                'data' => $user
+                'email' => $user->email
             ];
 
-            event(new EventNotification($data_event));
+            event(new LogoutEvent($data_event));
+
             if ($removeToken) {
                 $userIsLogout = User::whereId($user->id)
                 ->select('users.id', 'users.name', 'users.email', 'users.is_login', 'users.expires_at', 'users.last_login')
