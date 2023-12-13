@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ResponseDataCollect;
 use Illuminate\Http\Request;
 use App\Models\ItemPenjualan;
 
@@ -18,15 +19,22 @@ class DataItemPenjualanController extends Controller
         try {
             $itemPenjualan = ItemPenjualan::paginate(10);
 
-            return response()->json([
-              'success' => true,
-              'message' => 'List data item penjualan 🛒🛍️',
-              'data' => $itemPenjualan
-          ], 200);
+            return new ResponseDataCollect($itemPenjualan);
 
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    public function penjualanTerbaik()
+    {
+        $penjualanTerbaik = ItemPenjualan::penjualanTerbaikSatuBulanKedepan();
+
+        return response()->json([
+          'success' => true,
+          'message' => 'Prediksi penjualan terbaik satu bulan kedepan 🛒🛍️',
+          'data' => $penjualanTerbaik
+      ], 200);
     }
 
     /**

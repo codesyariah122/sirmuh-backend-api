@@ -23,7 +23,9 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataSubMenuManagementController,
 	DataChildSubMenuManagementController,
 	DataWebFiturController,
-	DataSupplierController
+	DataSupplierController,
+	DataLaporanUtangPiutangPelangganController,
+	DataPerusahaanController
 };
 
 class RouteSelection {
@@ -54,15 +56,23 @@ class RouteSelection {
 		],
 		
 		[
-			'endPoint' => '/data-lists-category-barang',
-			'method' => 'get',
-			'controllers' => [DataBarangController::class, 'category_lists']
-		],
-		[
 			'endPoint' => '/data-barang',
 			'method' => 'resource',
 			'controllers' => DataBarangController::class
 		],
+
+		[
+			'endPoint' => '/update-photo-barang/{kode}',
+			'method' => 'post',
+			'controllers' => [DataBarangController::class, 'update_photo_barang']
+		],
+
+		[
+			'endPoint' => '/data-lists-category-barang',
+			'method' => 'get',
+			'controllers' => [DataBarangController::class, 'category_lists']
+		],
+		
 		// End Data Barang Management
 		// Data Kategori Barang
 		[
@@ -97,11 +107,19 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataExpiredBarangController::class, 'index']
 		],
+
+		// Item Penjualan
 		[
 			'endPoint' => '/data-item-penjualan',
 			'method' => 'get',
 			'controllers' => [DataItemPenjualanController::class, 'index']
 		],
+		[
+			'endPoint' => '/penjualan-terbaik',
+			'method' => 'get',
+			'controllers' => [DataItemPenjualanController::class, 'penjualanTerbaik']
+		],
+		
 		[
 			'endPoint' => '/data-return-penjualan',
 			'method' => 'get',
@@ -167,6 +185,13 @@ class RouteSelection {
 			'controllers' => DataSupplierController::class
 		],
 
+		// Data Perusahaan
+		[
+			'endPoint' => '/data-perusahaan',
+			'method' => 'resource',
+			'controllers' => DataPerusahaanController::class
+		],
+
 		// Fitur Data
 		[
 			'endPoint' => '/data-total-trash',
@@ -202,6 +227,11 @@ class RouteSelection {
 			'endPoint' => '/satuan-jual',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'satuanJual']
+		],
+		[
+			'endPoint' => '/laporan-utangpiutang-pelanggan',
+			'method' => 'get',
+			'controllers' => [DataLaporanUtangPiutangPelangganController::class, 'laporanHutangPiutang']
 		]
 	];
 

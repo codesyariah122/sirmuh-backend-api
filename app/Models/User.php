@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
       return $this->belongsToMany("App\Models\Karyawan");
     }
+    
+    public function tokos()
+    {
+      return $this->belongsToMany("App\Models\Toko");
+    }
 }

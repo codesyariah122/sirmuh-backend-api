@@ -127,9 +127,11 @@ class LoginController extends Controller
                         ->get();
 
                         $menus = Menu::whereJsonContains('roles', $userIsLogin[0]->role)
-                        ->with(['sub_menus' => function ($query) {
-                         $query->with('child_sub_menus');
-                     }])
+                        ->with([
+                            'sub_menus' => function ($query) use ($userIsLogin) {
+                                $query->whereJsonContains('roles', $userIsLogin[0]->role)
+                                ->with('child_sub_menus');
+                            }])
                         ->get();
 
                         $data_event = [
@@ -165,10 +167,7 @@ class LoginController extends Controller
                 }
             }
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'messge' => $th->getMessage()
-            ]);
+            throw $th;
         }
     }
 
@@ -186,9 +185,9 @@ class LoginController extends Controller
             $delete_login->delete();
 
             $userLogout = User::whereNull('deleted_at')
-                ->with('logins')
-                ->where('id', $user->id)
-                ->first();
+            ->with('logins')
+            ->where('id', $user->id)
+            ->first();
             
             $data_event = [
                 'alert' => 'info',

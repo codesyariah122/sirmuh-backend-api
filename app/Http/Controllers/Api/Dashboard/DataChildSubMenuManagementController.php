@@ -96,7 +96,7 @@ class DataChildSubMenuManagementController extends Controller
             $child_sub_menu = new ChildSubMenu;
             $child_sub_menu->menu = $request->menu;
             $child_sub_menu->link = Str::slug($request->menu);
-            $child_sub_menu->roles = json_encode($request->roles);
+            $child_sub_menu->roles = $request->roles;
             $child_sub_menu->save();
             $child_sub_menu->sub_menus()->sync($sub_menu_id);
 

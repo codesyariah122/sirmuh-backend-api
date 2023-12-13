@@ -16,14 +16,15 @@ class ResponseDataCollect extends ResourceCollection
     {
         $collects = collect($this->collection);
 
-        $barangs = $collects->map(function($barang) {
+        $collects = $collects->map(function($barang) {
             return $barang;
         });
 
         return [
             'success' => true,
             'message' => 'Data Lists 📋 !',
-            'data' => $barangs
+            'total' => count($collects),
+            'data' => $collects
         ];
     }
 }

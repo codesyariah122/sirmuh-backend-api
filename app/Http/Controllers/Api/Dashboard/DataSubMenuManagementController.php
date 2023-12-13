@@ -91,7 +91,7 @@ class DataSubMenuManagementController extends Controller
             $sub_menu->link = Str::slug($request->menu);
             $sub_menu->icon = $request->icon;
             $sub_menu->is_active = 1;
-            $sub_menu->roles = json_encode($request->roles);
+            $sub_menu->roles = $request->roles;
             $sub_menu->save();
             $sub_menu->menus()->sync($menu_id);
 

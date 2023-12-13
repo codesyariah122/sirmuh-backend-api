@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
@@ -374,6 +374,7 @@ class DataWebFiturController extends Controller
                 ->limit(10)
                 ->select('kode', 'nama', 'satuan', 'toko')
                 ->get();
+                
                 $sendResponse = [
                     'type' => 'TOTAL_BARANG',
                     'message' => 'Total data barang',
@@ -669,5 +670,15 @@ class DataWebFiturController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    public function calculateBarang()
+    {
+        $penjualanHarian = Barang::select(DB::raw('DATE(created_at) as tanggal'), DB::raw('SUM(jumlah_terjual) as total_penjualan'))
+            ->groupBy('tanggal')
+            ->get();
+
+        var_dump($penjualanHarian); die;
+        
     }
 }

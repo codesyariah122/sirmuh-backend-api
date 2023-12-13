@@ -12,7 +12,7 @@ class Barang extends Model
 	use SoftDeletes;
 
 	protected $table = 'barang';
-	
+
 	public function kategoris()
 	{
 		return $this->belongsToMany("App\Models\Kategori");
@@ -21,5 +21,10 @@ class Barang extends Model
 	public function suppliers()
 	{
 		return $this->belongsToMany("App\Models\Supplier");
+	}
+
+	public function itempenjualans()
+	{
+		return $this->belongsTo("App\Models\ItemPenjualan", 'kode_barang', 'kode');
 	}
 }

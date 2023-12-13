@@ -38,9 +38,11 @@ class DataUserDataController extends Controller
             ->firstOrFail();
             $menus = Menu::whereJsonContains('roles', $user_login->role)
             ->with([
-                'sub_menus',
-                'sub_menus.child_sub_menus' => function ($query) use ($user_login) {
-                    $query->whereJsonContains('roles', $user_login->role);
+                'sub_menus' => function ($query) use ($user_login) {
+                    $query->whereJsonContains('roles', $user_login->role)
+                    ->with(['child_sub_menus' => function ($query) use ($user_login) {
+                        $query->whereJsonContains('roles', $user_login->role);
+                    }]);
                 }
             ])
             ->get();

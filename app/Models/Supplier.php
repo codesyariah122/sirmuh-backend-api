@@ -17,4 +17,9 @@ class Supplier extends Model
 	{
 		return $this->belongsToMany("App\Models\Barang");
 	}
+
+	public function hutangs()
+	{
+		return $this->hasMany("App\Models\Hutang");
+	}
 }

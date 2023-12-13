@@ -11,4 +11,5 @@ Route::middleware(['auth:api', 'cors', 'json.response', 'session.expired'])->pre
 Route::middleware('cors')->prefix('v1')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::get('/detail', [PublicFeatureController::class, 'detail_data']);
+    Route::get('/data-toko', [PublicFeatureController::class, 'data_toko']);
 });
