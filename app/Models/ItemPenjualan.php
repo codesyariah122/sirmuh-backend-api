@@ -46,4 +46,44 @@ class ItemPenjualan extends Model
 
 		return $result;
 	}
+
+	public static function barangTerlaris()
+	{
+		$tanggalMulai = now();
+		$tanggalAkhir = now()->addMonth();
+
+		$barangTerlaris = DB::table('itempenjualan')
+		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
+		->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
+		->groupBy('kode_barang')
+		->orderByDesc('total_penjualan')
+		->limit(10)
+        ->get();
+
+        $listBarangTerlaris = [];
+
+        foreach ($barangTerlaris as $barang) {
+        	$kodeBarang = $barang->kode_barang;
+        	$totalQty = $barang->total_qty;
+        	$totalPenjualan = $barang->total_penjualan;
+
+        	$barangDetail = DB::table('barang')
+        	->select('kode', 'nama', 'satuan', 'satuanbeli', 'toko', 'supplier')
+        	->where('kode', $kodeBarang)
+        	->first();
+
+        	$listBarangTerlaris[] = [
+        		'kode' => $barangDetail->kode,
+        		'nama' => $barangDetail->nama,
+        		'satuan' => $barangDetail->satuan,
+        		'satuanbeli' => $barangDetail->satuanbeli,
+        		'toko' => $barangDetail->toko,
+        		'supplier' => $barangDetail->supplier,
+        		'total_qty' => $totalQty,
+        		'total_penjualan' => $totalPenjualan,
+        	];
+        }
+
+        return $listBarangTerlaris;
+    }
 }

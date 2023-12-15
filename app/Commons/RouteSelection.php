@@ -119,6 +119,11 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataItemPenjualanController::class, 'penjualanTerbaik']
 		],
+		[
+			'endPoint' => '/barang-terlaris',
+			'method' => 'get',
+			'controllers' => [DataItemPenjualanController::class, 'barangTerlaris']
+		],
 		
 		[
 			'endPoint' => '/data-return-penjualan',

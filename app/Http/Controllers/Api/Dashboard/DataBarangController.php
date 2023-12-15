@@ -405,8 +405,15 @@ class DataBarangController extends Controller
                 $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
             }
 
+
             $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
+
+            if(count($barang_data->suppliers) > 0) {
             $supplier = Supplier::whereNama($barang_data->supplier)->firstOrFail();
+            } else {
+                $supplier = Supplier::whereKode($barang_data->supplier)->firstOrFail();
+            }
+
 
             $update_barang = Barang::with('kategoris')
             ->findOrFail($barang_data->id);

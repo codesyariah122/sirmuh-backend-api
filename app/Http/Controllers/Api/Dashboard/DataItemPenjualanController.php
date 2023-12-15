@@ -37,6 +37,17 @@ class DataItemPenjualanController extends Controller
       ], 200);
     }
 
+    public function barangTerlaris()
+    {
+        $barangTerlaris = ItemPenjualan::barangTerlaris();
+
+        return response()->json([
+          'success' => true,
+          'message' => 'Barang terlaris 🛒🛍️',
+          'data' => $barangTerlaris
+      ], 200);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
