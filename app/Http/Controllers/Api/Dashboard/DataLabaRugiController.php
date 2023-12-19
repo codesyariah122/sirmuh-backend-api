@@ -52,8 +52,8 @@ class DataLabaRugiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Total laba per month for the last 3 months',
-                'total_laba_per_month' => $totalLabaPerMonth,
+                'message' => 'Laba 3 BLN Terakhir 📝',
+                'data' => $totalLabaPerMonth,
             ]);
         } catch(\Throwable $th) {
             throw $th;
