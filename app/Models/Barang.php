@@ -27,4 +27,9 @@ class Barang extends Model
 	{
 		return $this->belongsTo("App\Models\ItemPenjualan", 'kode_barang', 'kode');
 	}
+ 
+   public function labarugi()
+   {
+     return $this->belongsTo("App\Models\LabaRugi", 'kode_barang', 'nama_barang');
+   }
 }

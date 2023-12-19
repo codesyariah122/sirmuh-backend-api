@@ -25,7 +25,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataWebFiturController,
 	DataSupplierController,
 	DataLaporanUtangPiutangPelangganController,
-	DataPerusahaanController
+	DataPerusahaanController,
+	DataLabaRugiController
 };
 
 class RouteSelection {
@@ -129,6 +130,11 @@ class RouteSelection {
 			'endPoint' => '/data-return-penjualan',
 			'method' => 'get',
 			'controllers' => [DataReturnPenjualanController::class, 'index']
+		],
+		[
+			'endPoint' => '/laba-rugi/{jml_month}',
+			'method' => 'get',
+			'controllers' => [DataLabaRugiController::class, 'labaRugiLastMonth'],
 		],
 		[
 			'endPoint' => '/data-pemasukan',
