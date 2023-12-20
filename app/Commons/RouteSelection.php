@@ -120,11 +120,7 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataItemPenjualanController::class, 'penjualanTerbaik']
 		],
-		[
-			'endPoint' => '/barang-terlaris',
-			'method' => 'get',
-			'controllers' => [DataItemPenjualanController::class, 'barangTerlaris']
-		],
+		
 		
 		[
 			'endPoint' => '/data-return-penjualan',
@@ -243,7 +239,12 @@ class RouteSelection {
 			'endPoint' => '/laporan-utangpiutang-pelanggan',
 			'method' => 'get',
 			'controllers' => [DataLaporanUtangPiutangPelangganController::class, 'laporanHutangPiutang']
-		]
+		],
+		[
+			'endPoint' => '/to-the-best/{type}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'toTheBest']
+		],
 	];
 
 	public static function getListRoutes()
