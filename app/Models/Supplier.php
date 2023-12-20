@@ -22,4 +22,9 @@ class Supplier extends Model
 	{
 		return $this->hasMany("App\Models\Hutang");
 	}
+ 
+   public function pembelians()
+	{
+		return $this->hasMany("App\Models\Pembelian");
+	}
 }

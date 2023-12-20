@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
-use App\Models\{User, Roles, Bank, Barang, ItemPenjualan, SatuanBeli, SatuanJual};
+use App\Models\{User, Roles, Bank, Barang, ItemPenjualan, SatuanBeli, SatuanJual, Pembelian, Supplier, Penjualan, Pelanggan};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
@@ -389,6 +389,58 @@ class DataWebFiturController extends Controller
                 default:
                 $totalData = [];
             }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => true,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
+
+    public function toTheBest($type)
+    {
+        try {
+            switch($type) {
+                case "barang":
+                $title = "barang terlaris";
+                $icon = " 🛒🛍️";
+                $label = "Total Quantity";
+                $result = ItemPenjualan::barangTerlaris();
+                break;
+
+                case "supplier":
+                $title = "supplier terbaik";
+                $icon = "🤝🏼";
+                $label = "Total Pembelian";
+                $result = Supplier::select('supplier.kode', 'supplier.nama', DB::raw('COALESCE(SUM(pembelian.jumlah), 0) as total_pembelian'))
+                    ->leftJoin('pembelian', 'supplier.kode', '=', 'pembelian.supplier')
+                    ->whereNull('supplier.deleted_at')
+                    ->groupBy('supplier.kode', 'supplier.nama')
+                    ->orderByDesc('total_pembelian')
+                    ->take(10)
+                    ->get();
+                break;
+
+                case "pelanggan":
+                $title = "pelanggan terbaik";
+                $icon = "🎖️";
+                $label = "Total Pembelian";
+                $result = Pelanggan::select('pelanggan.kode', 'pelanggan.nama', DB::raw('COALESCE(SUM(penjualan.subtotal), 0) as total_penjualan'))
+                    ->leftJoin('penjualan', 'pelanggan.kode', '=', 'penjualan.pelanggan')
+                    ->whereNull('pelanggan.deleted_at')
+                    ->groupBy('pelanggan.kode', 'pelanggan.nama')
+                    ->orderBy('total_penjualan', 'DESC')
+                    ->take(10)
+                    ->get();
+                break;
+            }
+
+            return response()->json([
+                'success' => true,
+                'label' => $label,
+                'message' => "10 {$title} {$icon}",
+                'data' => $result,
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => true,
