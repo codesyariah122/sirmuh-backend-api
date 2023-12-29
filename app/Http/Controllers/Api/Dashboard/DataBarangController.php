@@ -139,7 +139,7 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         try{
-         $validator = Validator::make($request->all(), [
+           $validator = Validator::make($request->all(), [
             'nama' => 'required',
             'kategori' => 'required',
             'supplier' => 'required',
@@ -153,7 +153,7 @@ class DataBarangController extends Controller
         ]);
 
 
-         if ($validator->fails()) {
+           if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
@@ -303,14 +303,17 @@ class DataBarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($kode)
+    public function show($id)
     {
         try {
-            $dataBarang = Barang::where('kode_barcode', $kode)
+            $dataBarang = Barang::where('id', $id)
             ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-            ->with('suppliers')
+            ->with(['suppliers' => function($query) {
+                $query->select('kode', 'nama');
+            }])
             ->with('kategoris')
-            ->firstOrFail();            
+            ->firstOrFail(); 
+
             return response()->json([
                 'success' => true,
                 'message' => "Detail data barang {$dataBarang->nama}",
@@ -405,13 +408,13 @@ class DataBarangController extends Controller
                 $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
             }
 
-
             $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
 
+
             if(count($barang_data->suppliers) > 0) {
-            $supplier = Supplier::whereNama($barang_data->supplier)->firstOrFail();
-            } else {
                 $supplier = Supplier::whereKode($barang_data->supplier)->firstOrFail();
+            } else {
+                $supplier = Supplier::whereKode($request->supplier)->firstOrFail();
             }
 
 
@@ -478,7 +481,7 @@ class DataBarangController extends Controller
      */
     public function destroy($id)
     {
-     try {
+       try {
         $delete_barang = Barang::whereNull('deleted_at')
         ->findOrFail($id);
 

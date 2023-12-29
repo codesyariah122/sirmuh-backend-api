@@ -411,7 +411,7 @@ class DataWebFiturController extends Controller
                 case "supplier":
                 $title = "supplier terbaik";
                 $icon = "🤝🏼";
-                $label = "Total Pembelian";
+                $label = "Jumlah Quantity";
                 $result = Supplier::select('supplier.kode', 'supplier.nama', DB::raw('COALESCE(SUM(pembelian.jumlah), 0) as total_pembelian'))
                     ->leftJoin('pembelian', 'supplier.kode', '=', 'pembelian.supplier')
                     ->whereNull('supplier.deleted_at')

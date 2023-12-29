@@ -4,17 +4,8 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use App\Events\{EventNotification};
-use App\Helpers\{WebFeatureHelpers};
-use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier, LabaRugi};
 
-
-class DataLabaRugiController extends Controller
+class DataJasaController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -34,32 +25,6 @@ class DataLabaRugiController extends Controller
     public function create()
     {
         //
-    }
-    
-    public function labaRugiLastMonth(int $jmlMonth)
-    {
-        try {
-            $label = "Total Penjualan";
-            $startDate = now()->subMonths($jmlMonth)->startOfMonth();
-
-            $endDate = now()->endOfMonth();
-
-            // Query the labarugi table for the specified period and group by month
-            $totalLabaPerMonth = LabaRugi::whereBetween('tanggal', [$startDate, $endDate])
-            ->groupBy(\DB::raw('YEAR(tanggal), MONTH(tanggal)'))
-            ->select(\DB::raw('YEAR(tanggal) as year, MONTH(tanggal) as month, SUM(labarugi) as total_laba'))
-            ->orderBy('labarugi', 'DESC')
-            ->get();
-
-            return response()->json([
-                'success' => true,
-                'label' => $label,
-                'message' => 'Laba 3 BLN Terakhir 📝',
-                'data' => $totalLabaPerMonth,
-            ]);
-        } catch(\Throwable $th) {
-            throw $th;
-        }
     }
 
     /**
