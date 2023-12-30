@@ -52,12 +52,6 @@ class RouteSelection {
 		// Data Barang Management
 		[
 			'endPoint' => '/data-barang',
-			'method' => 'get',
-			'controllers' => [DataBarangController::class, 'index']
-		],
-		
-		[
-			'endPoint' => '/data-barang',
 			'method' => 'resource',
 			'controllers' => DataBarangController::class
 		],
@@ -81,8 +75,8 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataKategoriBarangController::class
 		],
+   
 		//End Data Kategori Barang 
-
 		[
 			'endPoint' => '/data-bank',
 			'method' => 'get',

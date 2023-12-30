@@ -72,6 +72,7 @@ class DataChildSubMenuManagementController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    
     public function store(Request $request)
     {
         try {
@@ -86,7 +87,6 @@ class DataChildSubMenuManagementController extends Controller
             }
 
             $subMenu = SubMenu::whereId($request->parent_menu)->get();
-
 
             $sub_menu_id = $subMenu[0]->id;
 

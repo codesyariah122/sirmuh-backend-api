@@ -39,6 +39,7 @@ class DataLabaRugiController extends Controller
     public function labaRugiLastMonth(int $jmlMonth)
     {
         try {
+            $label = "Total Penjualan";
             $startDate = now()->subMonths($jmlMonth)->startOfMonth();
 
             $endDate = now()->endOfMonth();
@@ -52,6 +53,7 @@ class DataLabaRugiController extends Controller
 
             return response()->json([
                 'success' => true,
+                'label' => $label,
                 'message' => 'Laba 3 BLN Terakhir 📝',
                 'data' => $totalLabaPerMonth,
             ]);

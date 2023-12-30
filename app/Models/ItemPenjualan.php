@@ -26,10 +26,13 @@ class ItemPenjualan extends Model
 
 		$topSellingItem = DB::table('itempenjualan')
 		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
-		->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
+		// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
 		->limit(1);
+		// ->get();
+
+		// var_dump($topSellingItem); die;
 
 		$result = DB::table('barang')
 		->joinSub($topSellingItem, 'top_selling', function ($join) {
@@ -44,6 +47,8 @@ class ItemPenjualan extends Model
 		->latest('penjualan.tanggal')
 		->first();
 
+		// var_dump($result); die;
+
 		return $result;
 	}
 
@@ -54,7 +59,7 @@ class ItemPenjualan extends Model
 
 		$barangTerlaris = DB::table('itempenjualan')
 		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
-		->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
+		// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
 		->limit(10)
