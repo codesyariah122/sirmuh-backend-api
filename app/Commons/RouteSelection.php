@@ -168,11 +168,11 @@ class RouteSelection {
 			'controllers' => DataSubMenuManagementController::class
 		],
 		// Child Sub Menu
-		[
-			'endPoint' => '/data-child-sub-menu',
-			'method' => 'get',
-			'controllers' => [DataChildSubMenuManagementController::class, 'index']
-		],
+		// [
+		// 	'endPoint' => '/data-child-sub-menu',
+		// 	'method' => 'get',
+		// 	'controllers' => [DataChildSubMenuManagementController::class, 'index']
+		// ],
 		[
 			'endPoint' => '/data-child-sub-menu',
 			'method' => 'resource',

@@ -72,7 +72,7 @@ class DataChildSubMenuManagementController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    
+
     public function store(Request $request)
     {
         try {
@@ -86,29 +86,27 @@ class DataChildSubMenuManagementController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
-            $subMenu = SubMenu::whereId($request->parent_menu)->get();
+            $subMenu = SubMenu::findOrFail($request->parent_menu);
 
-            $sub_menu_id = $subMenu[0]->id;
-
-            // var_dump($sub_menu_id);
-            // die;
-
+            $sub_menu_id = $subMenu->id;
+            $menuValue = is_array($request->menu) ? reset($request->menu) : $request->menu;
+            $link = Str::slug($menuValue);
+            $menu =  is_array($request->menu) ? implode(', ', $request->menu) : $request->menu;
             $child_sub_menu = new ChildSubMenu;
-            $child_sub_menu->menu = $request->menu;
-            $child_sub_menu->link = Str::slug($request->menu);
+            $child_sub_menu->menu = $menu;
+            $child_sub_menu->link = $link;
             $child_sub_menu->roles = $request->roles;
             $child_sub_menu->save();
             $child_sub_menu->sub_menus()->sync($sub_menu_id);
 
             $data_event = [
-                'type' => 'child-sub-menu',
-                'notif' => "{$child_sub_menu->menu}, berhasil ditambahkan! 🥳",
-                'data' => $child_sub_menu
+                'type' => 'add-data',
+                'notif' => $request->menu.", successfully add child sub menus!!",
             ];
 
             event(new EventNotification($data_event));
 
-            $new_child_sub_menu = SubMenu::whereId($sub_menu_id)
+            $new_child_sub_menu = SubMenu::whereId($request->parent_menu)
             ->with('child_sub_menus')
             ->get();
 
@@ -118,7 +116,13 @@ class DataChildSubMenuManagementController extends Controller
                 'data' => $new_child_sub_menu
             ]);
         } catch (\Throwable $th) {
-            throw $th;
+            \Log::error('Error while processing the request. ' . $th->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error while processing the request.',
+                'error' => $th->getMessage(),
+            ], 500);
         }
     }
 
