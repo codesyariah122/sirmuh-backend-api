@@ -16,7 +16,7 @@
           background: #000;
       }
 
-      #YakÄ±ndaYazÄ± {
+      #YakindaYazi {
           color: green;
           /*color: #8002f5;*/
           font-family: Monaco, monospace;
@@ -30,7 +30,7 @@
       }
 
       span {
-          animation: 1.5s infinite normal imleÃ§;
+          animation: 1.5s infinite normal imleç;
       }
 
       ::-moz-selection {
@@ -55,7 +55,7 @@
         }
     }
 
-    @keyframes imleÃ§ {
+    @keyframes imleç {
       0% {
         opacity: 0;
         left: 0;
@@ -79,9 +79,9 @@
 </style>
 </head>
 <body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
-    <div id="YakÄ±ndaYazÄ±">â–ˆ â–ˆ â–ˆ <span style="color:black">â–ˆ â–ˆ â–ˆ â–ˆ â–ˆ â–ˆ â–ˆ â–ˆ â–ˆ â–ˆ </span>100%
+    <div id="YakindaYazi">¦ ¦ ¦ <span style="color:black">¦ ¦ ¦ ¦ ¦ ¦ ¦ ¦ ¦ ¦ </span>100%
       <br>&gt; Site Sirojul Muhtadin Api Server&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <br>&gt; Sirojul Muhtadin  <span id="imleÃ§">â–ˆ</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <br>&gt; Sirojul Muhtadin  <span id="imleç">¦</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   </div>
 </body>
 </html>

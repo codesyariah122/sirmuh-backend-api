@@ -343,38 +343,89 @@ class DataBarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update_photo_barang(Request $request, $kode)
+    // public function update_photo_barang(Request $request, $id)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'photo' => 'image|mimes:jpg,png,jpeg|max:2048'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json($validator->errors(), 400);
+    //     }
+
+    //     $barang_data = Barang::with('kategoris')
+    //     ->whereKodeBarcode($kode)
+    //     ->firstOrFail();
+
+    //     if(count($barang_data->kategoris) > 0) {
+    //         $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
+    //     }
+
+    //     $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
+
+
+    //     $update_barang = Barang::with('kategoris')
+    //     ->findOrFail($barang_data->id);
+
+    //     if ($request->file('photo')) {
+    //         $photo = $request->file('photo');
+    //         $file = $photo->store(trim(preg_replace('/\s+/', '', '/products')), 'public');
+    //         $update_barang->photo = $file;
+    //     } else {
+    //         $update_barang->photo = $update_barang->photo;
+    //     }
+
+    //     $update_barang->save();
+    //     $data_event = [
+    //         'type' => 'updated',
+    //         'notif' => "{$update_barang->nama}, successfully update photo barang!"
+    //     ];
+
+    //     event(new EventNotification($data_event));
+
+    //     $saving_barang = Barang::with('kategoris')
+    //     ->with('suppliers')
+    //     ->whereId($update_barang->id)
+    //     ->get();
+
+    //         // return new RequestDataCollect($saving_barang);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => "{$update_barang->nama}, successfully update!",
+    //         'data' => $saving_barang
+    //     ]);
+    // }
+    public function update_photo_barang(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'photo' => 'image|mimes:jpg,png,jpeg|max:2048'
         ]);
+
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $barang_data = Barang::with('kategoris')
-        ->whereKodeBarcode($kode)
-        ->firstOrFail();
-
-        if(count($barang_data->kategoris) > 0) {
-            $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
-        }
-
-        $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
-
-
         $update_barang = Barang::with('kategoris')
-        ->findOrFail($barang_data->id);
+        ->findOrFail($id);
+
+        $previousPhotoPath = $update_barang->photo;
 
         if ($request->file('photo')) {
             $photo = $request->file('photo');
             $file = $photo->store(trim(preg_replace('/\s+/', '', '/products')), 'public');
+
+            if ($previousPhotoPath) {
+                Storage::disk('public')->delete($previousPhotoPath);
+            }
+
             $update_barang->photo = $file;
         } else {
-            $update_barang->photo = $update_barang->photo;
+            $update_barang->photo = $previousPhotoPath;
         }
 
         $update_barang->save();
+
         $data_event = [
             'type' => 'updated',
             'notif' => "{$update_barang->nama}, successfully update photo barang!"
@@ -387,8 +438,6 @@ class DataBarangController extends Controller
         ->whereId($update_barang->id)
         ->get();
 
-            // return new RequestDataCollect($saving_barang);
-
         return response()->json([
             'success' => true,
             'message' => "{$update_barang->nama}, successfully update!",
@@ -396,13 +445,19 @@ class DataBarangController extends Controller
         ]);
     }
 
-    public function update(Request $request, $kode)
+    public function update(Request $request, $id)
     {
         try {
 
-            $barang_data = Barang::with('kategoris')
-            ->whereKodeBarcode($kode)
-            ->firstOrFail();
+            // $barang_data = Barang::with('kategoris')
+            // ->whereKodeBarcode($kode)
+            // ->firstOrFail();
+            $barang_data = Barang::whereId($id)
+            ->with('kategoris')
+            ->with('suppliers')
+            ->first();
+
+            // var_dump($barang_data->suppliers); die;
 
             if(count($barang_data->kategoris) > 0) {
                 $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
