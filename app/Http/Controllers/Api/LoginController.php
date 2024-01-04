@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\{Hash, Validator, Http};
 use App\Models\{User, Login, Menu};
-use App\Events\{EventNotification, ForbidenLoginEvent, LogoutEvent};
+use App\Events\{EventNotification, ForbidenLoginEvent, LogoutEvent, LoginEvent};
 use Auth;
 
 class LoginController extends Controller
@@ -143,7 +143,7 @@ class LoginController extends Controller
                             'data' => $userIsLogin
                         ];
 
-                        event(new EventNotification($data_event));
+                        event(new LoginEvent($data_event));
 
                         return response()->json([
                             'success' => true,
@@ -193,7 +193,8 @@ class LoginController extends Controller
                 'alert' => 'info',
                 'type' => 'logout',
                 'notif' => "{$user->name}, telah logout!",
-                'email' => $user->email
+                'email' => $user->email,
+                'user' => Auth::user()
             ];
 
             event(new LogoutEvent($data_event));

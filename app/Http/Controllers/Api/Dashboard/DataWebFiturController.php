@@ -19,6 +19,7 @@ use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
 use Image;
+use Auth;
 
 
 class DataWebFiturController extends Controller
@@ -117,7 +118,8 @@ class DataWebFiturController extends Controller
                     'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "{$name}, has been restored!",
-                    'data' => $restored->deleted_at
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
                 ];
                 break;
 
@@ -156,7 +158,8 @@ class DataWebFiturController extends Controller
                     'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "{$name} has been restored!",
-                    'data' => $restored->deleted_at
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
                 ];
                 break;
 
@@ -170,7 +173,8 @@ class DataWebFiturController extends Controller
                     'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "Bank, {$name} has been restored!",
-                    'data' => $restored->deleted_at
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
                 ];
                 break;
 
@@ -184,7 +188,8 @@ class DataWebFiturController extends Controller
                     'alert' => 'info',
                     'type' => 'restored',
                     'notif' => "Barang, {$name} has been restored!",
-                    'data' => $restored->deleted_at
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
                 ];
                 break;
 
@@ -245,7 +250,8 @@ class DataWebFiturController extends Controller
                     'alert' => 'error',
                     'type' => 'destroyed',
                     'notif' => "User {$deleted->name} has permanently deleted!",
-                    'data' => $deleted->deleted_at
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
                 ];
 
                 break;
@@ -256,8 +262,10 @@ class DataWebFiturController extends Controller
 
                 $file_path = $deleted->photo;
                 
-                if (Storage::disk('public')->exists($file_path)) {
-                    Storage::disk('public')->delete($file_path);
+                if($file_path !== NULL) {                    
+                    if (Storage::disk('public')->exists($file_path)) {
+                        Storage::disk('public')->delete($file_path);
+                    }
                 }
 
                 $deleted->suppliers()->forceDelete();
@@ -268,7 +276,8 @@ class DataWebFiturController extends Controller
                     'alert' => 'error',
                     'type' => 'destroyed',
                     'notif' => "Barang, {$deleted->nama} has permanently deleted!",
-                    'data' => $deleted->deleted_at
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
                 ];
                 break;
 
@@ -413,12 +422,12 @@ class DataWebFiturController extends Controller
                 $icon = "🤝🏼";
                 $label = "Jumlah Quantity";
                 $result = Supplier::select('supplier.kode', 'supplier.nama', DB::raw('COALESCE(SUM(pembelian.jumlah), 0) as total_pembelian'))
-                    ->leftJoin('pembelian', 'supplier.kode', '=', 'pembelian.supplier')
-                    ->whereNull('supplier.deleted_at')
-                    ->groupBy('supplier.kode', 'supplier.nama')
-                    ->orderByDesc('total_pembelian')
-                    ->take(10)
-                    ->get();
+                ->leftJoin('pembelian', 'supplier.kode', '=', 'pembelian.supplier')
+                ->whereNull('supplier.deleted_at')
+                ->groupBy('supplier.kode', 'supplier.nama')
+                ->orderByDesc('total_pembelian')
+                ->take(10)
+                ->get();
                 break;
 
                 case "pelanggan":
@@ -426,12 +435,12 @@ class DataWebFiturController extends Controller
                 $icon = "🎖️";
                 $label = "Total Pembelian";
                 $result = Pelanggan::select('pelanggan.kode', 'pelanggan.nama', DB::raw('COALESCE(SUM(penjualan.subtotal), 0) as total_penjualan'))
-                    ->leftJoin('penjualan', 'pelanggan.kode', '=', 'penjualan.pelanggan')
-                    ->whereNull('pelanggan.deleted_at')
-                    ->groupBy('pelanggan.kode', 'pelanggan.nama')
-                    ->orderBy('total_penjualan', 'DESC')
-                    ->take(10)
-                    ->get();
+                ->leftJoin('penjualan', 'pelanggan.kode', '=', 'penjualan.pelanggan')
+                ->whereNull('pelanggan.deleted_at')
+                ->groupBy('pelanggan.kode', 'pelanggan.nama')
+                ->orderBy('total_penjualan', 'DESC')
+                ->take(10)
+                ->get();
                 break;
             }
 
@@ -727,8 +736,8 @@ class DataWebFiturController extends Controller
     public function calculateBarang()
     {
         $penjualanHarian = Barang::select(DB::raw('DATE(created_at) as tanggal'), DB::raw('SUM(jumlah_terjual) as total_penjualan'))
-            ->groupBy('tanggal')
-            ->get();
+        ->groupBy('tanggal')
+        ->get();
 
         var_dump($penjualanHarian); die;
         

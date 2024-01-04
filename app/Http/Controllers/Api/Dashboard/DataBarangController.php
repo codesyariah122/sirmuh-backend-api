@@ -12,6 +12,7 @@ use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier};
+use Auth;
 
 class DataBarangController extends Controller 
 {
@@ -545,7 +546,8 @@ class DataBarangController extends Controller
         $data_event = [
             'alert' => 'error',
             'type' => 'removed',
-            'notif' => "{$delete_barang->nama}, has move to trash, please check trash!"
+            'notif' => "{$delete_barang->nama}, has move to trash, please check trash!",
+            'user' => Auth::user()
         ];
 
         event(new EventNotification($data_event));
