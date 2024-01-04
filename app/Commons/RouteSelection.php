@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\{
 use App\Http\Controllers\Api\Dashboard\{
 	DataUserDataController,
 	DataBarangController,
+	DataPelangganController,
 	DataKategoriBarangController,
 	DataBankController,
 	DataBiayaController,
@@ -75,13 +76,29 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataKategoriBarangController::class
 		],
-   
 		//End Data Kategori Barang 
+
+		// Data Pelanggan
+		[
+			'endPoint' => '/data-pelanggan',
+			'method' => 'resource',
+			'controllers' => DataPelangganController::class
+		],
+
+		// Data Cabang
+		[
+			'endPoint' => '/data-cabang',
+			'method' => 'resource',
+			'controllers' => DataPelangganController::class
+		],
+
+		// Data Bank
 		[
 			'endPoint' => '/data-bank',
 			'method' => 'get',
 			'controllers' => [DataBankController::class, 'index']
 		],
+
 		[
 			'endPoint' => '/data-biaya',
 			'method' => 'get',

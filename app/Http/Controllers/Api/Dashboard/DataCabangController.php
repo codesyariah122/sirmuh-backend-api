@@ -11,50 +11,40 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pelanggan, Penjualan};
+use App\Models\{Cabang};
+use Auth;
 
 
-class DataPelangganController extends Controller
+class DataCabangController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
         try {
             $keywords = $request->query('keywords');
-            $sales = $request->query('sales');
             $kode = $request->query('kode');
 
             if($keywords) {
-                $pelanggans = Pelanggan::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+                $cabangs = Cabang::whereNull('deleted_at')
+                ->select('id', 'kode', 'nama', 'alamat', 'max_piutang', 'saldo_piutang', 'nopwp', 'pelanggan_kena_pajak')
                 ->where('nama', 'like', '%'.$keywords.'%')
                 // ->orderByDesc('harga_toko')
                 ->orderByDesc('id')
                 ->paginate(10);
-            } else if($sales){
-                $barangs =  Pelanggan::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                ->where('sales', $sales)
+            }else {
+                $cabangs = Cabang::whereNull('deleted_at')
+                ->select('id', 'kode', 'nama', 'alamat', 'max_piutang', 'saldo_piutang', 'nopwp', 'pelanggan_kena_pajak')
+                ->where('kode', 'like', '%'.$kode.'%')
                 // ->orderByDesc('harga_toko')
                 ->orderByDesc('id')
                 ->paginate(10);
-            } else if($kode) {
-                $barangs = Barang::whereKode($kode)
-                ->get();
-            }else {
-                $pelanggans =  Pelanggan::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                // ->orderByDesc('harga_toko')
-                ->orderBy('nama', 'ASC')
-                ->paginate(10);
             }
 
-            return new ResponseDataCollect($pelanggans);
-
+            return new ResponseDataCollect($cabangs);
         } catch (\Throwable $th) {
             throw $th;
         }

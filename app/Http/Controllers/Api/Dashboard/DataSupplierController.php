@@ -26,14 +26,16 @@ class DataSupplierController extends Controller
 
         if($keywords) {
             $suppliers = Supplier::whereNull('deleted_at')
-            ->select('id', 'nama')
+            ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
             ->where('nama', 'like', '%'.$keywords.'%')
-            ->orderByDesc('id', 'DESC')
+            // ->orderByDesc('id', 'DESC')
+            ->orderBy('nama', 'ASC')
             ->paginate(10);
         } else {
             $suppliers =  Supplier::whereNull('deleted_at')
-            ->select('id', 'nama')
-            ->orderByDesc('id', 'DESC')
+            ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+            // ->orderByDesc('id', 'DESC')
+            ->orderBy('nama', 'ASC')
             ->paginate(10);
         }
 
