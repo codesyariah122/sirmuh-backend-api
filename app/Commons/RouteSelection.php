@@ -27,7 +27,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataSupplierController,
 	DataLaporanUtangPiutangPelangganController,
 	DataPerusahaanController,
-	DataLabaRugiController
+	DataLabaRugiController,
+	DataKaryawanController
 };
 
 class RouteSelection {
@@ -119,6 +120,14 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataExpiredBarangController::class, 'index']
 		],
+
+		// Karyawan
+		[
+			'endPoint' => '/data-karyawan',
+			'method' => 'resource',
+			'controllers' => DataKaryawanController::class
+		],
+		// End Karyawan
 
 		// Item Penjualan
 		[
