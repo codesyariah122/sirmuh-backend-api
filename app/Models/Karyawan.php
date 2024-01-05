@@ -15,6 +15,6 @@ class Karyawan extends Model
 
     public function users()
     {
-    	$this->belongsToMany("App\Models\User");
+    	return $this->belongsToMany("App\Models\User");
     }
 }
