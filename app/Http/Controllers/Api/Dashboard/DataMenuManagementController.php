@@ -92,9 +92,9 @@ class DataMenuManagementController extends Controller
             $menu->save();
 
             $data_event = [
+                'routes' => 'menus',
                 'type' => 'menu',
                 'notif' => "{$menu->menu}, berhasil ditambahkan! 🥳",
-                'data' => $menu
             ];
 
             event(new EventNotification($data_event));

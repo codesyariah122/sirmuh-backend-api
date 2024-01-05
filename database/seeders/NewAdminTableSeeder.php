@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 use App\Models\{User, Roles, Karyawan};
 use App\Helpers\{WebFeatureHelpers};
 
-class UsersAdminTableSeeder extends Seeder
+class NewAdminTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -25,8 +25,8 @@ class UsersAdminTableSeeder extends Seeder
     public function run()
     {
         $administrator = new User;
-        $administrator->name = "admin sirmuh";
-        $administrator->email = "admin@sirojulmuhtadin.com";
+        $administrator->name = "admin toko";
+        $administrator->email = "admin_toko@sirojulmuhtadin.com";
         $administrator->password = Hash::make("Admin@123654");
         $administrator->is_login = 0;
         $initial = $this->initials($administrator->name);

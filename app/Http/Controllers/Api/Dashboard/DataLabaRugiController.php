@@ -40,8 +40,9 @@ class DataLabaRugiController extends Controller
     {
         try {
             $label = "Total Penjualan";
-            $startDate = now()->subMonths($jmlMonth)->startOfMonth();
+            $startDate = now()->subMonthsNoOverflow($jmlMonth - 1)->startOfMonth();
 
+            // endDate menggunakan now() agar termasuk bulan saat ini
             $endDate = now()->endOfMonth();
 
             // Query the labarugi table for the specified period and group by month

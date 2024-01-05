@@ -279,6 +279,7 @@ class DataBarangController extends Controller
             ->get();
 
             $data_event = [
+                'routes' => 'barang',
                 'alert' => 'success',
                 'type' => 'add-data',
                 'notif' => "{$newBarang->nama}, baru saja ditambahkan 🤙!",
