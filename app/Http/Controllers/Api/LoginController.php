@@ -105,7 +105,7 @@ class LoginController extends Controller
                             $user_login->expires_at = $dates;
                             $user_login->remember_token = $user[0]->createToken('RememberMe')->accessToken;
                         } else {
-                            $user_login->expires_at = Carbon::now()->addRealDays(7);
+                            $user_login->expires_at = Carbon::now()->addRealDays(1);
                         }
 
                         $user_login->last_login = Carbon::now();
