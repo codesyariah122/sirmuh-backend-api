@@ -100,7 +100,8 @@ class DataChildSubMenuManagementController extends Controller
             $child_sub_menu->sub_menus()->sync($sub_menu_id);
 
             $data_event = [
-                'type' => 'add-data',
+                'routes' => 'menus',
+                'type' => 'child-sub-menu',
                 'notif' => $request->menu.", successfully add child sub menus!!",
             ];
 
@@ -108,6 +109,7 @@ class DataChildSubMenuManagementController extends Controller
 
             $new_child_sub_menu = SubMenu::whereId($request->parent_menu)
             ->with('child_sub_menus')
+            ->orderBy('id', 'DESC')
             ->get();
 
             return response()->json([

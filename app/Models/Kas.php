@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Biaya extends Model
-{   
+class Kas extends Model
+{
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'biaya';
+    protected $table = "kas";
 }

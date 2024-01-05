@@ -4,29 +4,42 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Pemasukan;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use App\Events\{EventNotification};
+use App\Helpers\{WebFeatureHelpers};
+use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
+use App\Models\{Kas};
 
-class DataPemasukanController extends Controller
+class DataKasController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        try {
-            $pemasukan = Pemasukan::paginate(10);
+        $keywords = $request->query('keywords');
 
-            return response()->json([
-              'success' => true,
-              'message' => 'List data pemasukan 💵',
-              'data' => $pemasukan
-          ], 200);
-
-        } catch (\Throwable $th) {
-            throw $th;
+        if($keywords) {
+            $kas = Kas::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'saldo')
+            ->where('nama', 'like', '%'.$keywords.'%')
+            // ->orderByDesc('id', 'DESC')
+            ->orderBy('nama', 'ASC')
+            ->paginate(10);
+        } else {
+            $kas =  Kas::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'saldo')
+            // ->orderByDesc('id', 'DESC')
+            ->orderBy('nama', 'ASC')
+            ->paginate(10);
         }
+
+        return new ResponseDataCollect($kas);
     }
 
     /**
@@ -94,5 +107,4 @@ class DataPemasukanController extends Controller
     {
         //
     }
-
 }

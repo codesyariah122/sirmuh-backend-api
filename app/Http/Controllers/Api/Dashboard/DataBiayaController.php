@@ -4,6 +4,13 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use App\Events\{EventNotification};
+use App\Helpers\{WebFeatureHelpers};
+use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Biaya};
 
 class DataBiayaController extends Controller
@@ -13,20 +20,26 @@ class DataBiayaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        try {
-            $biaya = Biaya::paginate(10);
+        $keywords = $request->query('keywords');
 
-            return response()->json([
-              'success' => true,
-              'message' => 'List data biaya 📈',
-              'data' => $biaya
-          ], 200);
-
-        } catch (\Throwable $th) {
-            throw $th;
+        if($keywords) {
+            $biaya = Biaya::whereNull('deleted_at')
+            ->select('kode', 'nama')
+            ->where('nama', 'like', '%'.$keywords.'%')
+            // ->orderByDesc('id', 'DESC')
+            ->orderBy('nama', 'ASC')
+            ->paginate(10);
+        } else {
+            $biaya =  Biaya::whereNull('deleted_at')
+            ->select('kode', 'nama')
+            // ->orderByDesc('id', 'DESC')
+            ->orderBy('nama', 'ASC')
+            ->paginate(10);
         }
+
+        return new ResponseDataCollect($biaya);
     }
 
     /**

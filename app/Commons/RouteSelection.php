@@ -28,7 +28,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataLaporanUtangPiutangPelangganController,
 	DataPerusahaanController,
 	DataLabaRugiController,
-	DataKaryawanController
+	DataKaryawanController,
+	DataKasController
 };
 
 class RouteSelection {
@@ -128,6 +129,14 @@ class RouteSelection {
 			'controllers' => DataKaryawanController::class
 		],
 		// End Karyawan
+
+		// Kas
+		[
+			'endPoint' => '/data-kas',
+			'method' => 'resource',
+			'controllers' => DataKasController::class
+		],
+		// End Kas
 
 		// Item Penjualan
 		[
