@@ -103,6 +103,7 @@ class DataChildSubMenuManagementController extends Controller
                 'routes' => 'menus',
                 'type' => 'child-sub-menu',
                 'notif' => $request->menu.", successfully add child sub menus!!",
+                'user' => Auth::user()
             ];
 
             event(new EventNotification($data_event));
