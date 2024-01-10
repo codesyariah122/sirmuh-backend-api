@@ -37,6 +37,7 @@ class AuthServiceProvider extends ServiceProvider
         $gate_data = [
             'data-menu',
             'data-sub-menu',
+            'data-role-management'
             // 'data-perusahaan'
         ];
         self::__contstruct($gate_data);

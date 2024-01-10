@@ -117,6 +117,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'info',
                     'type' => 'restored',
+                    'routes' => 'user-data',
                     'notif' => "{$name}, has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
@@ -157,6 +158,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'info',
                     'type' => 'restored',
+                    'routes' => 'user-role',
                     'notif' => "{$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
@@ -172,6 +174,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'info',
                     'type' => 'restored',
+                    'routes' => 'bank-data',
                     'notif' => "Bank, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
@@ -187,6 +190,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'info',
                     'type' => 'restored',
+                    'routes' => 'data-barang',
                     'notif' => "Barang, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
@@ -249,6 +253,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'error',
                     'type' => 'destroyed',
+                    'routes' => 'barang',
                     'notif' => "User {$deleted->name} has permanently deleted!",
                     'data' => $deleted->deleted_at,
                     'user' => Auth::user()

@@ -99,13 +99,14 @@ class DataSubMenuManagementController extends Controller
                 'routes' => 'menus',
                 'type' => 'sub-menu',
                 'notif' => "{$sub_menu->menu}, berhasil ditambahkan! 🥳",
+                'user' => Auth::user()
             ];
 
             event(new EventNotification($data_event));
 
             $new_menu = Menu::whereId($menu_id)
             ->with('sub_menus')
-            ->orderDescBy('id')
+            ->orderByDesc('id')
             ->get();
 
             return response()->json([
