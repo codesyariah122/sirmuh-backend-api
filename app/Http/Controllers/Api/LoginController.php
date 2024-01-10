@@ -109,6 +109,7 @@ class LoginController extends Controller
                         }
 
                         $user_login->last_login = Carbon::now();
+
                         $user_login->save();
                         $user_id = $user_login->id;
 

@@ -29,7 +29,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataPerusahaanController,
 	DataLabaRugiController,
 	DataKaryawanController,
-	DataKasController
+	DataKasController,
+	DataRoleUserManagementController
 };
 
 class RouteSelection {
@@ -129,6 +130,14 @@ class RouteSelection {
 			'controllers' => DataKaryawanController::class
 		],
 		// End Karyawan
+
+		// User & role Management
+		[
+			'endPoint' => '/data-role-management',
+			'method' => 'resource',
+			'controllers' => DataRoleUserManagementController::class
+		],
+		// End User & Role Management
 
 		// Kas
 		[

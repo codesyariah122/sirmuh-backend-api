@@ -279,7 +279,7 @@ class DataBarangController extends Controller
             ->get();
 
             $data_event = [
-                'routes' => 'barang',
+                'routes' => 'data-barang',
                 'alert' => 'success',
                 'type' => 'add-data',
                 'notif' => "{$newBarang->nama}, baru saja ditambahkan 🤙!",
@@ -430,6 +430,7 @@ class DataBarangController extends Controller
 
         $data_event = [
             'type' => 'updated',
+            'routes' => 'data-barang',
             'notif' => "{$update_barang->nama}, successfully update photo barang!"
         ];
 
@@ -502,6 +503,7 @@ class DataBarangController extends Controller
 
             $data_event = [
                 'type' => 'updated',
+                'routes' => 'data-barang',
                 'notif' => "{$update_barang->nama}, successfully update!"
             ];
 
@@ -546,6 +548,7 @@ class DataBarangController extends Controller
 
         $data_event = [
             'alert' => 'error',
+            'routes' => 'data-barang',
             'type' => 'removed',
             'notif' => "{$delete_barang->nama}, has move to trash, please check trash!",
             'user' => Auth::user()
