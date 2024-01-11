@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pembelian extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
-    
-    protected $table = 'pembelian';
-    
-    public function suppliers()
-	  {
-		  return $this->belongsToMany("App\Models\Supplier");
-	  }
+	use HasFactory;
+	use SoftDeletes;
+	
+	protected $table = 'pembelian';
+	
+	public function suppliers()
+	{
+		return $this->belongsToMany("App\Models\Supplier");
+	}
 }

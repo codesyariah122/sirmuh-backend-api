@@ -11,9 +11,10 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Kas};
+use App\Models\{Pembelian,ItemPembelian,Supplier};
+use Auth;
 
-class DataKasController extends Controller
+class DataPembelianController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,24 +23,29 @@ class DataKasController extends Controller
      */
     public function index(Request $request)
     {
-        $keywords = $request->query('keywords');
+        try {
+            $keywords = $request->query('keywords');
+            $today = now()->toDateString();
 
-        if($keywords) {
-            $kas = Kas::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'saldo')
-            ->where('nama', 'like', '%'.$keywords.'%')
-            // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
+            $query = Pembelian::query()
+            ->select('pembelian.*', 'itempembelian.*', 'supplier.*')
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
+
+            if ($keywords) {
+                $query->where('pembelian.nama', 'like', '%' . $keywords . '%');
+            }
+
+            $query->whereDate('pembelian.tanggal', '=', $today);
+
+            $pembelians = $query->orderByDesc('pembelian.id')
             ->paginate(10);
-        } else {
-            $kas =  Kas::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'saldo')
-            // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
-            ->paginate(10);
+
+            return new ResponseDataCollect($pembelians);
+
+        } catch (\Throwable $th) {
+            throw $th;
         }
-
-        return new ResponseDataCollect($kas);
     }
 
     /**
@@ -71,14 +77,7 @@ class DataKasController extends Controller
      */
     public function show($id)
     {
-        try {
-            $kas = Kas::whereNull('deleted_at')
-            ->whereId($id)
-            ->get();
-            return new ResponseDataCollect($kas);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        //
     }
 
     /**
