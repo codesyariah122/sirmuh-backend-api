@@ -140,7 +140,7 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         try{
-           $validator = Validator::make($request->all(), [
+         $validator = Validator::make($request->all(), [
             'nama' => 'required',
             'kategori' => 'required',
             'supplier' => 'required',
@@ -154,7 +154,7 @@ class DataBarangController extends Controller
         ]);
 
 
-           if ($validator->fails()) {
+         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
@@ -192,6 +192,7 @@ class DataBarangController extends Controller
             $file = $photo->store(trim(preg_replace('/\s+/', '', '/products')), 'public');
             $newBarang->photo = $file;
         }
+
 
         $checkKategori = Kategori::where('kode', $request->kategori)->count();
 
@@ -540,7 +541,7 @@ class DataBarangController extends Controller
      */
     public function destroy($id)
     {
-       try {
+     try {
         $delete_barang = Barang::whereNull('deleted_at')
         ->findOrFail($id);
 

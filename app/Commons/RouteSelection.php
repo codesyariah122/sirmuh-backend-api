@@ -294,7 +294,7 @@ class RouteSelection {
 		],
 
 		[
-			'endPoint' => '/load-form/{diskon}/{total}',
+			'endPoint' => '/load-form/{diskon}/{ppn}/{total}',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'loadForm']
 		]
