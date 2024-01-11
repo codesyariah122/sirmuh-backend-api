@@ -755,17 +755,40 @@ class DataWebFiturController extends Controller
         
     }
 
-    public function loadForm($diskon, $total)
+    public function loadForm($diskon, $ppn, $total)
     {
         $helpers = $this->helpers;
-        $bayar = $total - ($diskon / 100 * $total);
+        $diskonAmount = $diskon / 100 * $total;
+        $ppnAmount = $ppn / 100 * $total;
+
+        $totalAfterDiscount = $total - $diskonAmount;
+        $totalWithPPN = $totalAfterDiscount + $ppnAmount;
+
         $data  = [
-            'totalrp' => $this->helpers->format_uang($total),
-            'bayar' => $bayar,
-            'bayarrp' => $this->helpers->format_uang($bayar),
-            'terbilang' => ucwords($this->helpers->terbilang($bayar). ' Rupiah')
+            'totalrp' => $this->helpers->format_uang($totalWithPPN),
+            'diskonrp' => $this->helpers->format_uang($diskonAmount),
+            'ppnrp' => $this->helpers->format_uang($ppnAmount),
+            'total_after_diskon' => $this->helpers->format_uang($totalAfterDiscount),
+            'total_with_ppn' => $this->helpers->format_uang($totalWithPPN),
+            'bayar' => $totalWithPPN,
+            'bayarrp' => $this->helpers->format_uang($diskon && $ppn ? $totalWithPPN : $total),
+            'terbilang' => ucwords($this->helpers->terbilang($totalWithPPN). ' Rupiah')
         ];
 
         return new ResponseDataCollect($data);
     }
+
+    // public function loadForm($diskon, $ppn, $total)
+    // {
+    //     $helpers = $this->helpers;
+    //     $bayar = $total - ($diskon / 100 * $total);
+    //     $data  = [
+    //         'totalrp' => $this->helpers->format_uang($total),
+    //         'bayar' => $bayar,
+    //         'bayarrp' => $this->helpers->format_uang($bayar),
+    //         'terbilang' => ucwords($this->helpers->terbilang($bayar). ' Rupiah')
+    //     ];
+
+    //     return new ResponseDataCollect($data);
+    // }
 }

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas};
 use Auth;
 
 class DataPembelianLangsungController extends Controller
@@ -28,8 +28,12 @@ class DataPembelianLangsungController extends Controller
             $today = now()->toDateString();
 
             $query = Pembelian::query()
-            ->select('pembelian.*', 'itempembelian.*', 'supplier.nama',
-                'supplier.alamat',)
+            ->select(
+                'pembelian.*',
+                'itempembelian.*',
+                'supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier'
+            )
             ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
 
@@ -69,6 +73,7 @@ class DataPembelianLangsungController extends Controller
     {
         try {
             $data = $request->all();
+
             $currentDate = now()->format('ymd');
 
             $lastIncrement = Pembelian::max('id') ?? 0;
@@ -78,7 +83,74 @@ class DataPembelianLangsungController extends Controller
 
             $generatedCode = 'R21-' . $currentDate . $formattedIncrement;
             
-            
+            $supplier = Supplier::findOrFail($data['supplier']);
+
+            $barang = Barang::findOrFail($data['kode_barang']);
+
+            $kas = Kas::findOrFail($data['kode_kas']);
+
+            $newPembelian = new Pembelian;
+            $newPembelian->tanggal = $currentDate;
+            $newPembelian->kode = $generatedCode;
+            $newPembelian->supplier = $supplier->kode;
+            $newPembelian->kode_kas = $kas->kode;
+            $newPembelian->jumlah = $data['jumlah'];
+            $newPembelian->lunas = true;
+            $newPembelian->hutang = 0.00;
+            $newPembelian->jt = 1.00;
+            $newPembelian->keterangan = $data['keterangan'];
+            $newPembelian->operator = $data['operator'];
+
+            $newPembelian->save();
+
+            $newItemPembelian = new ItemPembelian;
+            $newItemPembelian->kode = $newPembelian->kode;
+            $newItemPembelian->kode_barang = $barang->kode;
+            $newItemPembelian->nama_barang = $barang->nama;
+            $newItemPembelian->satuan = $barang->satuan;
+            $newItemPembelian->qty = $data['qty'];
+            $newItemPembelian->harga_beli = $barang->hpp;
+            $newItemPembelian->harga_toko = $barang->harga_toko;
+            $newItemPembelian->harga_cabang = $barang->harga_cabang;
+            $newItemPembelian->harga_partai = $barang->harga_partai;
+            $newItemPembelian->subtotal = $barang->hpp * $data['qty'];
+            $newItemPembelian->isi = $barang->isi;
+
+            if($data['diskon']) {
+                $total = $barang['hpp'] * $data['qty'];
+                $diskonAmount = $data['diskon'] / 100 * $total;
+                $totalSetelahDiskon = $total - $diskonAmount;
+                $newItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
+            }
+
+            $newItemPembelian->save();
+
+            if($newPembelian && $newItemPembelian) {
+                $newPembelianSaved =  Pembelian::query()
+                ->select(
+                    'pembelian.*',
+                    'itempembelian.*',
+                    'supplier.nama as nama_supplier',
+                    'supplier.alamat as alamat_supplier'
+                )
+                ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+                ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+                ->where('pembelian.id', $newPembelian->id)
+                ->get();
+
+                $data_event = [
+                    'routes' => 'pembelian-langsung',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$newPembelian->kode}, baru saja ditambahkan 🤙!",
+                    'data' => $newPembelian->kode,
+                ];
+
+                event(new EventNotification($data_event));
+
+                return new RequestDataCollect($newPembelianSaved);
+            }
+
         } catch (\Throwable $th) {
             throw $th;
         }
