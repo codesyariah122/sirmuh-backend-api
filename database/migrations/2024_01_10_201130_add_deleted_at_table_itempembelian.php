@@ -13,8 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('itempenjualan', function (Blueprint $table) {
+        Schema::table('itempembelian', function (Blueprint $table) {
             $table->id()->first();
+            $table->timestamp('deleted_at')->nullable();
         });
     }
 
@@ -25,8 +26,9 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('itempenjualan', function (Blueprint $table) {
+        Schema::table('itempembelian', function (Blueprint $table) {
             $table->dropColumn('id');
+            $table->dropColumn('deleted_at');
         });
     }
 };

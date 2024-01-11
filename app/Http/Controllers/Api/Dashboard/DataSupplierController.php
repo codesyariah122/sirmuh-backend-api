@@ -22,24 +22,28 @@ class DataSupplierController extends Controller
      */
     public function index(Request $request)
     {
-        $keywords = $request->query('keywords');
+        try {
+            $keywords = $request->query('keywords');
 
-        if($keywords) {
-            $suppliers = Supplier::whereNull('deleted_at')
-            ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
-            ->where('nama', 'like', '%'.$keywords.'%')
+            if($keywords) {
+                $suppliers = Supplier::whereNull('deleted_at')
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->where('nama', 'like', '%'.$keywords.'%')
             // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
-            ->paginate(10);
-        } else {
-            $suppliers =  Supplier::whereNull('deleted_at')
-            ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->orderBy('nama', 'ASC')
+                ->paginate(10);
+            } else {
+                $suppliers =  Supplier::whereNull('deleted_at')
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
             // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
-            ->paginate(10);
+                ->orderBy('nama', 'ASC')
+                ->paginate(10);
+            }
+
+            return new ResponseDataCollect($suppliers);
+        } catch (\Throwable $th) {
+            throw $th;
         }
-
-        return new ResponseDataCollect($suppliers);
     }
 
     /**
@@ -71,7 +75,13 @@ class DataSupplierController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $suppliers = Supplier::whereId($id)
+            ->get();
+            return new ResponseDataCollect($suppliers);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

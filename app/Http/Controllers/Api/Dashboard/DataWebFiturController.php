@@ -25,6 +25,13 @@ use Auth;
 class DataWebFiturController extends Controller
 {
 
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function web_data()
     {
         try {
@@ -353,7 +360,7 @@ class DataWebFiturController extends Controller
                 $totalData = User::whereNull('deleted_at')
                 ->get();
                 $totals = count($totalData);
-                $user_per_role = new WebFeatureHelpers;
+                $user_per_role = $this->helpers;
                 $owner = $user_per_role->get_total_user('OWNER');
                 $admin = $user_per_role->get_total_user('ADMIN');
                 $kasir = $user_per_role->get_total_user('KASIR');
@@ -746,5 +753,19 @@ class DataWebFiturController extends Controller
 
         var_dump($penjualanHarian); die;
         
+    }
+
+    public function loadForm($diskon, $total)
+    {
+        $helpers = $this->helpers;
+        $bayar = $total - ($diskon / 100 * $total);
+        $data  = [
+            'totalrp' => $this->helpers->format_uang($total),
+            'bayar' => $bayar,
+            'bayarrp' => $this->helpers->format_uang($bayar),
+            'terbilang' => ucwords($this->helpers->terbilang($bayar). ' Rupiah')
+        ];
+
+        return new ResponseDataCollect($data);
     }
 }

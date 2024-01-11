@@ -30,7 +30,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataLabaRugiController,
 	DataKaryawanController,
 	DataKasController,
-	DataRoleUserManagementController
+	DataRoleUserManagementController,
+	DataPembelianLangsungController
 };
 
 class RouteSelection {
@@ -146,6 +147,14 @@ class RouteSelection {
 			'controllers' => DataKasController::class
 		],
 		// End Kas
+
+		// Pembelian
+		[
+			'endPoint' => '/data-pembelian-langsung',
+			'method' => 'resource',
+			'controllers' => DataPembelianLangsungController::class
+		],
+		// End of pembelian
 
 		// Item Penjualan
 		[
@@ -283,6 +292,12 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'toTheBest']
 		],
+
+		[
+			'endPoint' => '/load-form/{diskon}/{total}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'loadForm']
+		]
 	];
 
 	public static function getListRoutes()
