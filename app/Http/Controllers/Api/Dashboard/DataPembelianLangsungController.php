@@ -87,7 +87,7 @@ class DataPembelianLangsungController extends Controller
             
             $supplier = Supplier::findOrFail($data['supplier']);
 
-            $barang = Barang::findOrFail($data['kode_barang']);
+            $barang = Barang::findOrFail($data['barang']);
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
@@ -97,9 +97,12 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->jumlah = $data['jumlah'];
-            $newPembelian->lunas = true;
+            $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
+            $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
             $newPembelian->hutang = 0.00;
-            $newPembelian->jt = 1.00;
+            $newPembelian->po = "False";
+            $newPembelian->receive = "True";
+            $newPembelian->jt = 0.00;
             $newPembelian->keterangan = $data['keterangan'];
             $newPembelian->operator = $data['operator'];
 
