@@ -89,7 +89,12 @@ class DataPelangganController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $pelanggan = Pelanggan::whereId($id)->get();
+            return new ResponseDataCollect($pelanggan);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

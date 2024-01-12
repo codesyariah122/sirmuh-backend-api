@@ -305,6 +305,12 @@ class RouteSelection {
 			'endPoint' => '/load-form/{diskon}/{ppn}/{total}',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'loadForm']
+		],
+
+		[
+			'endPoint' => '/generate-reference-code',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'generateReference']
 		]
 	];
 

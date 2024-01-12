@@ -777,4 +777,21 @@ class DataWebFiturController extends Controller
 
         return new ResponseDataCollect($data);
     }
+
+    public function generateReference()
+    {
+        $currentDate = now()->format('ymd');
+        $lastIncrement = Penjualan::max('id') ?? 0;
+        $increment = $lastIncrement + 1;
+
+        $formattedIncrement = sprintf('%03d', $increment);
+
+        $generatedCode = 'R21-' . $currentDate . $formattedIncrement;
+
+        $data = [
+            'ref_code' => $generatedCode
+        ];
+
+        return new ResponseDataCollect($data);
+    }
 }
