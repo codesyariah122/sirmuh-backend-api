@@ -31,7 +31,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataKaryawanController,
 	DataKasController,
 	DataRoleUserManagementController,
-	DataPembelianLangsungController
+	DataPembelianLangsungController,
+	DataPenjualanTokoController
 };
 
 class RouteSelection {
@@ -166,6 +167,13 @@ class RouteSelection {
 			'endPoint' => '/penjualan-terbaik',
 			'method' => 'get',
 			'controllers' => [DataItemPenjualanController::class, 'penjualanTerbaik']
+		],
+
+		// Penjualan Toko
+		[
+			'endPoint' => '/data-penjualan-toko',
+			'method' => 'resource',
+			'controllers' => DataPenjualanTokoController::class
 		],
 		
 		

@@ -777,18 +777,4 @@ class DataWebFiturController extends Controller
 
         return new ResponseDataCollect($data);
     }
-
-    // public function loadForm($diskon, $ppn, $total)
-    // {
-    //     $helpers = $this->helpers;
-    //     $bayar = $total - ($diskon / 100 * $total);
-    //     $data  = [
-    //         'totalrp' => $this->helpers->format_uang($total),
-    //         'bayar' => $bayar,
-    //         'bayarrp' => $this->helpers->format_uang($bayar),
-    //         'terbilang' => ucwords($this->helpers->terbilang($bayar). ' Rupiah')
-    //     ];
-
-    //     return new ResponseDataCollect($data);
-    // }
 }

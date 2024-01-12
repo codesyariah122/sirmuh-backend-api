@@ -35,7 +35,9 @@ class DataPembelianLangsungController extends Controller
                 'supplier.alamat as alamat_supplier'
             )
             ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->orderByDesc('pembelian.id')
+            ->limit(10);
 
             if ($keywords) {
                 $query->where('pembelian.nama', 'like', '%' . $keywords . '%');
