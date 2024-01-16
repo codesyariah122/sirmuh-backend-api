@@ -89,6 +89,13 @@ class DataPembelianLangsungController extends Controller
 
             $barang = Barang::findOrFail($data['barang']);
 
+            $updateStokBarang = Barang::findOrFail($data['barang']);
+            $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
+            $updateStokBarang->save();
+
+            // echo $request->qty;
+            // var_dump($barang->toko); die;
+
             $kas = Kas::findOrFail($data['kode_kas']);
 
             $newPembelian = new Pembelian;
@@ -130,6 +137,8 @@ class DataPembelianLangsungController extends Controller
 
             $newItemPembelian->save();
 
+            $userOnNotif = Auth::user();
+
             if($newPembelian && $newItemPembelian) {
                 $newPembelianSaved =  Pembelian::query()
                 ->select(
@@ -143,12 +152,15 @@ class DataPembelianLangsungController extends Controller
                 ->where('pembelian.id', $newPembelian->id)
                 ->get();
 
+                 
+
                 $data_event = [
                     'routes' => 'pembelian-langsung',
                     'alert' => 'success',
                     'type' => 'add-data',
-                    'notif' => "{$newPembelian->kode}, baru saja ditambahkan 🤙!",
+                    'notif' => "Pembelian dengan kode {$newPembelian->kode}, baru saja ditambahkan 🤙!",
                     'data' => $newPembelian->kode,
+                    'user' => $userOnNotif
                 ];
 
                 event(new EventNotification($data_event));

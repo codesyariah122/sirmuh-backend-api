@@ -89,6 +89,21 @@ class DataPenjualanTokoController extends Controller
 
 
             $barang = Barang::findOrFail($data['barang']);
+            $check_stok = intval($barang->toko);
+            $qty = intval($request->qty);
+            // var_dump($qty > $check_stok); die;
+            if($qty > $check_stok) {
+                $barangOutOfStok = Barang::select("kode", "nama", "photo")->findOrFail($data['barang']);
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Stok barang tidak tersedia',
+                    'data' => $barangOutOfStok
+                ]);
+            }
+
+            $updateStokBarang = Barang::findOrFail($data['barang']);
+            $updateStokBarang->toko = $updateStokBarang->toko - $request->qty;
+            $updateStokBarang->save();
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
@@ -122,6 +137,9 @@ class DataPenjualanTokoController extends Controller
             $newItemPenjualan->subtotal = $barang->hpp * $data['qty'];
             $newItemPenjualan->isi = $barang->isi;
 
+            // $updateQty = ItemPenjualan::findOrFail($newItemPenjualan->id);
+            // $updateQty->qty = $newItemPenjualan->qty + $data['qty'];
+
             if($data['diskon']) {
                 $total = $barang['hpp'] * $data['qty'];
                 $diskonAmount = $data['diskon'] / 100 * $total;
@@ -131,25 +149,28 @@ class DataPenjualanTokoController extends Controller
 
             $newItemPenjualan->save();
 
+            $userOnNotif = Auth::user();
+
             if($newPenjualan && $newItemPenjualan) {
-             $newPenjualanSaved =  Penjualan::query()
-             ->select(
+               $newPenjualanSaved =  Penjualan::query()
+               ->select(
                 'penjualan.*',
                 'itempenjualan.*',
                 'pelanggan.nama as nama_pelanggan',
                 'pelanggan.alamat as alamat_pelanggan'
             )
-             ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-             ->where('penjualan.id',$newPenjualan->id)
-             ->get();
+               ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+               ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+               ->where('penjualan.id',$newPenjualan->id)
+               ->get();
 
-             $data_event = [
+               $data_event = [
                 'routes' => 'penjualan-toko',
                 'alert' => 'success',
                 'type' => 'add-data',
-                'notif' => "{$newPenjualan->kode}, baru saja ditambahkan 🤙!",
+                'notif' => "Penjualan dengan kode {$newPenjualan->kode}, baru saja ditambahkan 🤙!",
                 'data' =>$newPenjualan->kode,
+                'user' => $userOnNotif
             ];
 
             event(new EventNotification($data_event));

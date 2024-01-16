@@ -76,7 +76,8 @@ class LoginController extends Controller
                                 'alert' => 'error',
                                 'notif' => "Seseorang, baru saja mencoba mengakses akun Anda!",
                                 'emailForbaiden' => $user[0]->email,
-                                'token' => $user[0]->logins[0]->user_token_login
+                                'token' => $user[0]->logins[0]->user_token_login,
+                                'user' => $user[0]
                             ];
 
                             $users = User::with('logins')

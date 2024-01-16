@@ -265,6 +265,8 @@ class DataBarangController extends Controller
 
         $newBarang->save();
 
+        $userOnNotif = Auth::user();
+
         if ($newBarang) {
             $supplierBarang = Supplier::where('nama', $request->supplier)->first();
             $kategoriBarang = Kategori::where('kode', $request->kategori)->first();
@@ -279,12 +281,14 @@ class DataBarangController extends Controller
             ->with('suppliers')
             ->get();
 
+
             $data_event = [
                 'routes' => 'data-barang',
                 'alert' => 'success',
                 'type' => 'add-data',
                 'notif' => "{$newBarang->nama}, baru saja ditambahkan 🤙!",
                 'data' => $newBarang->nama,
+                'user' => $userOnNotif
             ];
 
             event(new EventNotification($data_event));
