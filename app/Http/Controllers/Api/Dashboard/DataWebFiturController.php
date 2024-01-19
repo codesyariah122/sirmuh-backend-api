@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
-use App\Models\{User, Roles, Bank, Barang, ItemPenjualan, SatuanBeli, SatuanJual, Pembelian, Supplier, Penjualan, Pelanggan};
+use App\Models\{User, Roles, Bank, Barang, ItemPenjualan, SatuanBeli, SatuanJual, Pembelian, ItemPembelian, Supplier, Penjualan, Pelanggan};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
@@ -758,10 +758,10 @@ class DataWebFiturController extends Controller
     public function loadForm($diskon, $ppn, $total)
     {
         $helpers = $this->helpers;
-        $diskonAmount = $diskon / 100 * $total;
-        $ppnAmount = $ppn / 100 * $total;
+        $diskonAmount = intval($diskon) / 100 * intval($total);
+        $ppnAmount = intval($ppn) / 100 * intval($total);
 
-        $totalAfterDiscount = $total - $diskonAmount;
+        $totalAfterDiscount = intval($total) - $diskonAmount;
         $totalWithPPN = $totalAfterDiscount + $ppnAmount;
 
         $data  = [
@@ -771,7 +771,7 @@ class DataWebFiturController extends Controller
             'total_after_diskon' => $this->helpers->format_uang($totalAfterDiscount),
             'total_with_ppn' => $this->helpers->format_uang($totalWithPPN),
             'bayar' => $totalWithPPN,
-            'bayarrp' => $this->helpers->format_uang($diskon && $ppn ? $totalWithPPN : $total),
+            'bayarrp' => $this->helpers->format_uang((intval($diskon) && intval($ppn)) ? $totalWithPPN : $total),
             'terbilang' => ucwords($this->helpers->terbilang($totalWithPPN). ' Rupiah')
         ];
 
@@ -781,12 +781,9 @@ class DataWebFiturController extends Controller
     public function generateReference()
     {
         $currentDate = now()->format('ymd');
-        $lastIncrement = Penjualan::max('id') ?? 0;
-        $increment = $lastIncrement + 1;
+        $randomNumber = sprintf('%05d', mt_rand(0, 99999));
 
-        $formattedIncrement = sprintf('%03d', $increment);
-
-        $generatedCode = 'R21-' . $currentDate . $formattedIncrement;
+        $generatedCode = 'R21-' . $currentDate . $randomNumber;
 
         $data = [
             'ref_code' => $generatedCode
@@ -794,4 +791,137 @@ class DataWebFiturController extends Controller
 
         return new ResponseDataCollect($data);
     }
+
+    public function loadFormPenjualan($diskon = 0, $total = 0, $bayar = 0)
+    {
+        $diterima   = $total - ($diskon / 100 * $total);
+        $kembali = ($bayar != 0) ? $bayar - $diterima : 0;
+        $data    = [
+            'totalrp' => $this->helpers->format_uang($total),
+            'bayar' => $bayar,
+            'bayarrp' => $this->helpers->format_uang($bayar),
+            'terbilang' => ucwords($this->helpers->terbilang($bayar). ' Rupiah'),
+            'kembalirp' => $this->helpers->format_uang($kembali),
+            'kembali_terbilang' => ucwords($this->helpers->terbilang($kembali). ' Rupiah'),
+        ];
+
+        return response()->json($data);
+    }
+
+    public function update_stok_barang(Request $request)
+    {
+        try {
+            $updateBarang = Barang::findOrFail($barang['id']);
+            $qtyBarang = $barang['qty'];
+            $stokBarang = intval($updateBarang->toko);
+            $updateBarang->toko = $stokBarang + $qtyBarang;
+            $updateBarang->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stok barang update!'
+            ]);
+
+            return response()->json([
+                'draft' => true,
+                'message' => 'Stok its draft updated!'
+            ], 203);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function update_item_pembelian(Request $request)
+    {
+        try {
+            $draft = $request->draft;
+            $kode = $request->kode;
+            $barangs = $request->barangs;
+
+            if($draft) {
+                foreach($barangs as $barang) {
+                    $dataBarang = Barang::whereKode($barang['kode'])->firstOrFail();
+                    $existingItem = ItemPembelian::where('kode', $kode)
+                    ->where('kode_barang', $dataBarang->kode)
+                    ->where('draft', 1)
+                    ->first();
+                    if ($existingItem) {
+                        // Jika sudah ada, update informasi yang diperlukan
+                        $existingItem->qty = intval($barang['qty']);
+                        $existingItem->subtotal = $dataBarang->hpp * $barang['qty'];
+
+                        // Update atribut lainnya sesuai kebutuhan
+                        $existingItem->save();
+                    } else {
+                        $draftItemPembelian = new ItemPembelian;
+                        $draftItemPembelian->kode = $kode;
+                        $draftItemPembelian->draft = $draft;
+                        $draftItemPembelian->kode_barang = $dataBarang->kode;
+                        $draftItemPembelian->nama_barang = $dataBarang->nama;
+                        $draftItemPembelian->satuan = $dataBarang->satuan;
+                        $draftItemPembelian->qty = $barang['qty'];
+                        $draftItemPembelian->isi = $dataBarang->isi;
+                        $draftItemPembelian->nourut = $barang['nourut'];
+                        $draftItemPembelian->harga_beli = $dataBarang->hpp;
+                        $draftItemPembelian->harga_toko = $dataBarang->harga_toko;
+                        $draftItemPembelian->harga_cabang = $dataBarang->harga_cabang;
+                        $draftItemPembelian->harga_partai = $dataBarang->harga_partai;
+                        $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
+                        $draftItemPembelian->isi = $dataBarang->isi;
+
+                        if($barang['diskon']) {
+                            $total = $dataBarang->hpp * $barang['qty'];
+                            $diskonAmount = $barang['diskon'] / 100 * $total;
+                            $totalSetelahDiskon = $total - $diskonAmount;
+                            $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
+                        }
+
+                        // if($barang['ppn']) {
+                        //     $total = $dataBarang->hpp * $barang['qty'];
+                        //     $ppnAmount = $barang['ppn'] / 100 * $total;
+                        //     $totalSetelahPpn = $total - $diskonAmount;
+                        //     $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
+                        // }
+
+                        $draftItemPembelian->save();
+                    }
+                }
+                return response()->json([
+                    'draft' => true,
+                    'message' => 'Draft item pembelian successfully updated!',
+                    'data' => $kode
+                ], 200);
+            } else {
+             return response()->json([
+                'failed' => true,
+                'message' => 'Draft item pembelian has no success updated!',
+                'data' => $kode
+            ], 203);
+         }
+
+     } catch (\Throwable $th) {
+        throw $th;
+    }
+}
+
+public function list_draft_itempembelian($kode)
+{
+    try {
+        if($kode) {                
+            $listDrafts = ItemPembelian::whereDraft(1)
+            ->select("id", "kode", "nourut", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
+            ->whereKode($kode)
+            ->get();
+            return new ResponseDataCollect($listDrafts);
+        } else {
+            return response()->json([
+                'failed' => true,
+                'message' => 'Draft item pembelian has no success updated!'
+            ], 203);
+        }
+    } catch (\Throwable $th) {
+        throw $th;
+    }
+}
 }

@@ -21,6 +21,17 @@ class DataPembelianLangsungController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function data($id)
+    {
+        try {
+            $barang = Barang::findOrFail($id);
+            var_dump($barang);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function index(Request $request)
     {
         try {
@@ -32,11 +43,15 @@ class DataPembelianLangsungController extends Controller
                 'pembelian.*',
                 'itempembelian.*',
                 'supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier'
+                'supplier.alamat as alamat_supplier',
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang'
             )
             ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
             ->orderByDesc('pembelian.id')
+            // ->whereDraft(0)
             ->limit(10);
 
             if ($keywords) {
@@ -75,6 +90,11 @@ class DataPembelianLangsungController extends Controller
     {
         try {
             $data = $request->all();
+            $barangs = $data['barangs'];
+            // if(is_array($barangs) || is_object($barangs)) {
+            //     $dataBarangs = $data['barangs'];
+            // } else {}
+            $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
 
@@ -87,20 +107,33 @@ class DataPembelianLangsungController extends Controller
             
             $supplier = Supplier::findOrFail($data['supplier']);
 
-            $barang = Barang::findOrFail($data['barang']);
+            $barangIds = array_column($dataBarangs, 'id');
+            $barangs = Barang::whereIn('id', $barangIds)->get();
+            // $updateStokBarang = Barang::findOrFail($data['barang']);
+            // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
+            // $updateStokBarang->save();
 
-            $updateStokBarang = Barang::findOrFail($data['barang']);
-            $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
-            $updateStokBarang->save();
+            foreach($barangs as $barang) {
+                $barangId = $barang->id;
+                $qtyToUpdate = 0;
 
-            // echo $request->qty;
-            // var_dump($barang->toko); die;
+                foreach ($dataBarangs as $dataBarang) {
+                    if ($dataBarang['id'] == $barangId) {
+                        $qtyToUpdate = $dataBarang['qty'];
+                        break;
+                    }
+                }
+
+                $barang->toko = $barang->toko + $qtyToUpdate;
+                $barang->save();
+            }
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
             $newPembelian = new Pembelian;
-            $newPembelian->tanggal = $currentDate;
-            $newPembelian->kode = $generatedCode;
+            $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
+            $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
+            $newPembelian->draft = $data['draft'] === 'false' ? false : boolval($data['draft']);
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->jumlah = $data['jumlah'];
@@ -110,36 +143,14 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->po = "False";
             $newPembelian->receive = "True";
             $newPembelian->jt = 0.00;
-            $newPembelian->keterangan = $data['keterangan'];
+            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
 
-            $newItemPembelian = new ItemPembelian;
-            $newItemPembelian->kode = $newPembelian->kode;
-            $newItemPembelian->kode_barang = $barang->kode;
-            $newItemPembelian->nama_barang = $barang->nama;
-            $newItemPembelian->satuan = $barang->satuan;
-            $newItemPembelian->qty = $data['qty'];
-            $newItemPembelian->harga_beli = $barang->hpp;
-            $newItemPembelian->harga_toko = $barang->harga_toko;
-            $newItemPembelian->harga_cabang = $barang->harga_cabang;
-            $newItemPembelian->harga_partai = $barang->harga_partai;
-            $newItemPembelian->subtotal = $barang->hpp * $data['qty'];
-            $newItemPembelian->isi = $barang->isi;
-
-            if($data['diskon']) {
-                $total = $barang['hpp'] * $data['qty'];
-                $diskonAmount = $data['diskon'] / 100 * $total;
-                $totalSetelahDiskon = $total - $diskonAmount;
-                $newItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
-            }
-
-            $newItemPembelian->save();
-
             $userOnNotif = Auth::user();
 
-            if($newPembelian && $newItemPembelian) {
+            if($newPembelian) {
                 $newPembelianSaved =  Pembelian::query()
                 ->select(
                     'pembelian.*',
@@ -152,7 +163,7 @@ class DataPembelianLangsungController extends Controller
                 ->where('pembelian.id', $newPembelian->id)
                 ->get();
 
-                 
+
 
                 $data_event = [
                     'routes' => 'pembelian-langsung',
@@ -173,6 +184,15 @@ class DataPembelianLangsungController extends Controller
         }
     }
 
+    public function cetak_nota($type, $kode)
+    {
+        try {
+            var_dump($kode);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * Display the specified resource.
      *
@@ -181,7 +201,11 @@ class DataPembelianLangsungController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            var_dump($kode);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

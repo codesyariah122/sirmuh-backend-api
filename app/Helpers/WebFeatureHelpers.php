@@ -161,8 +161,9 @@ class WebFeatureHelpers
         return $filePath;
     }
 
-    public function format_uang ($angka) {
-        return number_format($angka, 0, ',', '.');
+    public function format_uang($angka) {
+        $floatValue = floatval($angka);
+        return number_format($floatValue, 0, ',', '.');
     }
 
     public function terbilang($angka)

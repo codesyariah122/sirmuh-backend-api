@@ -32,7 +32,10 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataKasController,
 	DataRoleUserManagementController,
 	DataPembelianLangsungController,
-	DataPenjualanTokoController
+	DataPenjualanTokoController,
+	DataPengeluaranController,
+	DataMutasiKasController,
+	DataItemPembelianController
 };
 
 class RouteSelection {
@@ -155,7 +158,20 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataPembelianLangsungController::class
 		],
+		[
+			'endPoint' => '/cetak-pembelian-langsung/{type}/{kode}',
+			'method' => 'get',
+			'controllers' => [DataPembelianLangsungController::class, 'cetak_nota']
+		],
 		// End of pembelian
+
+		// Item Pembelian
+		[
+			'endPoint' => '/data-item-pembelian',
+			'method' => 'resource',
+			'controllers' => DataItemPembelianController::class
+		],
+		// End of itempembelian
 
 		// Item Penjualan
 		[
@@ -254,6 +270,20 @@ class RouteSelection {
 			'controllers' => DataPerusahaanController::class
 		],
 
+		// Data Pengeluaran
+		[
+			'endPoint' => '/data-pengeluaran',
+			'method' => 'resource',
+			'controllers' => DataPengeluaranController::class
+		],
+
+		// Mutasi kas
+		[
+			'endPoint' => '/mutasi-kas',
+			'method' => 'resource',
+			'controllers' => DataMutasiKasController::class
+		],
+
 		// Fitur Data
 		[
 			'endPoint' => '/data-total-trash',
@@ -306,12 +336,33 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'loadForm']
 		],
+		[
+			'endPoint' => '/load-form-penjualan/{diskon}/{total}/{bayar}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'loadFormPenjualan']
+		],
 
 		[
 			'endPoint' => '/generate-reference-code',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'generateReference']
-		]
+		],
+		[
+			'endPoint' => '/update-stok-barang',
+			'method' => 'post',
+			'controllers' => [DataWebFiturController::class, 'update_stok_barang']
+		],
+		[
+			'endPoint' => '/update-item-pembelian',
+			'method' => 'post',
+			'controllers' => [DataWebFiturController::class, 'update_item_pembelian']
+		],
+		[
+			'endPoint' => '/draft-item-pembelian/{kode}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'list_draft_itempembelian']
+		],
+
 	];
 
 	public static function getListRoutes()

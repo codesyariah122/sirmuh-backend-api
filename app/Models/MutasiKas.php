@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
-class Pengeluaran extends Model
+class MutasiKas extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = "pengeluaran";
+    protected $table = "mutasikas";
 }

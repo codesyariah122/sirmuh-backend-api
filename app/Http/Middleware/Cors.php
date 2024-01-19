@@ -24,35 +24,38 @@ class Cors
      */
     public function handle($request, Closure $next)
     {
-        $api_key = $request->header('sirmuh_key');
-        $check_api_onDb = ApiKey::whereToken($api_key)->first();
+        try {
+            $api_key = $request->header('sirmuh_key');
+            $check_api_onDb = ApiKey::whereToken($api_key)->first();
 
-        if ($check_api_onDb !== null) {
-            $response = $next($request);
+            if ($check_api_onDb !== null) {
+                $response = $next($request);
 
-        // Periksa apakah $response bukan null sebelum menetapkan header
-            if ($response !== null) {
-                return $response
-                ->header('Access-Control-Allow-Origin', '*')
-                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Authorization')
-                ->header('Access-Control-Allow-Headers', 'Content-Type');
-            } else {
+                if ($response !== null) {
+                    return $response
+                    ->header('Access-Control-Allow-Origin', '*')
+                    ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                    ->header('Access-Control-Allow-Headers', 'Authorization')
+                    ->header('Access-Control-Allow-Headers', 'Content-Type');
+                } else {
                 // Jika $response null, Anda bisa mengembalikan respons yang sesuai
-                $userData = Auth::user();
+                    $userData = Auth::user();
 
-                Login::whereUserId($userData->id)->delete();
+                    Login::whereUserId($userData->id)->delete();
 
+                    return response()->json([
+                        'error' => true,
+                        'message' => 'Internal Server Error, please login again 🔑'
+                    ], 500);
+                }
+            } else {
                 return response()->json([
                     'error' => true,
-                    'message' => 'Internal Server Error, please login again 🔑'
-                ], 500);
+                    'message' => 'Access blocked!'
+                ], 404);
             }
-        } else {
-            return response()->json([
-                'error' => true,
-                'message' => 'Access blocked!'
-            ], 404);
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 }

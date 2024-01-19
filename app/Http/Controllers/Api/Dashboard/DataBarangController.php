@@ -140,7 +140,7 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         try{
-         $validator = Validator::make($request->all(), [
+           $validator = Validator::make($request->all(), [
             'nama' => 'required',
             'kategori' => 'required',
             'supplier' => 'required',
@@ -154,7 +154,7 @@ class DataBarangController extends Controller
         ]);
 
 
-         if ($validator->fails()) {
+           if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
@@ -545,7 +545,7 @@ class DataBarangController extends Controller
      */
     public function destroy($id)
     {
-     try {
+       try {
         $delete_barang = Barang::whereNull('deleted_at')
         ->findOrFail($id);
 
@@ -559,14 +559,14 @@ class DataBarangController extends Controller
             'user' => Auth::user()
         ];
 
-        event(new EventNotification($data_event));
+            event(new EventNotification($data_event));
 
-        return response()->json([
-            'success' => true,
-            'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
-        ]);
-    } catch (\Throwable $th) {
-        throw $th;
+            return response()->json([
+                'success' => true,
+                'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
-}
 }

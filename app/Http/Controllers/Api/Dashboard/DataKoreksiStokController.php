@@ -11,37 +11,37 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier};
+use App\Models\{Pembelian,KoreksiStok,ItemPembelian,Supplier,Barang,Kas};
 use Auth;
 
-class DataPembelianController extends Controller
+class DataKoreksiStokController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-
-    public function data($items)
-    {
-        try {
-            var_dump($items);
-            die;
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
     public function index(Request $request)
     {
-        try {
+      try {
             $keywords = $request->query('keywords');
             $today = now()->toDateString();
 
             $query = Pembelian::query()
-            ->select('pembelian.*', 'itempembelian.*', 'supplier.*')
+            ->select(
+                'pembelian.*',
+                'itempembelian.*',
+                'supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier',
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang'
+            )
             ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->orderByDesc('pembelian.id')
+            ->whereDraft(0)
+            ->limit(10);
 
             if ($keywords) {
                 $query->where('pembelian.nama', 'like', '%' . $keywords . '%');

@@ -4,7 +4,16 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Pemasukan;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use App\Events\{EventNotification};
+use App\Helpers\{WebFeatureHelpers};
+use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
+use App\Models\{Pemasukan};
+use Auth;
+
 
 class DataPemasukanController extends Controller
 {
@@ -16,14 +25,10 @@ class DataPemasukanController extends Controller
     public function index()
     {
         try {
-            $pemasukan = Pemasukan::paginate(10);
+            $pemasukan = Pemasukan::whereNull('deleted_at')
+            ->paginate(10);
 
-            return response()->json([
-              'success' => true,
-              'message' => 'List data pemasukan 💵',
-              'data' => $pemasukan
-          ], 200);
-
+            return new ResponseDataCollect($pemasukan);
         } catch (\Throwable $th) {
             throw $th;
         }
