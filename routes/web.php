@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DetailProductController;
+use App\Http\Controllers\Api\Dashboard\{
+	DataPembelianLangsungController
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -17,5 +20,7 @@ use App\Http\Controllers\DetailProductController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/transaksi/cetak-nota/{type}/{kode}', [DataPembelianLangsungController::class, 'cetak_nota']);
 
 Route::get('/detail/{barcode}', [DetailProductController::class, 'index']);

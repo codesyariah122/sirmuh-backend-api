@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ItemPembelian extends Model
 {
-    use HasFactory;
-   	use SoftDeletes;
+	use HasFactory;
+	use SoftDeletes;
 	
-   protected $table = 'itempembelian';
+	public $table = 'itempembelian';
 }

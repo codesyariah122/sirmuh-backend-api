@@ -11,7 +11,13 @@ class Pembelian extends Model
 	use HasFactory;
 	use SoftDeletes;
 	
-	protected $table = 'pembelian';
+	protected $fillable = [
+        'kode',
+        'tanggal',
+        'supplier',
+    ];
+
+	public $table = 'pembelian';
 	
 	public function suppliers()
 	{

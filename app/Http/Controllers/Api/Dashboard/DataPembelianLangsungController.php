@@ -8,11 +8,13 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
-use App\Helpers\{WebFeatureHelpers};
+use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas};
 use Auth;
+use PDF;
 
 class DataPembelianLangsungController extends Controller
 {
@@ -21,6 +23,13 @@ class DataPembelianLangsungController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
 
     public function data($id)
     {
@@ -186,11 +195,31 @@ class DataPembelianLangsungController extends Controller
 
     public function cetak_nota($type, $kode)
     {
-        try {
-            var_dump($kode);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        $ref_code = $kode;
+        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+        $helpers = $this->helpers;
+        $today = now()->toDateString();
+
+        $query = Pembelian::query()
+        ->select(
+            'pembelian.*',
+            'itempembelian.*',
+            'supplier.nama as nama_supplier',
+            'supplier.alamat as alamat_supplier',
+            'barang.nama as nama_barang',
+            'barang.satuan as satuan_barang'
+        )
+        ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+        ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+        ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+        ->orderByDesc('pembelian.id')
+            // ->whereDate('pembelian.tanggal', '=', $today)
+        ->where('pembelian.kode', $kode);
+
+            // var_dump($query->toSql());
+        $pembelian = $query->get()[0];
+        $setting = "";
+        return view('pembelian.nota_kecil', compact('pembelian', 'kode', 'nota_type', 'helpers'));
     }
 
     /**
@@ -199,10 +228,28 @@ class DataPembelianLangsungController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($kode)
     {
         try {
-            var_dump($kode);
+            $today = now()->toDateString();
+
+            $pembelian = Pembelian::query()
+            ->select(
+                'pembelian.*',
+                'itempembelian.*',
+                'supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier',
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang'
+            )
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->orderByDesc('pembelian.id')
+            ->whereDate('pembelian.tanggal', '=', $today)
+            ->where('pembelian.kode', $kode)
+            ->get();
+            return new RequestDataCollect($pembelian);
         } catch (\Throwable $th) {
             throw $th;
         }
