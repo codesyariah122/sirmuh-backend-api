@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Events\EventNotification;
-use App\Models\{User, Toko};
+use App\Models\{User, Toko, SetupPerusahaan};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 
@@ -78,19 +78,20 @@ class DataPerusahaanController extends Controller
     public function store(Request $request)
     {
         try{
-         $validator = Validator::make($request->all(), [
+           $validator = Validator::make($request->all(), [
             'name' => 'required',
             'logo' => 'image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
 
-         if ($validator->fails()) {
+           if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
-        $userOwner = User::findOrFail(1);
-        $newToko = new Toko;
+        $userOwner = User::with('roles')
+        ->findOrFail(1);
 
+        $newToko = new Toko;
         $newToko->name = $request->name;
 
         if ($request->file('logo')) {
@@ -133,6 +134,42 @@ class DataPerusahaanController extends Controller
         if ($newToko) {
             $newTokoId = $newToko->id;
             $userOwner->tokos()->sync($newTokoId, false);
+            $check_already_perusahaan = SetupPerusahaan::whereNama($newToko->name)->first();
+            // var_dump($check_already_perusahaan); die;
+            if($check_already_perusahaan) {
+                $check_already_perusahaan->tokos()->sync($newTokoId, false);
+            } else {
+                $setup_perusahaan = new SetupPerusahaan;
+                $setup_perusahaan->nama = $newToko->name;
+                $setup_perusahaan->alamat = $newToko->address;
+                $setup_perusahaan->telp = $newToko->phone;
+                $setup_perusahaan->fax = $request->fax;
+                $setup_perusahaan->propinsi = $request->provinsi;
+                $setup_perusahaan->negara = $request->negara;
+                $setup_perusahaan->lokasi = $request->lokasi;
+                $setup_perusahaan->kd_pembelian = $request->kd_pembelian;
+                $setup_perusahaan->kd_return_pembelian = $request->kd_return_pembelian;
+                $setup_perusahaan->kd_terima_return = $request->kd_terima_return;
+                $setup_perusahaan->kd_penjualan_toko = $request->kd_penjualan_toko;
+                $setup_perusahaan->kd_return_penjualan = $request->kd_return_penjualan;
+                $setup_perusahaan->Kd_pengeluaran = $request->kd_pengeluaran;
+                $setup_perusahaan->kd_bayar_hutang = $request->kd_bayar_hutang;
+                $setup_perusahaan->kd_bayar_piutang = $request->kd_bayar_piutang;
+                $setup_perusahaan->kd_mutasi_kas = $request->kd_mutasi_kas;
+                $setup_perusahaan->kd_tukar_point = $request->kd_tukar_point;
+                $setup_perusahaan->kd_penyesuaian_stok = $request->kd_penyesuaian_stok;
+                $setup_perusahaan->footer_pembelian = $request->footer_pembelian;
+                $setup_perusahaan->tutup_form_setelah_disimpan = $request->tutup_form_setelah_disimpan;
+                $setup_perusahaan->aktivkan_login = $request->aktivkan_login;
+                $setup_perusahaan->id_operator = $userOwner->roles[0]->name;
+                $setup_perusahaan->nama_operator = $userOwner->roles[0]->name;
+                $setup_perusahaan->footer_penjualan_toko = $request->footer_penjualan_toko;
+                $setup_perusahaan->footer_penjualan_partai = $request->footer_penjualan_partai;
+                $setup_perusahaan->footer_penjualan_cabang = $request->footer_penjualan_cabang;
+                $setup_perusahaan->save();
+
+                $setup_perusahaan->tokos()->sync($newTokoId, false);
+            }
 
 
             $newTokoSaved = Toko::where('id', $newToko->id)
@@ -168,7 +205,21 @@ class DataPerusahaanController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+             $tokos = Toko::whereId($id)
+            ->with('users')
+            ->take(2)
+            ->get();
+
+            $tokos->transform(function ($toko) {
+                $toko->koordinat = DB::select(DB::raw("SELECT ST_AsText(koordinat) as text FROM tokos WHERE id = :id"), ['id' => $toko->id])[0]->text;
+                return $toko;
+            });
+            return new ResponseDataCollect($tokos);
+        } catch (\Throwable $th) {
+            \Log::error($th);
+            throw $th;
+        }
     }
 
     /**

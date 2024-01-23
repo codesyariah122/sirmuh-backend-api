@@ -37,6 +37,7 @@ class DataPenjualanTokoController extends Controller
             ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
             ->orderByDesc('penjualan.id')
+
             ->limit(10);
 
             if ($keywords) {
@@ -45,7 +46,9 @@ class DataPenjualanTokoController extends Controller
 
             $query->whereDate('penjualan.tanggal', '=', $today);
 
-            $penjualans = $query->orderByDesc('penjualan.id')
+            $penjualans = $query
+            ->where('penjualan.pelanggan', '!=', '--')
+            ->orderByDesc('penjualan.id')
             ->paginate(10);
 
             return new ResponseDataCollect($penjualans);

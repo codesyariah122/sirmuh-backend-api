@@ -35,7 +35,9 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataPenjualanTokoController,
 	DataPengeluaranController,
 	DataMutasiKasController,
-	DataItemPembelianController
+	DataItemPembelianController,
+	DataKoreksiStokController,
+	DataPemakaianBarangController
 };
 
 class RouteSelection {
@@ -218,6 +220,11 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataHutangController::class, 'index']
 		],
+		[
+			'endPoint' => '/pemakaian-barang',
+			'method' => 'resource',
+			'controllers' => DataPemakaianBarangController::class
+		],
 
 		/**
 		 * Menu Management
@@ -361,6 +368,11 @@ class RouteSelection {
 			'endPoint' => '/draft-item-pembelian/{kode}',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'list_draft_itempembelian']
+		],
+		[
+			'endPoint' => '/koreksi-stok',
+			'method' => 'resource',
+			'controllers' => DataKoreksiStokController::class
 		],
 
 	];

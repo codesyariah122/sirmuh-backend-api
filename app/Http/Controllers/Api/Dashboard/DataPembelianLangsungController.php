@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko};
 use Auth;
 use PDF;
 
@@ -142,10 +142,12 @@ class DataPembelianLangsungController extends Controller
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-            $newPembelian->draft = $data['draft'] === 'false' ? false : boolval($data['draft']);
+            $newPembelian->draft = $data['draft'] ? 1 : 0;
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->jumlah = $data['jumlah'];
+            $newPembelian->bayar = $data['bayar'];
+            $newPembelian->diterima = $data['diterima'];
             $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
             $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
             $newPembelian->hutang = 0.00;
@@ -193,12 +195,19 @@ class DataPembelianLangsungController extends Controller
         }
     }
 
-    public function cetak_nota($type, $kode)
+    public function cetak_nota($type, $kode, $id_perusahaan)
     {
         $ref_code = $kode;
         $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
         $helpers = $this->helpers;
         $today = now()->toDateString();
+        $toko = Toko::whereId($id_perusahaan)
+        ->select("name","logo","address","kota","provinsi")
+        ->first();
+
+        // echo "<pre>";
+        // var_dump($toko['name']); die;
+        // echo "</pre>";
 
         $query = Pembelian::query()
         ->select(
@@ -216,10 +225,24 @@ class DataPembelianLangsungController extends Controller
             // ->whereDate('pembelian.tanggal', '=', $today)
         ->where('pembelian.kode', $kode);
 
-            // var_dump($query->toSql());
+        $barangs = $query->get();
+        // echo "<pre>";
+        // var_dump($barangs);
+        // echo "</pre>";
+        // die;
         $pembelian = $query->get()[0];
         $setting = "";
-        return view('pembelian.nota_kecil', compact('pembelian', 'kode', 'nota_type', 'helpers'));
+
+        switch($type) {
+            case "nota-kecil":
+            return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            break;
+            case "nota-besar":
+            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf->setPaper(0,0,609,440, 'potrait');
+            return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
+            break;
+        }
     }
 
     /**

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Kecil</title>
+    <title>Nota Kecil -  {{$kode}}</title>
 
     <?php
     $style = '
@@ -60,21 +60,47 @@
         <div class="clear-both" style="clear: both;"></div>
         <p>No: {{ $pembelian->kode }}</p>
         <p class="text-center">===================================</p>
-
+        <p>
+            <img src="{{  Storage::url('tokos/' . $toko['logo']) }}" style="max-width: 50px;">
+        </p>
+        <p>{{ $toko['name'] }}</p>
+        <p>{{ $toko['address'] }}</p>
+        <br/>
+        <p>No : {{ $pembelian->kode }}</p>
+        <p>Tgl Transaksi : {{ $pembelian->tanggal }}</p>
+        <p>Supplier : {{ $pembelian->nama_supplier }}</p>
+        <p>Kode Supplier : {{$pembelian->supplier}}</p>
+        <p>
+            <address>
+                {{ $pembelian->alamat_supplier }}
+            </address>
+        </p>
+        <p style="text-decoration: underline;">Operator : {{ strtoupper($pembelian->operator) }}</p>
+        <p class="text-center">===================================</p>
         <br>
-        <table width="100%" style="border: 0;">
-          
-        </table>
+        <p>Daftar Barang :</p>
+        <br>
+         <table width="100%" style="border: 0;">
+        @foreach ($barangs as $item)
+            <tr>
+                <td colspan="3">{{ $item->nama_barang }}</td>
+            </tr>
+            <tr>
+                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->jumlah) }}</td>
+                <td></td>
+                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_beli) }}</td>
+            </tr>
+        @endforeach
+    </table>
         <p class="text-center">-----------------------------------</p>
-
         <table width="100%" style="border: 0;">
             <tr>
                 <td>Total Harga:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->total_harga) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
             </tr>
             <tr>
                 <td>Total Item:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->total_item) }}</td>
+                <td class="text-right">{{ round($pembelian->qty) }}</td>
             </tr>
             <tr>
                 <td>Diskon:</td>
@@ -90,7 +116,7 @@
             </tr>
             <tr>
                 <td>Kembali:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->bayar) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
             </tr>
         </table>
 

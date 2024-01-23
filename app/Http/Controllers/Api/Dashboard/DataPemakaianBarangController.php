@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,KoreksiStok,ItemPembelian,Supplier,Barang,Kas};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas};
 use Auth;
 
-class DataKoreksiStokController extends Controller
+class DataPemakaianBarangController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,10 +23,33 @@ class DataKoreksiStokController extends Controller
      */
     public function index(Request $request)
     {
-      try {
-            $results=KoreksiStok::paginate(10);
+        try {
+            $keywords = $request->query('keywords');
+            $today = now()->toDateString();
 
-            return new ResponseDataCollect($results);
+            $query = Penjualan::query()
+            ->select(
+                'penjualan.id','penjualan.kode','penjualan.tanggal','penjualan.operator','penjualan.alamat_pelanggan','penjualan.keterangan',
+                'itempenjualan.kode', 'itempenjualan.kode_barang', 'itempenjualan.nama_barang', 'itempenjualan.satuan', 'itempenjualan.qty',
+                'pelanggan.nama as pelanggan_nama', 'pelanggan.alamat as pelanggan_alamat'
+            )
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->orderByDesc('penjualan.id')
+            ->limit(10);
+
+            if ($keywords) {
+                $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
+            }
+
+            $query->whereDate('penjualan.tanggal', '=', $today);
+
+            $penjualans = $query
+            ->where('penjualan.pelanggan', '=', '--')
+            ->orderByDesc('penjualan.id')
+            ->paginate(10);
+
+            return new ResponseDataCollect($penjualans);
 
         } catch (\Throwable $th) {
             throw $th;

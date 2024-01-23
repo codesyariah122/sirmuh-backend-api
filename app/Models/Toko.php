@@ -18,4 +18,9 @@ class Toko extends Model
     {
         return $this->belongsToMany("App\Models\User");
     }
+
+    public function setup_perusahaan()
+    {
+        return $this->belongsToMany("App\Models\SetupPerusahaan");
+    }
 }

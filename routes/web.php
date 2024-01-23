@@ -21,6 +21,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/transaksi/cetak-nota/{type}/{kode}', [DataPembelianLangsungController::class, 'cetak_nota']);
+Route::get('/transaksi/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPembelianLangsungController::class, 'cetak_nota']);
 
 Route::get('/detail/{barcode}', [DetailProductController::class, 'index']);
