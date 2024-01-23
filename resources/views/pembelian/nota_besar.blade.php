@@ -31,7 +31,7 @@
     <table width="100%">
         <tr>
             <td rowspan="4" width="60%">
-                <img src="{{ asset('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120">
+                <img src="{{ storage_path($toko['logo']) }}" alt="{{$toko['logo']}}" width="120">
                 <br>
                 {{ $toko['name'] }}
                 <br>
@@ -53,7 +53,7 @@
             <td>: {{ $pembelian->nama_supplier }}
                 <br>
                 <address>
-                    {{ $pembelian->alamat_supplier }}
+                    {{ $pembelian->alamat_supplier ?? '-' }}
                 </address>
                 <br>
             </td>
@@ -61,14 +61,6 @@
         <tr>
             <td>Operator</td>
             <td>: {{ strtoupper($pembelian->operator) }}</td>
-        </tr>
-        <tr>
-            <td>Tanggal</td>
-            <td>: {{ $helpers->tanggal_indonesia(date('Y-m-d')) }}</td>
-        </tr>
-        <tr>
-            <td>Kode Supplier</td>
-            <td>: {{ $penjualan->supplier ?? '' }}</td>
         </tr>
     </table>
 
@@ -121,7 +113,7 @@
         </tfoot>
     </table>
 
-    <table width="100%">
+  <!--   <table width="100%">
         <tr>
             <td><b>Terimakasih telah berbelanja dan sampai jumpa</b></td>
             <td class="text-center">
@@ -131,6 +123,6 @@
                 {{ strtoupper($pembelian->operator) }}
             </td>
         </tr>
-    </table>
+    </table> -->
 </body>
 </html>

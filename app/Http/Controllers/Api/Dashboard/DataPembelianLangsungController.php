@@ -226,19 +226,21 @@ class DataPembelianLangsungController extends Controller
         ->where('pembelian.kode', $kode);
 
         $barangs = $query->get();
+        $pembelian = $query->get()[0];
         // echo "<pre>";
-        // var_dump($barangs);
+        // var_dump($pembelian);
         // echo "</pre>";
         // die;
-        $pembelian = $query->get()[0];
         $setting = "";
+
+        // $logoPath = asset('storage/tokos/' . $toko['logo']);
 
         switch($type) {
             case "nota-kecil":
             return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
             break;
             case "nota-besar":
-            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'kode', 'toko', 'logoPath', 'nota_type', 'helpers'));
             $pdf->setPaper(0,0,609,440, 'potrait');
             return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
             break;
