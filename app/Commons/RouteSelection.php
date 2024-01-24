@@ -37,7 +37,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataMutasiKasController,
 	DataItemPembelianController,
 	DataKoreksiStokController,
-	DataPemakaianBarangController
+	DataPemakaianBarangController,
+	DataPurchaseOrderController
 };
 
 class RouteSelection {
@@ -164,6 +165,13 @@ class RouteSelection {
 			'endPoint' => '/cetak-pembelian-langsung/{type}/{kode}',
 			'method' => 'get',
 			'controllers' => [DataPembelianLangsungController::class, 'cetak_nota']
+		],
+
+		// Purchase order
+		[
+			'endPoint' => '/data-purchase-order',
+			'method' => 'resource',
+			'controllers' => DataPurchaseOrderController::class
 		],
 		// End of pembelian
 
@@ -350,7 +358,7 @@ class RouteSelection {
 		],
 
 		[
-			'endPoint' => '/generate-reference-code',
+			'endPoint' => '/generate-reference-code/{type}',
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'generateReference']
 		],
@@ -359,6 +367,7 @@ class RouteSelection {
 			'method' => 'post',
 			'controllers' => [DataWebFiturController::class, 'update_stok_barang']
 		],
+		// ItemPembelian
 		[
 			'endPoint' => '/update-item-pembelian',
 			'method' => 'post',
@@ -369,6 +378,18 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'list_draft_itempembelian']
 		],
+		// Item Penjualan
+		[
+			'endPoint' => '/update-item-penjualan',
+			'method' => 'post',
+			'controllers' => [DataWebFiturController::class, 'update_item_penjualan']
+		],
+		[
+			'endPoint' => '/draft-item-penjualan/{kode}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'list_draft_itempenjualan']
+		],
+		// Koreksi stok
 		[
 			'endPoint' => '/koreksi-stok',
 			'method' => 'resource',

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Pembelian -  {{$kode}}</title>
+    <title>Nota Penjualan -  {{$kode}}</title>
 
     <?php
     $style = '
@@ -58,8 +58,8 @@
         <button class="btn-print" style="position: absolute; right: 1rem; top: rem;" onclick="window.print()">Print</button>
        
         <div class="clear-both" style="clear: both;"></div>
-        <p>No: {{ $pembelian->kode }}</p>
-        <p>Type: {{$pembelian->po === 'True' ? "Purchase Order" : "Pembelian Langsung"}}</p>
+        <p>No: {{ $penjualan->kode }}</p>
+        <p>Type: Penjualan Toko</p>
         <p class="text-center">===================================</p>
         <p>
             <img src="{{  Storage::url('tokos/' . $toko['logo']) }}" width="70">
@@ -67,16 +67,16 @@
         <p>{{ $toko['name'] }}</p>
         <p>{{ $toko['address'] }}</p>
         <br/>
-        <p>No : {{ $pembelian->kode }}</p>
-        <p>Tgl Transaksi : {{ $pembelian->tanggal }}</p>
-        <p>Supplier : {{ $pembelian->nama_supplier }}</p>
-        <p>Kode Supplier : {{$pembelian->supplier}}</p>
+        <p>No : {{ $penjualan->kode }}</p>
+        <p>Tgl Transaksi : {{ $penjualan->tanggal }}</p>
+        <p>Pelanggan : {{ $penjualan->pelanggan_nama }}</p>
+        <p>Kode pelanggan : {{$penjualan->pelanggan}}</p>
         <p>
             <address>
-                {{ $pembelian->alamat_supplier }}
+                {{ $penjualan->alamat_supplier }}
             </address>
         </p>
-        <p>Operator : {{ strtoupper($pembelian->operator) }}</p>
+        <p>Operator : {{ strtoupper($penjualan->operator) }}</p>
         <p class="text-center">===================================</p>
         <br>
         <p style="text-decoration: underline;">Daftar Barang :</p>
@@ -97,32 +97,35 @@
         <table width="100%" style="border: 0;">
             <tr>
                 <td>Total Harga:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
             </tr>
             <tr>
                 <td>Total Item:</td>
-                <td class="text-right">{{ round($pembelian->qty) }}</td>
+                <td class="text-right">{{ round($penjualan->qty) }}</td>
             </tr>
             <tr>
                 <td>Diskon:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->diskon) }}</td>
             </tr>
             <tr>
                 <td>Total Bayar:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
             <tr>
                 <td>Diterima:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diterima) }}</td>
+                <td class="text-right">{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar)}}</td>
             </tr>
             <tr>
                 <td>Kembali:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
+                <td class="text-right">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
             </tr>
         </table>
 
         <p class="text-center">===================================</p>
-        <p class="text-center">-- TERIMA KASIH --</p>
+        <p class="text-center">Semoga Lancar</p>
+        <p class="text-center">&</p>
+        <p class="text-center">Tetap Menjadi Langganan</p>
+        <p class="text-center">*** TERIMA KASIH ****</p>
 
         <script>
             let body = document.body;

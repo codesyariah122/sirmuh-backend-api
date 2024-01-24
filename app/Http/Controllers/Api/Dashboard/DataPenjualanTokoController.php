@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -11,8 +12,9 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko};
 use Auth;
+use PDF;
 
 class DataPenjualanTokoController extends Controller
 {
@@ -21,42 +23,54 @@ class DataPenjualanTokoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
-            $keywords = $request->query('keywords');
-            $today = now()->toDateString();
+         $keywords = $request->query('keywords');
+         $today = now()->toDateString();
 
-            $query = Penjualan::query()
-            ->select(
-                'penjualan.*',
-                'itempenjualan.*',
-                'pelanggan.nama as nama_pelanggan',
-                'pelanggan.alamat as alamat_pelanggan'
-            )
-            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-            ->orderByDesc('penjualan.id')
+         $user = Auth::user()->name;
 
-            ->limit(10);
+         $query = Penjualan::query()
+         ->select(
+            'penjualan.*',
+            'itempenjualan.*',
+            'pelanggan.nama as pelanggan_nama',
+            'pelanggan.alamat as pelanggan_alamat',
+            'barang.nama as barang_nama',
+            'barang.satuan as barang_satuan',
+            DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
+        )
+         ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+         ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+         ->orderByDesc('penjualan.id')
+         ->limit(10);
 
-            if ($keywords) {
-                $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
-            }
-
-            $query->whereDate('penjualan.tanggal', '=', $today);
-
-            $penjualans = $query
-            ->where('penjualan.pelanggan', '!=', '--')
-            ->orderByDesc('penjualan.id')
-            ->paginate(10);
-
-            return new ResponseDataCollect($penjualans);
-
-        } catch (\Throwable $th) {
-            throw $th;
+         if ($keywords) {
+            $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
+
+        $query->whereDate('penjualan.tanggal', '=', $today);
+
+        $penjualans = $query
+        ->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')])
+        ->orderByDesc('penjualan.id')
+        ->paginate(10);
+
+        return new ResponseDataCollect($penjualans);
+
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 
     /**
      * Show the form for creating a new resource.
@@ -78,6 +92,11 @@ class DataPenjualanTokoController extends Controller
     {
         try {
             $data = $request->all();
+            $barangs = $data['barangs'];
+            // if(is_array($barangs) || is_object($barangs)) {
+            //     $dataBarangs = $data['barangs'];
+            // } else {}
+            $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
 
@@ -91,32 +110,37 @@ class DataPenjualanTokoController extends Controller
             $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
 
 
-            $barang = Barang::findOrFail($data['barang']);
-            $check_stok = intval($barang->toko);
-            $qty = intval($request->qty);
-            // var_dump($qty > $check_stok); die;
-            if($qty > $check_stok) {
-                $barangOutOfStok = Barang::select("kode", "nama", "photo")->findOrFail($data['barang']);
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Stok barang tidak tersedia',
-                    'data' => $barangOutOfStok
-                ]);
-            }
+            $barangIds = array_column($dataBarangs, 'id');
+            $barangs = Barang::whereIn('id', $barangIds)->get();
+            // $updateStokBarang = Barang::findOrFail($data['barang']);
+            // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
+            // $updateStokBarang->save();
 
-            $updateStokBarang = Barang::findOrFail($data['barang']);
-            $updateStokBarang->toko = $updateStokBarang->toko - $request->qty;
-            $updateStokBarang->save();
+            foreach($barangs as $barang) {
+                $barangId = $barang->id;
+                $qtyToUpdate = 0;
+
+                foreach ($dataBarangs as $dataBarang) {
+                    if ($dataBarang['id'] == $barangId) {
+                        $qtyToUpdate = $dataBarang['qty'];
+                        break;
+                    }
+                }
+
+                $barang->toko = $barang->toko + $qtyToUpdate;
+                $barang->save();
+            }
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
             $newPenjualan = new Penjualan;
             $newPenjualan->tanggal = $currentDate;
-            $newPenjualan->kode = $request->ref_no ? $request->ref_no : $generatedCode;
+            $newPenjualan->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
             $newPenjualan->pelanggan = $pelanggan->kode;
             $newPenjualan->kode_kas = $kas->kode;
             $newPenjualan->subtotal = $barang->hpp * $data['qty'];
-            $newPenjualan->kembali = $data['bayar'] - ($barang->hpp * $data['qty']);
+            // $newPenjualan->kembali = $data['kembali'] ? $data['kembali'] : $data['bayar'] - ($barang->hpp * $data['qty']);
+            $newPenjualan->kembali = $data['kembali'] ?? 0;
             $newPenjualan->jumlah = $data['bayar'] - ($data['bayar'] - ($barang->hpp * $data['qty'])) ;
             $newPenjualan->bayar = $data['bayar'];
             $newPenjualan->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
@@ -130,61 +154,100 @@ class DataPenjualanTokoController extends Controller
 
             $newPenjualan->save();
 
-            $newItemPenjualan = new ItemPenjualan;
-            $newItemPenjualan->kode =$newPenjualan->kode;
-            $newItemPenjualan->kode_barang = $barang->kode;
-            $newItemPenjualan->nama_barang = $barang->nama;
-            $newItemPenjualan->satuan = $barang->satuan;
-            $newItemPenjualan->qty = $data['qty'];
-            $newItemPenjualan->harga = $barang->hpp;
-            $newItemPenjualan->subtotal = $barang->hpp * $data['qty'];
-            $newItemPenjualan->isi = $barang->isi;
-
             // $updateQty = ItemPenjualan::findOrFail($newItemPenjualan->id);
             // $updateQty->qty = $newItemPenjualan->qty + $data['qty'];
 
-            if($data['diskon']) {
-                $total = $barang['hpp'] * $data['qty'];
-                $diskonAmount = $data['diskon'] / 100 * $total;
-                $totalSetelahDiskon = $total - $diskonAmount;
-                $newItemPenjualan->harga_setelah_diskon = $totalSetelahDiskon;
+                if($data['diskon']) {
+                    $total = $barang['hpp'] * $data['qty'];
+                    $diskonAmount = $data['diskon'] / 100 * $total;
+                    $totalSetelahDiskon = $total - $diskonAmount;
+                    $newItemPenjualan->harga_setelah_diskon = $totalSetelahDiskon;
+                }
+
+                $userOnNotif = Auth::user();
+
+                if($newPenjualan) {
+                 $newPenjualanSaved =  Penjualan::query()
+                 ->select(
+                    'penjualan.*',
+                    'itempenjualan.*',
+                    'pelanggan.nama as nama_pelanggan',
+                    'pelanggan.alamat as alamat_pelanggan'
+                )
+                 ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+                 ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+                 ->where('penjualan.id',$newPenjualan->id)
+                 ->get();
+
+                 $data_event = [
+                    'routes' => 'penjualan-toko',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "Penjualan dengan kode {$newPenjualan->kode}, baru saja ditambahkan 🤙!",
+                    'data' =>$newPenjualan->kode,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                return new RequestDataCollect($newPenjualanSaved);
             }
 
-            $newItemPenjualan->save();
-
-            $userOnNotif = Auth::user();
-
-            if($newPenjualan && $newItemPenjualan) {
-               $newPenjualanSaved =  Penjualan::query()
-               ->select(
-                'penjualan.*',
-                'itempenjualan.*',
-                'pelanggan.nama as nama_pelanggan',
-                'pelanggan.alamat as alamat_pelanggan'
-            )
-               ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-               ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-               ->where('penjualan.id',$newPenjualan->id)
-               ->get();
-
-               $data_event = [
-                'routes' => 'penjualan-toko',
-                'alert' => 'success',
-                'type' => 'add-data',
-                'notif' => "Penjualan dengan kode {$newPenjualan->kode}, baru saja ditambahkan 🤙!",
-                'data' =>$newPenjualan->kode,
-                'user' => $userOnNotif
-            ];
-
-            event(new EventNotification($data_event));
-
-            return new RequestDataCollect($newPenjualanSaved);
+        } catch (\Throwable $th) {
+            throw $th;
         }
-
-    } catch (\Throwable $th) {
-        throw $th;
     }
-}
+
+    public function cetak_nota($type, $kode, $id_perusahaan)
+    {
+        $ref_code = $kode;
+        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+        $helpers = $this->helpers;
+        $today = now()->toDateString();
+        $toko = Toko::whereId($id_perusahaan)
+        ->select("name","logo","address","kota","provinsi")
+        ->first();
+
+            // echo "<pre>";
+            // var_dump($toko['name']); die;
+            // echo "</pre>";
+
+       $query = Penjualan::query()
+         ->select(
+            'penjualan.*',
+            'itempenjualan.*',
+            'pelanggan.nama as pelanggan_nama',
+            'pelanggan.alamat as pelanggan_alamat',
+            'barang.nama as barang_nama',
+            'barang.satuan as barang_satuan',
+            DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
+        )
+         ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+         ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+                // ->whereDate('pembelian.tanggal', '=', $today)
+        ->where('penjualan.kode', $kode);
+
+        $barangs = $query->get();
+        $penjualan = $query->get()[0];
+        // echo "<pre>";
+        // var_dump($penjualan);
+        // echo "</pre>";
+        // die;
+
+        $setting = "";
+
+        switch($type) {
+            case "nota-kecil":
+            return view('penjualan.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            break;
+            case "nota-besar":
+            $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf->setPaper(0,0,609,440, 'potrait');
+            return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
+            break;
+        }
+    }
 
     /**
      * Display the specified resource.

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Pembelian - {{$kode}}</title>
+    <title>Nota Penjualan - {{$kode}}</title>
 
     <style>
         table td {
@@ -44,27 +44,27 @@
             <td>
                 No
             </td>
-            <td>: {{ $pembelian->kode }}</td>
+            <td>: {{ $penjualan->kode }}</td>
         </tr>
         <tr>
             <td>Type</td>
-            <td>: {{$pembelian->po === 'True' ? "Purchase Order" : "Pembelian Langsung"}}</td>
+            <td>: Penjualan Toko</td>
         <tr>
             <td>
-                Supplier
+                Pelanggan
             </td>
-            <td>: {{ $pembelian->nama_supplier }}
-                @if($pembelian->alamat_supplier)
-                <br>
-                <address>
-                    {{ $pembelian->alamat_supplier ?? '-' }}
+            <td>: {{ $penjualan->pelanggan_nama }}
+                @if($penjualan->pelanggan_alamat)
+               <br>
+               <address>
+                {{ $penjualan->pelanggan_alamat ?? '-' }}
                 </address>
                 @endif
                 <br>
             </td>
         </tr>
         <tr>
-            <td>Operator : {{ strtoupper($pembelian->operator) }}</td>
+            <td>Operator : {{ strtoupper($penjualan->operator) }}</td>
         </tr>
     </table>
 
@@ -86,7 +86,7 @@
                 <td class="text-center">{{ $key+1 }}</td>
                 <td>{{ $item->nama_barang }}</td>
                 <td>{{ $item->kode_barang }}</td>
-                <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($item->hpp) }}</td>
                 <td class="text-right">{{ round($item->qty) }}</td>
                 <td class="text-right">{{ $item->diskon }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
@@ -96,23 +96,23 @@
         <tfoot>
             <tr>
                 <td colspan="6" class="text-right"><b>Total Harga</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
-                <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
+                <td class="text-right"><b>{{  $helpers->format_uang($penjualan->diskon) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Total Bayar</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
+                <td class="text-right"><b>{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</b></td>
+                <td class="text-right"><b>{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</b></td>
             </tr>
         </tfoot>
     </table>
@@ -124,7 +124,7 @@
                 Kasir
                 <br>
                 <br>
-                {{ strtoupper($pembelian->operator) }}
+                {{ strtoupper($penjualan->operator) }}
             </td>
         </tr>
     </table> -->

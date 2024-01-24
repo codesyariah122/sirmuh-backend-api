@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -17,31 +16,13 @@ use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko};
 use Auth;
 use PDF;
 
-class DataPembelianLangsungController extends Controller
+class DataPurchaseOrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-
-    private $helpers;
-
-    public function __construct()
-    {
-        $this->helpers = new WebFeatureHelpers;
-    }
-
-    public function data($id)
-    {
-        try {
-            $barang = Barang::findOrFail($id);
-            var_dump($barang);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
     public function index(Request $request)
     {
         try {
@@ -66,14 +47,14 @@ class DataPembelianLangsungController extends Controller
             ->limit(10);
 
             if ($keywords) {
-                $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
+                $query->where('pembelian.nama', 'like', '%' . $keywords . '%');
             }
 
             $query->whereDate('pembelian.tanggal', '=', $today);
 
             $pembelians = $query
             ->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')])
-            ->where('pembelian.po', '=', 'False')
+            ->where('pembelian.po', '=', 'True')
             ->orderByDesc('pembelian.id')
             ->paginate(10);
 
@@ -156,8 +137,8 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
             $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
             $newPembelian->hutang = 0.00;
-            $newPembelian->po = "False";
-            $newPembelian->receive = "True";
+            $newPembelian->po = "True";
+            $newPembelian->receive = "False";
             $newPembelian->jt = 0.00;
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
@@ -200,87 +181,15 @@ class DataPembelianLangsungController extends Controller
         }
     }
 
-    public function cetak_nota($type, $kode, $id_perusahaan)
-    {
-        $ref_code = $kode;
-        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
-        $helpers = $this->helpers;
-        $today = now()->toDateString();
-        $toko = Toko::whereId($id_perusahaan)
-        ->select("name","logo","address","kota","provinsi")
-        ->first();
-
-        // echo "<pre>";
-        // var_dump($toko['name']); die;
-        // echo "</pre>";
-
-        $query = Pembelian::query()
-        ->select(
-            'pembelian.*',
-            'itempembelian.*',
-            'supplier.nama as nama_supplier',
-            'supplier.alamat as alamat_supplier',
-            'barang.nama as nama_barang',
-            'barang.satuan as satuan_barang'
-        )
-        ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-        ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-        ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-        ->orderByDesc('pembelian.id')
-            // ->whereDate('pembelian.tanggal', '=', $today)
-        ->where('pembelian.kode', $kode);
-
-        $barangs = $query->get();
-        $pembelian = $query->get()[0];
-        // echo "<pre>";
-        // var_dump($pembelian);
-        // echo "</pre>";
-        // die;
-        $setting = "";
-
-        switch($type) {
-            case "nota-kecil":
-            return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-            break;
-            case "nota-besar":
-            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-            $pdf->setPaper(0,0,609,440, 'potrait');
-            return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
-            break;
-        }
-    }
-
     /**
      * Display the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($kode)
+    public function show($id)
     {
-        try {
-            $today = now()->toDateString();
-
-            $pembelian = Pembelian::query()
-            ->select(
-                'pembelian.*',
-                'itempembelian.*',
-                'supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang'
-            )
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-            ->orderByDesc('pembelian.id')
-            ->whereDate('pembelian.tanggal', '=', $today)
-            ->where('pembelian.kode', $kode)
-            ->get();
-            return new RequestDataCollect($pembelian);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        //
     }
 
     /**
