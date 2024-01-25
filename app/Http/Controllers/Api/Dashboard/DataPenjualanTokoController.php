@@ -40,8 +40,8 @@ class DataPenjualanTokoController extends Controller
 
          $query = Penjualan::query()
          ->select(
-            'penjualan.*',
-            'itempenjualan.*',
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar','penjualan.kembali','penjualan.tax','penjualan.diskon','penjualan.lunas','penjualan.operator','penjualan.jt','penjualan.piutang',
+            'itempenjualan.kode', 'itempenjualan.qty','itempenjualan.subtotal','itempenjualan.ppn','itempenjualan.diskon','itempenjualan.diskon_rupiah',
             'pelanggan.nama as pelanggan_nama',
             'pelanggan.alamat as pelanggan_alamat',
             'barang.nama as barang_nama',

@@ -28,6 +28,63 @@ class DataBarangController extends Controller
     {
         $this->feature_helpers = new WebFeatureHelpers;
     }
+    // public function index(Request $request)
+    // {
+    //     try {
+    //         $keywords = $request->query('keywords');
+    //         $kategori = $request->query('kategori');
+    //         $endDate = $request->query('tgl_terakhir');
+    //         $barcode = $request->query('barcode');
+
+    //         if($keywords) {
+    //             $barangs = Barang::whereNull('deleted_at')
+    //             ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+    //             ->where('nama', 'like', '%'.$keywords.'%')
+    //             // ->orderByDesc('harga_toko')
+    //             ->orderByDesc('id')
+    //             ->with('suppliers')
+    //             ->paginate(10);
+    //         } else if($kategori){
+    //             $barangs = Barang::whereNull('deleted_at')
+    //             ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+    //             ->where('kategori', $kategori)
+    //             // ->orderByDesc('harga_toko')
+    //             ->orderByDesc('id')
+    //             ->with('suppliers')
+    //             ->paginate(10);
+    //         } else if($endDate) {
+    //             $barangs = Barang::whereNull('deleted_at')
+    //             ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+    //             ->where('tgl_terakhir', $endDate)
+    //             // ->orderByDesc('harga_toko')
+    //             ->orderByDesc('id')
+    //             ->with('suppliers')
+    //             ->paginate(10);
+    //         } else if($barcode) {
+    //             $barangs = Barang::whereKodeBarcode($barcode)->get();
+    //         }else {
+    //             $barangs = Barang::whereNull('deleted_at')
+    //             ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+    //             ->with("kategoris")
+    //             // ->orderByDesc('harga_toko')
+    //             ->with('suppliers')
+    //             ->orderByDesc('id')
+    //             ->paginate(10);
+    //         }
+
+    //         foreach ($barangs as $item) {
+    //             $kodeBarcode = $item->kode_barcode;
+    //             $this->feature_helpers->generateQrCode($kodeBarcode);
+    //             // $this->feature_helpers->generateBarcode($kodeBarcode);
+    //         }
+
+    //         return new ResponseDataCollect($barangs);
+
+    //     } catch (\Throwable $th) {
+    //         throw $th;
+    //     }
+    // }
+
     public function index(Request $request)
     {
         try {
@@ -35,47 +92,31 @@ class DataBarangController extends Controller
             $kategori = $request->query('kategori');
             $endDate = $request->query('tgl_terakhir');
             $barcode = $request->query('barcode');
+            $startDate = $request->query('start_date'); 
+            
+            $query = Barang::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+            ->with("kategoris")
+            ->with('suppliers')
+            ->orderByDesc('id');
 
-            if($keywords) {
-                $barangs = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->where('nama', 'like', '%'.$keywords.'%')
-                // ->orderByDesc('harga_toko')
-                ->orderByDesc('id')
-                ->with('suppliers')
-                ->paginate(10);
-            } else if($kategori){
-                $barangs = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->where('kategori', $kategori)
-                // ->orderByDesc('harga_toko')
-                ->orderByDesc('id')
-                ->with('suppliers')
-                ->paginate(10);
-            } else if($endDate) {
-                $barangs = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->where('tgl_terakhir', $endDate)
-                // ->orderByDesc('harga_toko')
-                ->orderByDesc('id')
-                ->with('suppliers')
-                ->paginate(10);
-            } else if($barcode) {
-                $barangs = Barang::whereKodeBarcode($barcode)->get();
-            }else {
-                $barangs = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->with("kategoris")
-                // ->orderByDesc('harga_toko')
-                ->with('suppliers')
-                ->orderByDesc('id')
-                ->paginate(10);
+            if ($keywords) {
+                $query->where('nama', 'like', '%' . $keywords . '%');
+            } elseif ($kategori) {
+                $query->where('kategori', $kategori);
+            } elseif ($endDate) {
+                $query->where('tgl_terakhir', $endDate);
+            } elseif ($startDate) { // Add this block
+                $query->whereBetween('tgl_terakhir', [$startDate, $endDate]);
+            } elseif ($barcode) {
+                $query->whereKodeBarcode($barcode);
             }
+
+            $barangs = $query->paginate(10);
 
             foreach ($barangs as $item) {
                 $kodeBarcode = $item->kode_barcode;
                 $this->feature_helpers->generateQrCode($kodeBarcode);
-                // $this->feature_helpers->generateBarcode($kodeBarcode);
             }
 
             return new ResponseDataCollect($barangs);

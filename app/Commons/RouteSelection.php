@@ -38,7 +38,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataItemPembelianController,
 	DataKoreksiStokController,
 	DataPemakaianBarangController,
-	DataPurchaseOrderController
+	DataPurchaseOrderController,
+	DataLaporanPembelianController
 };
 
 class RouteSelection {
@@ -335,11 +336,7 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'satuanJual']
 		],
-		[
-			'endPoint' => '/laporan-utangpiutang-pelanggan',
-			'method' => 'get',
-			'controllers' => [DataLaporanUtangPiutangPelangganController::class, 'laporanHutangPiutang']
-		],
+		
 		[
 			'endPoint' => '/to-the-best/{type}',
 			'method' => 'get',
@@ -400,6 +397,33 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'check_saldo']
 		],
+		[
+			'endPoint' => '/update-faktur-terakhir',
+			'method' => 'post',
+			'controllers' => [DataWebFiturController::class, 'update_faktur_terakhir']
+		],
+
+		// Laporan
+		[
+			'endPoint' => '/laporan-utangpiutang-pelanggan',
+			'method' => 'get',
+			'controllers' => [DataLaporanUtangPiutangPelangganController::class, 'laporanHutangPiutang']
+		],
+		[
+			'endPoint' => '/laporan-pembelian-periode',
+			'method' => 'get',
+			'controllers' => [DataLaporanPembelianController::class, 'laporan_pembelian_periode']
+		],
+		[
+			'endPoint' => '/laporan-pembelian-supplier',
+			'method' => 'get',
+			'controllers' => [DataLaporanPembelianController::class, 'laporan_pembelian_supplier']
+		],
+		[
+			'endPoint' => '/laporan-pembelian-barang',
+			'method' => 'get',
+			'controllers' => [DataLaporanPembelianController::class, 'laporan_pembelian_barang']
+		]
 
 	];
 

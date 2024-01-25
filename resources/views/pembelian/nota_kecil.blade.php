@@ -78,9 +78,6 @@
         </p>
         <p>Operator : {{ strtoupper($pembelian->operator) }}</p>
         <p class="text-center">===================================</p>
-        <br>
-        <p style="text-decoration: underline;">Daftar Barang :</p>
-        <br>
          <table width="100%" style="border: 0;">
         @foreach ($barangs as $item)
             <tr>

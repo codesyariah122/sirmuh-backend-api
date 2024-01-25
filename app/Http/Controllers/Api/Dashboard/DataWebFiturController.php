@@ -28,7 +28,8 @@ use App\Models\{
     Penjualan, 
     Pelanggan, Perusahaan, 
     SetupPerusahaan,
-    Kas
+    Kas,
+    FakturTerakhir
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -1068,6 +1069,34 @@ class DataWebFiturController extends Controller
                     'message' => 'Saldo tidak mencukupi!'
                 ], 202);
             }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function update_faktur_terakhir(Request $request)
+    {
+        try {
+            $existingFaktur = FakturTerakhir::whereFaktur($request->faktur)
+            ->first();
+            $today = now()->toDateString();
+            if($existingFaktur === NULL) {
+                $updateFakturTerakhir = new FakturTerakhir;
+                $updateFakturTerakhir->faktur = $request->faktur;
+                $updateFakturTerakhir->save();
+
+            } else {
+               $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+               ->first();
+               $updateFakturTerakhir->faktur = $request->faktur;
+               $updateFakturTerakhir->tanggal = $today;
+               $updateFakturTerakhir->save();
+
+           }
+           return response()->json([
+            'success' => true,
+            'message' => 'Faktur terakhir terupdate!'
+        ], 200);
         } catch (\Throwable $th) {
             throw $th;
         }
