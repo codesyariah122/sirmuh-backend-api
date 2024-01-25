@@ -99,10 +99,26 @@
                 <td>Total Harga:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
             </tr>
-            <tr>
-                <td>Total Item:</td>
-                <td class="text-right">{{ round($pembelian->qty) }}</td>
-            </tr>
+            @if(count($barangs) > 0)
+                <tr>
+                    <td>Total Item:</td>
+                    <td>
+                        @foreach ($barangs as $item)
+                        <tr>
+                            <td>{{ $item->nama_barang }} : </td>
+                            <td>{{ round($item->qty)." ".$item->satuan }}</td>
+                        </tr>
+                        @endforeach
+                    </td>
+                </tr>
+            @else
+                <tr>
+                    <td>Total Item:</td>
+                    <td class="text-right">
+                       {{round($pembelian->qty)}}
+                    </td>
+                </tr>
+            @endif
             <tr>
                 <td>Diskon:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>

@@ -87,7 +87,7 @@
                 <td>{{ $item->nama_barang }}</td>
                 <td>{{ $item->kode_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
-                <td class="text-right">{{ round($item->qty) }}</td>
+                <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->diskon }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
             </tr>

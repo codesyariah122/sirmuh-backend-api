@@ -395,6 +395,11 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataKoreksiStokController::class
 		],
+		[
+			'endPoint' => '/check-saldo/{id}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'check_saldo']
+		],
 
 	];
 

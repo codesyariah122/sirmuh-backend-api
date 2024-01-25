@@ -63,17 +63,15 @@
                 <br>
             </td>
         </tr>
-        <tr>
-            <td>Operator : {{ strtoupper($penjualan->operator) }}</td>
-        </tr>
     </table>
 
-    <table class="data" width="100%">
+    <table class="data" width="100%" style="margin-top:15px;">
         <thead>
             <tr>
                 <th>No</th>
                 <th>Kode</th>
-                <th>Nama</th>
+                <th>Kode Kas</th>
+                <th>Barang</th>
                 <th>Harga Satuan</th>
                 <th>Jumlah</th>
                 <th>Diskon</th>
@@ -84,12 +82,13 @@
             @foreach ($barangs as $key => $item)
             <tr>
                 <td class="text-center">{{ $key+1 }}</td>
+                <td>{{ $item->kode }}</td>
+                <td>{{ $item->kode_kas }}</td>
                 <td>{{ $item->nama_barang }}</td>
-                <td>{{ $item->kode_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->hpp) }}</td>
-                <td class="text-right">{{ round($item->qty) }}</td>
-                <td class="text-right">{{ $item->diskon }}</td>
-                <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
+                <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
+                <td class="text-right">{{ $item->diskon }}%</td>
+                <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -100,11 +99,11 @@
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
-                <td class="text-right"><b>{{  $helpers->format_uang($penjualan->diskon) }}</b></td>
+                <td class="text-right"><b>{{  $helpers->format_uang($penjualan->diskon) }}%</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Total Bayar</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar) }}</b></td>
+                <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
@@ -117,16 +116,18 @@
         </tfoot>
     </table>
 
-  <!--   <table width="100%">
-        <tr>
-            <td><b>Terimakasih telah berbelanja dan sampai jumpa</b></td>
-            <td class="text-center">
-                Kasir
-                <br>
-                <br>
-                {{ strtoupper($penjualan->operator) }}
-            </td>
-        </tr>
-    </table> -->
+    <p style="text-align: center; margin-top: 20px;">
+        <p class="text-center">Semoga Lancar</p>
+        <p class="text-center">&</p>
+        <p class="text-center">Tetap Menjadi Langganan</p>
+        <p class="text-center">*** TERIMA KASIH ****</p>
+    </p>
+
+    <p style="text-align: right;">
+        <b>Kasir</b>
+        <br>
+        <br>
+        {{ strtoupper($penjualan->operator) }}
+    </p>
 </body>
 </html>

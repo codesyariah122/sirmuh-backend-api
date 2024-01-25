@@ -87,9 +87,9 @@
                 <td colspan="3">{{ $item->nama_barang }}</td>
             </tr>
             <tr>
-                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->jumlah) }}</td>
+                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->hpp) }}</td>
                 <td></td>
-                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_beli) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->hpp) }}</td>
             </tr>
         @endforeach
     </table>
@@ -105,11 +105,11 @@
             </tr>
             <tr>
                 <td>Diskon:</td>
-                <td class="text-right">{{ $helpers->format_uang($penjualan->diskon) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->diskon) }}%</td>
             </tr>
             <tr>
                 <td>Total Bayar:</td>
-                <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
+                <td class="text-right">{{$item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
             <tr>
                 <td>Diterima:</td>

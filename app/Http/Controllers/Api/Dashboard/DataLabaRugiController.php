@@ -41,6 +41,7 @@ class DataLabaRugiController extends Controller
         try {
             $label = "Total Penjualan";
             $startDate = now()->subMonthsNoOverflow($jmlMonth - 1)->startOfMonth();
+            // $startDate = now()->subMonthsNoOverflow($jmlMonth)->startOfMonth();
 
             // endDate menggunakan now() agar termasuk bulan saat ini
             $endDate = now()->endOfMonth();

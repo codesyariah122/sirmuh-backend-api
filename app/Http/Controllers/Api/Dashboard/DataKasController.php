@@ -12,6 +12,7 @@ use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Kas};
+use Auth;
 
 class DataKasController extends Controller
 {
@@ -23,19 +24,27 @@ class DataKasController extends Controller
     public function index(Request $request)
     {
         $keywords = $request->query('keywords');
+        $kode = $request->query('kode');
+        // var_dump($kode); die;
 
         if($keywords) {
             $kas = Kas::whereNull('deleted_at')
             ->select('id', 'kode', 'nama', 'saldo')
             ->where('nama', 'like', '%'.$keywords.'%')
             // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
+            ->orderBy('saldo', 'DESC')
             ->paginate(10);
+        } else if($kode) {
+            $kas = Kas::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'saldo')
+            ->whereKode($kode)
+            // ->orderByDesc('id', 'DESC')
+            ->get();
         } else {
             $kas =  Kas::whereNull('deleted_at')
             ->select('id', 'kode', 'nama', 'saldo')
             // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
+            ->orderBy('saldo', 'DESC')
             ->paginate(10);
         }
 
@@ -101,7 +110,35 @@ class DataKasController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $updateKas = Kas::findOrFail($id);
+            $updateKas->nama = $request->nama ?? $updateKas->nama;
+            $updateKas->kode = $request->kode ?? $updateKas->kode;
+            $updateKas->saldo = $request->saldo ?? $updateKas->saldo;
+            $updateKas->save();
+            $kas = Kas::whereNull('deleted_at')
+            ->whereId($id)
+            ->get();
+
+            $userOnNotif = Auth::user();
+            $data_event = [
+                'routes' => 'kas',
+                'alert' => 'success',
+                'type' => 'update-data',
+                'notif' => "Data kas dengan kode {$updateKas->kode}, berhasil diupdate 🤙!",
+                'data' => $updateKas->kode,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully updated data kas !',
+                'data' => $updateKas
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -25,10 +26,13 @@ class DataPemasukanController extends Controller
     public function index()
     {
         try {
-            $pemasukan = Pemasukan::whereNull('deleted_at')
+             $pemasukans = Pemasukan::leftJoin('jenis_pemasukan', 'pemasukan.kd_biaya', '=', 'jenis_pemasukan.kode')
+            ->select('pemasukan.*', 'jenis_pemasukan.nama as jenis_pemasukan_nama')
+            ->whereNull('pemasukan.deleted_at')
+            ->orderBy("pemasukan.tanggal", "DESC")
             ->paginate(10);
 
-            return new ResponseDataCollect($pemasukan);
+            return new ResponseDataCollect($pemasukans);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -52,7 +56,11 @@ class DataPemasukanController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

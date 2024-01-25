@@ -11,5 +11,5 @@ class Pemasukan extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'header_return_penjualan';
+    protected $table = 'pemasukan';
 }

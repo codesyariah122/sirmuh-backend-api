@@ -103,6 +103,16 @@ class DataPembelianLangsungController extends Controller
     public function store(Request $request)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'kode_kas' => 'required',
+                'barangs' => 'required',
+            ]);
+
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
             $data = $request->all();
             $barangs = $data['barangs'];
             // if(is_array($barangs) || is_object($barangs)) {
@@ -118,7 +128,7 @@ class DataPembelianLangsungController extends Controller
             $formattedIncrement = sprintf('%03d', $increment);
 
             $generatedCode = 'R21-' . $currentDate . $formattedIncrement;
-            
+
             $supplier = Supplier::findOrFail($data['supplier']);
 
             $barangIds = array_column($dataBarangs, 'id');
@@ -144,6 +154,13 @@ class DataPembelianLangsungController extends Controller
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
+            if($kas->saldo < $data['diterima']) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Saldo tidak mencukupi!!"
+                ]);
+            }
+
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
@@ -163,6 +180,17 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
+            
+            $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
+            foreach($updateDrafts as $idx => $draft) {
+                $updateDrafts[$idx]->draft = 0;
+                $updateDrafts[$idx]->save();
+            }
+
+            $diterima = intval($newPembelian->diterima);
+            $updateKas = Kas::findOrFail($data['kode_kas']);
+            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
+            $updateKas->save();
 
             $userOnNotif = Auth::user();
 
@@ -179,8 +207,6 @@ class DataPembelianLangsungController extends Controller
                 ->where('pembelian.id', $newPembelian->id)
                 ->get();
 
-
-
                 $data_event = [
                     'routes' => 'pembelian-langsung',
                     'alert' => 'success',
@@ -194,7 +220,6 @@ class DataPembelianLangsungController extends Controller
 
                 return new RequestDataCollect($newPembelianSaved);
             }
-
         } catch (\Throwable $th) {
             throw $th;
         }
