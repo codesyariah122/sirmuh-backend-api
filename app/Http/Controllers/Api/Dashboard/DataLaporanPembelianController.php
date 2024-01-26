@@ -31,6 +31,8 @@ class DataLaporanPembelianController extends Controller
 			$keywords = $request->keywords;
 			$startDate = $request->start_date;
 			$endDate = $request->end_date;
+
+			// var_dump($startDate); var_dump($endDate); die;
 			$downloadData = $request->download_data;
 
 			$query = Pembelian::query()
@@ -49,36 +51,24 @@ class DataLaporanPembelianController extends Controller
 			->orderByDesc('pembelian.tanggal')
 			->limit(10);
 
-			if($downloadData) {
-				$pembelians = $query
-				->orderByDesc('pembelian.id')
-				->paginate(10);
-
-				$pdf = PDF::loadView('laporan.laporan-pembelian-periode.download', compact('pembelians'));
-
-				$pdf->setPaper(0, 0, 609, 440, 'portrait');
-
-				return $pdf->stream('filename.pdf');
-			} else {
-				if ($keywords) {
-					$query->where(function ($query) use ($keywords) {
-						$query->where('pembelian.kode', 'like', '%' . $keywords . '%')
-						->orWhere('pembelian.supplier', 'like', '%' . $keywords . '%')
-						->orWhere('pembelian.kode_kas', 'like', '%' . $keywords . '%')
-						->orWhere('pembelian.operator', 'like', '%' . $keywords . '%');
-					});
-				}
-
-				if ($startDate && $endDate) {
-					$query->whereBetween('pembelian.tanggal', [$startDate, $endDate]);
-				}
-
-				$pembelians = $query
-				->orderByDesc('pembelian.id')
-				->paginate(10);
-
-				return new ResponseDataCollect($pembelians);
+			if ($keywords) {
+				$query->where(function ($query) use ($keywords) {
+					$query->where('pembelian.kode', 'like', '%' . $keywords . '%')
+					->orWhere('pembelian.supplier', 'like', '%' . $keywords . '%')
+					->orWhere('pembelian.kode_kas', 'like', '%' . $keywords . '%')
+					->orWhere('pembelian.operator', 'like', '%' . $keywords . '%');
+				});
 			}
+
+			if ($startDate || $endDate) {
+				$query->whereBetween('pembelian.tanggal', [$startDate, $endDate]);
+			}
+
+			$pembelians = $query
+			->orderByDesc('pembelian.id')
+			->paginate(10);
+
+			return new ResponseDataCollect($pembelians);
 
 
 		} catch (\Throwable $th) {

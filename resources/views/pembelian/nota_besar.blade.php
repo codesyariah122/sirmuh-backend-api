@@ -117,7 +117,7 @@
         </tfoot>
     </table>
 
-  <!--   <table width="100%">
+  {{--   <table width="100%">
         <tr>
             <td><b>Terimakasih telah berbelanja dan sampai jumpa</b></td>
             <td class="text-center">
@@ -127,6 +127,6 @@
                 {{ strtoupper($pembelian->operator) }}
             </td>
         </tr>
-    </table> -->
+    </table> --}}
 </body>
 </html>

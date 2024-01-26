@@ -3,23 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pembelian Periode</title>
+    <title></title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: none;
+            padding: 8px;
+            text-align: left;
+            max-width: 130px; /* Set a maximum width for each cell */
+            overflow: hidden;
+            white-space: nowrap;
+            /*text-overflow: ellipsis;*/
+            font-size: 9.5px; 
+        }
+
+        th {
+            background-color: #8a8a8a; /* Header background color */
+        }
+
+        tbody th, tbody td {
+            border: none; /* Remove border for table rows */
+        }
+
+        tfoot {
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        tfoot tr, td {
+            border: none;
+        }
+    </style>
 </head>
 <body>
     <img src="{{ public_path('storage/tokos/' . $perusahaan['logo']) }}" alt="{{$perusahaan['logo']}}" width="100">
-    <br>
-    <h4>{{$perusahaan->name}}</h4>
-    <address style="margin-top: -23px;">
+    <h5>{{$perusahaan->name}}</h5>
+    <address style="margin-top: -23px;font-size:9px;">
         {{$perusahaan->address}}
     </address>
 
-    <h2>Laporan Pembelian</h2>
-    <table border="1" style="margin-top: 15px;">
+
+    <h3>Laporan Pembelian</h3>
+    <hr style="margin-top:-.7rem;">
+    <ul style="list-style: none; margin-left:-2rem;margin-top:-.2rem;">
+        <li style="font-size: 10px;">PERIODE : {{$periode['start_date']}} S/D {{$periode['end_date']}}</li>
+    </ul>
+    <hr style="margin-top:-.7rem;">
+
+    <table>
         <thead>
             <tr>
-                <th>No</th>
-                <th width="100">Tanggal</th>
-                <th width="100">No Faktur</th>
+                <th width="50">Tanggal</th>
+                <th width="50">No Faktur</th>
                 <th>Supplier</th>
                 <th>Operator</th>
                 <th>Pembayaran</th>
@@ -31,20 +72,26 @@
         </thead>
         <tbody>
             @foreach ($pembelians as $index => $pembelian)
-                <tr>
-                    <td>{{$index += 1}}</td>
-                    <td>{{ $pembelian->tanggal }}</td>
-                    <td>{{$pembelian->kode}}</td>
-                    <td>{{$pembelian->nama_supplier}}</td>
-                    <td>{{ $pembelian->operator }}</td>
-                    <td>{{$pembelian->lunas ? "Lunas" : "Hutang"}}</td>
-                    <td>{{ round($pembelian->diskon) }}</td>
-                    <td>{{round($pembelian->tax)}}</td>
-                    <td>{{$pembelian->jumlah}}</td>
-                    <!-- Add more columns based on your query -->
-                </tr>
+            <tr>
+                <td>{{ $pembelian->tanggal }}</td>
+                <td>{{$pembelian->kode}}</td>
+                <td>{{$pembelian->nama_supplier}}</td>
+                <td>{{ $pembelian->operator }}</td>
+                <td>{{$pembelian->lunas ? "Lunas" : "Hutang"}}</td>
+                <td>{{ round($pembelian->diskon) }}</td>
+                <td>{{round($pembelian->tax)}}</td>
+                <td>{{$pembelian->jumlah}}</td>
+                <!-- Add more columns based on your query -->
+            </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6"></td>
+                <td>Total</td>
+                <td>Rp. {{ $pembelians->sum('jumlah') }}</td>
+            </tr>
+        </tfoot>
     </table>
 </body>
 </html>

@@ -9,12 +9,13 @@
     <style>
         table td {
             /* font-family: Arial, Helvetica, sans-serif; */
-            font-size: 14px;
+            font-size: 10px;
         }
         table.data td,
         table.data th {
             border: 1px solid #ccc;
             padding: 5px;
+            font-size: 10px;
         }
         table.data {
             border-collapse: collapse;
@@ -30,7 +31,7 @@
 <body>
     <table width="100%">
         <tr>
-            <td rowspan="4" width="60%">
+            <td rowspan="6" width="60%">
                 <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100">
                 <br>
                 {{ $toko['name'] }}
@@ -71,8 +72,7 @@
                 <th>No</th>
                 <th>Kode</th>
                 <th>Kode Kas</th>
-                <th>Barang</th>
-                <th>Harga Satuan</th>
+                <th>Barang / Harga Satuan</th>
                 <th>Jumlah</th>
                 <th>Diskon</th>
                 <th>Subtotal</th>
@@ -84,8 +84,7 @@
                 <td class="text-center">{{ $key+1 }}</td>
                 <td>{{ $item->kode }}</td>
                 <td>{{ $item->kode_kas }}</td>
-                <td>{{ $item->nama_barang }}</td>
-                <td class="text-right">{{ $helpers->format_uang($item->hpp) }}</td>
+                <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->hpp) }}</td>
                 <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->diskon }}%</td>
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
@@ -116,18 +115,22 @@
         </tfoot>
     </table>
 
-    <p style="text-align: center; margin-top: 20px;">
+      <table width="100%" style="margin-top: 2rem;">
+        <tr>
+            <td class="text-right">
+                <h2>Kasir</h2>
+                <br>
+                <br>
+                <b>{{ strtoupper($penjualan->operator) }}</b>
+            </td>
+        </tr>
+    </table>
+
+    <p style="text-align: center; margin-top: 20px;font-size:10px;">
         <p class="text-center">Semoga Lancar</p>
         <p class="text-center">&</p>
         <p class="text-center">Tetap Menjadi Langganan</p>
         <p class="text-center">*** TERIMA KASIH ****</p>
-    </p>
-
-    <p style="text-align: right;">
-        <b>Kasir</b>
-        <br>
-        <br>
-        {{ strtoupper($penjualan->operator) }}
     </p>
 </body>
 </html>

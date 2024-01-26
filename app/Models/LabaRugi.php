@@ -14,8 +14,8 @@ class LabaRugi extends Model
     protected $table = 'labarugi';
     
     public function barangs()
-	  {
-		  return $this->belongsTo("App\Models\Barang", 'kode', 'nama');
-	  }
+    {
+    	return $this->belongsTo("App\Models\Barang", 'kode', 'nama');
+    }
     
 }

@@ -104,9 +104,11 @@ class DataBarangController extends Controller
                 $query->where('nama', 'like', '%' . $keywords . '%');
             } elseif ($kategori) {
                 $query->where('kategori', $kategori);
+            } elseif ($startDate) {
+                $query->where('tgl_terakhir', $startDate);
             } elseif ($endDate) {
                 $query->where('tgl_terakhir', $endDate);
-            } elseif ($startDate) { // Add this block
+            } elseif ($startDate && $endDate) { // Add this block
                 $query->whereBetween('tgl_terakhir', [$startDate, $endDate]);
             } elseif ($barcode) {
                 $query->whereKodeBarcode($barcode);

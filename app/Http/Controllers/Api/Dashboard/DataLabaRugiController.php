@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -12,7 +13,8 @@ use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier, LabaRugi};
-
+use Auth;
+use PDF;
 
 class DataLabaRugiController extends Controller
 {
@@ -21,9 +23,39 @@ class DataLabaRugiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        try{
+            $query = LabaRugi::select("labarugi.id","labarugi.tanggal","labarugi.kode","labarugi.kode_barang","labarugi.nama_barang","labarugi.penjualan","labarugi.hpp","labarugi.diskon","labarugi.labarugi","labarugi.operator","labarugi.pelanggan","labarugi.nama_pelanggan", 
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang','barang.hpp as hpp_barang', 'barang.harga_toko as harga_toko')
+            ->leftJoin('barang', 'labarugi.kode_barang', '=', 'barang.kode')
+            ->orderByDesc('labarugi.tanggal')
+            ->limit(10);
+
+            $keywords = $request->query('keywords');
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+
+            if ($keywords) {
+                $query->where(function ($query) use ($keywords) {
+                    $query->where('kode', 'like', '%' . $keywords . '%')
+                    ->orWhere('nama_barang', 'like', '%' . $keywords . '%')
+                    ->orWhere('pelanggan', 'like', '%' . $keywords . '%')
+                    ->orWhere('operator', 'like', '%' . $keywords . '%');
+                });
+            }
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate]);
+            }
+
+            $labarugi = $query->paginate(10);
+
+            return new ResponseDataCollect($labarugi);
+        }catch(\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
-use App\Models\{Barang, User, Toko};
+use App\Models\{Barang, User, Toko, Pembelian};
 
 class PublicFeatureController extends Controller
 {
@@ -20,15 +20,15 @@ class PublicFeatureController extends Controller
             switch($type) {
             	case "barang":
             	$detailData = Barang::whereNull('deleted_at')
-                    ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
-            		->whereKodeBarcode($query)
-                    ->with("kategoris")
-                    ->with('suppliers')
-            		->get();
-            	break;
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
+                ->whereKodeBarcode($query)
+                ->with("kategoris")
+                ->with('suppliers')
+                ->get();
+                break;
 
-            	default:
-            	$detailData = [];
+                default:
+                $detailData = [];
             }
 
             return new ResponseDataCollect($detailData);

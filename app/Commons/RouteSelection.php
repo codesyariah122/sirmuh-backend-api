@@ -215,6 +215,11 @@ class RouteSelection {
 			'controllers' => [DataLabaRugiController::class, 'labaRugiLastMonth'],
 		],
 		[
+			'endPoint' => '/data-laba-rugi',
+			'method' => 'resource',
+			'controllers' => DataLabaRugiController::class,
+		],
+		[
 			'endPoint' => '/data-pemasukan',
 			'method' => 'get',
 			'controllers' => [DataPemasukanController::class, 'index']

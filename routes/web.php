@@ -25,6 +25,6 @@ Route::get('/', function () {
 
 Route::get('/transaksi/beli/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPembelianLangsungController::class, 'cetak_nota']);
 Route::get('/transaksi/jual/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPenjualanTokoController::class, 'cetak_nota']);
-Route::get('/laporan/pembelian/laporan-pembelian-periode/{id_perusahaan}/{limit}', [DataLaporanView::class, 'laporan_pembelian_periode']);
+Route::get('/laporan/pembelian/laporan-pembelian-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_pembelian_periode']);
 
 Route::get('/detail/{barcode}', [DetailProductController::class, 'index']);

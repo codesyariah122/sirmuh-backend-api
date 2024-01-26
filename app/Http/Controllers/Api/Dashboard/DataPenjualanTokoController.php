@@ -264,7 +264,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         break;
         case "nota-besar":
         $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-        $pdf->setPaper(0,0,609,440, 'potrait');
+        $pdf->setPaper(0,0,350,440, 'potrait');
         return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
         break;
     }
