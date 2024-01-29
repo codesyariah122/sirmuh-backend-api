@@ -104,7 +104,11 @@ class DataLabaRugiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+
+        } catch(\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

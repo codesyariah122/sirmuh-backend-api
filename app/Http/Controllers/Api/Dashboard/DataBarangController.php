@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -95,10 +96,11 @@ class DataBarangController extends Controller
             $startDate = $request->query('start_date'); 
             
             $query = Barang::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+            ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuan', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
             ->with("kategoris")
             ->with('suppliers')
-            ->orderByDesc('id');
+            ->orderBy('nama', 'ASC'); 
+            // ->orderByDesc('id');
 
             if ($keywords) {
                 $query->where('nama', 'like', '%' . $keywords . '%');
@@ -123,6 +125,20 @@ class DataBarangController extends Controller
 
             return new ResponseDataCollect($barangs);
 
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function barang_by_warehouse(Request $request)
+    {
+        try {
+            $barangs = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
+            ->whereNull('deleted_at')
+            ->groupBy('id','kode', 'nama', 'satuan')
+            ->orderBy('nama', 'ASC')
+            ->get();
+            return new ResponseDataCollect($barangs);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -183,7 +199,7 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         try{
-           $validator = Validator::make($request->all(), [
+         $validator = Validator::make($request->all(), [
             'nama' => 'required',
             'kategori' => 'required',
             'supplier' => 'required',
@@ -197,7 +213,7 @@ class DataBarangController extends Controller
         ]);
 
 
-           if ($validator->fails()) {
+         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
@@ -588,7 +604,7 @@ class DataBarangController extends Controller
      */
     public function destroy($id)
     {
-       try {
+     try {
         $delete_barang = Barang::whereNull('deleted_at')
         ->findOrFail($id);
 
@@ -602,14 +618,14 @@ class DataBarangController extends Controller
             'user' => Auth::user()
         ];
 
-            event(new EventNotification($data_event));
+        event(new EventNotification($data_event));
 
-            return response()->json([
-                'success' => true,
-                'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
-            ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+        return response()->json([
+            'success' => true,
+            'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
+        ]);
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 }

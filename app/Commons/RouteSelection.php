@@ -68,6 +68,11 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataBarangController::class
 		],
+		[
+			'endPoint' => '/barang-by-warehouse',
+			'method' => 'get',
+			'controllers' => [DataBarangController::class, 'barang_by_warehouse']
+		],
 
 		[
 			'endPoint' => '/update-photo-barang/{kode}',
