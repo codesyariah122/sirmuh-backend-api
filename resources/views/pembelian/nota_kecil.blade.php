@@ -81,7 +81,7 @@
          <table width="100%" style="border: 0;">
         @foreach ($barangs as $item)
             <tr>
-                <td colspan="3">{{ $item->nama_barang }}</td>
+                <td colspan="3">{{ $item->nama_barang }} - {{$item->kode_barang}}</td>
             </tr>
             <tr>
                 <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->jumlah) }}</td>

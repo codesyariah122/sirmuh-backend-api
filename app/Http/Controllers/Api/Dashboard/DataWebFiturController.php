@@ -888,7 +888,8 @@ class DataWebFiturController extends Controller
                     if ($existingItem) {
                             // Jika sudah ada, update informasi yang diperlukan
                         $existingItem->qty = intval($barang['qty']);
-                        $existingItem->subtotal = $dataBarang->hpp * $barang['qty'];
+                        $existingItem->harga_beli = intval($barang['harga_beli']);
+                        $existingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
 
                             // Update atribut lainnya sesuai kebutuhan
                         $existingItem->save();
@@ -902,7 +903,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->qty = $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
                         $draftItemPembelian->nourut = $barang['nourut'];
-                        $draftItemPembelian->harga_beli = $dataBarang->hpp;
+                        $draftItemPembelian->harga_beli = $barang['harga_beli'] ?? $dataBarang->hpp;
                         $draftItemPembelian->harga_toko = $dataBarang->harga_toko;
                         $draftItemPembelian->harga_cabang = $dataBarang->harga_cabang;
                         $draftItemPembelian->harga_partai = $dataBarang->harga_partai;
