@@ -93,15 +93,17 @@ class DataBarangController extends Controller
             $kategori = $request->query('kategori');
             $endDate = $request->query('tgl_terakhir');
             $barcode = $request->query('barcode');
-            $startDate = $request->query('start_date'); 
+            $startDate = $request->query('start_date');
+            $sortName = $request->query('sort_name');
+            $sortType = $request->query('sort_type');
             
             $query = Barang::whereNull('barang.deleted_at')
             ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired',)
             ->with("kategoris")
             ->with('suppliers')
-            ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama')
-            ->orderBy('barang.nama', 'ASC');
-            // ->orderByDesc('id');
+            ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama');
+            // ->orderBy('barang.nama', 'ASC');
+
 
             if ($keywords) {
                 $query->where('barang.nama', 'like', '%' . $keywords . '%');
@@ -117,7 +119,15 @@ class DataBarangController extends Controller
                 $query->whereKodeBarcode($barcode);
             }
 
-            $barangs = $query->paginate(10);
+            if($sortName && $sortType) {
+                $barangs = $query
+                ->orderBy($sortName, $sortType)
+                ->paginate(10);
+            } else {                
+                $barangs = $query
+                ->orderByDesc('barang.id')
+                ->paginate(10);
+            }
 
             foreach ($barangs as $item) {
                 $kodeBarcode = $item->kode_barcode;
@@ -138,13 +148,23 @@ class DataBarangController extends Controller
            $kategori = $request->query('kategori');
            $endDate = $request->query('tgl_terakhir');
            $barcode = $request->query('barcode');
-           $startDate = $request->query('start_date'); 
+           $startDate = $request->query('start_date');
+           $sortName = $request->query('sort_name');
+           $sortType = $request->query('sort_type');
 
+           if($sortName && $sortType) {
+             $barangs = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
+            ->whereNull('deleted_at')
+            ->groupBy('id','kode', 'nama', 'satuan')
+            ->orderBy($sortName, $sortType)
+            ->get();
+           } else {
             $barangs = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
             ->whereNull('deleted_at')
             ->groupBy('id','kode', 'nama', 'satuan')
             ->orderBy('nama', 'ASC')
             ->get();
+           }
             return new ResponseDataCollect($barangs);
         } catch (\Throwable $th) {
             throw $th;

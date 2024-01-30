@@ -52,8 +52,8 @@ class DataPembelianLangsungController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas','pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
-                'itempembelian.kode','itempembelian.subtotal','itempembelian.harga_setelah_diskon',
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
+                'itempembelian.kode','itempembelian.qty','itempembelian.satuan','itempembelian.subtotal','itempembelian.harga_setelah_diskon',
                 'supplier.nama as nama_supplier',
                 'supplier.alamat as alamat_supplier',
                 'barang.nama as nama_barang',
@@ -172,10 +172,10 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->diterima = $data['diterima'];
             $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
             $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-            $newPembelian->hutang = 0.00;
-            $newPembelian->po = "False";
+            $newPembelian->hutang = $data['pembayaran'] !== 'cash' ? $data['bayar'] : 0.00;
+            $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
             $newPembelian->receive = "True";
-            $newPembelian->jt = 0.00;
+            $newPembelian->jt = $data['jt'] ?? 0.00;
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
