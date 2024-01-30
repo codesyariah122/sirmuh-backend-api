@@ -72,7 +72,11 @@ class DataPembelianLangsungController extends Controller
             $query->whereDate('pembelian.tanggal', '=', $today);
 
             $pembelians = $query
-            ->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')])
+            ->where(function ($query) use ($user) {
+                if ($user !== "Vicky Andriani") {
+                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
+                }
+            })
             ->where('pembelian.po', '=', 'False')
             ->orderByDesc('pembelian.id')
             ->paginate(10);
