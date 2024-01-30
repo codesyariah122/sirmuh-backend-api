@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier};
+use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier, ItemPembelian};
 use Auth;
 
 class DataBarangController extends Controller 
@@ -399,13 +399,20 @@ class DataBarangController extends Controller
         public function show($id)
         {
             try {
-                $dataBarang = Barang::where('id', $id)
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->with(['suppliers' => function($query) {
-                    $query->select('kode', 'nama');
-                }])
-                ->with('kategoris')
-                ->firstOrFail(); 
+                // $dataBarang = Barang::where('id', $id)
+                // ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                // ->with(['suppliers' => function($query) {
+                //     $query->select('kode', 'nama');
+                // }])
+                // ->with('kategoris')
+                // ->firstOrFail();
+                $dataBarang = Barang::where('barang.id', $id)
+                ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian')
+                ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
+                ->where('itempembelian.draft','=', 1)
+                ->whereNull('barang.deleted_at')
+                ->limit(1)
+                ->first();
 
                 return response()->json([
                     'success' => true,
@@ -413,8 +420,19 @@ class DataBarangController extends Controller
                     'data' => $dataBarang
                 ]);
             } catch (\Throwable $th) {
-                \Log::error($th);
-                throw $th;
+                $dataBarang = Barang::where('id', $id)
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                ->with(['suppliers' => function($query) {
+                    $query->select('kode', 'nama');
+                }])
+                ->with('kategoris')
+                ->firstOrFail();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Detail data barang {$dataBarang->nama}",
+                    'data' => $dataBarang
+                ]);
             }
         }
 
@@ -634,6 +652,35 @@ class DataBarangController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function data_barang_with_item_pembelian($id)
+    {
+        try {
+            $dataBarang = Barang::where('id', $id)
+            ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+            ->with(['suppliers' => function($query) {
+                $query->select('kode', 'nama');
+            }])
+            ->with('kategoris')
+            ->firstOrFail(); 
+
+            $kodeBarang = $dataBarang->kode;
+
+            $dataItemPembelian = ItemPembelian::join('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->where('barang.kode', $kodeBarang)
+            ->select('itempembelian.*')
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Detail data barang {$dataBarang->nama}",
+                'data_barang' => $dataBarang,
+                'data_item_pembelian' => $dataItemPembelian,
             ]);
         } catch (\Throwable $th) {
             throw $th;

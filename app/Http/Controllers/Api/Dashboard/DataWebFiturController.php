@@ -876,7 +876,7 @@ class DataWebFiturController extends Controller
             $draft = $request->draft;
             $kode = $request->kode;
             $barangs = $request->barangs;
-
+            $lastItemPembelianId = NULL;
             if($draft) {
                 foreach($barangs as $barang) {
                     $dataBarang = Barang::whereKode($barang['kode'])->firstOrFail();
@@ -893,6 +893,7 @@ class DataWebFiturController extends Controller
 
                             // Update atribut lainnya sesuai kebutuhan
                         $existingItem->save();
+                        $lastItemPembelianId = $existingItem->id;
                     } else {
                         $draftItemPembelian = new ItemPembelian;
                         $draftItemPembelian->kode = $kode;
@@ -925,12 +926,14 @@ class DataWebFiturController extends Controller
                             // }
 
                         $draftItemPembelian->save();
+                        $lastItemPembelianId = $draftItemPembelian->id;
                     }
                 }
                     return response()->json([
                         'draft' => true,
                         'message' => 'Draft item pembelian successfully updated!',
-                        'data' => $kode
+                        'data' => $kode,
+                        'itempembelian_id' => $lastItemPembelianId
                     ], 200);
                 } else {
                  return response()->json([
@@ -960,6 +963,21 @@ class DataWebFiturController extends Controller
                     'message' => 'Draft item pembelian has no success updated!'
                 ], 203);
             }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function delete_item_pembelian($id)
+    {
+        try {
+            $itemPembelian = ItemPembelian::findOrFail($id);
+            $itemPembelian->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item pembelian successfully deleted!'
+            ], 200);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -1053,6 +1071,21 @@ class DataWebFiturController extends Controller
                     'message' => 'Draft item pembelian has no success updated!'
                 ], 204);
             }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function delete_item_penjualan($id)
+    {
+        try {
+            $itemPembelian = ItemPenjualan::findOrFail($id);
+            $itemPembelian->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item penjualan successfully deleted!'
+            ], 200);
         } catch (\Throwable $th) {
             throw $th;
         }

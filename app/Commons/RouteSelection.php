@@ -385,6 +385,16 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'list_draft_itempembelian']
 		],
+		[
+			'endPoint' => '/delete-item-pembelian/{id}',
+			'method' => 'delete',
+			'controllers' => [DataWebFiturController::class, 'delete_item_pembelian']
+		],
+		[
+			'endPoint' => '/data-barang-item-pembelian/{id}',
+			'method' => 'get',
+			'controllers' => [DataBarangController::class, 'data_barang_with_item_pembelian']
+		],
 		// Item Penjualan
 		[
 			'endPoint' => '/update-item-penjualan',
@@ -396,6 +406,13 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataWebFiturController::class, 'list_draft_itempenjualan']
 		],
+
+		[
+			'endPoint' => '/delete-item-penjualan/{id}',
+			'method' => 'delete',
+			'controllers' => [DataWebFiturController::class, 'delete_item_penjualan']
+		],
+
 		// Koreksi stok
 		[
 			'endPoint' => '/koreksi-stok',
