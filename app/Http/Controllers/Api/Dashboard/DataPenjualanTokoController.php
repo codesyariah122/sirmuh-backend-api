@@ -62,7 +62,7 @@ class DataPenjualanTokoController extends Controller
         $penjualans = $query
         ->where(function ($query) use ($user) {
             if ($user !== "Vicky Andriani") {
-                $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
             }
         })
         ->orderByDesc('penjualan.id')
