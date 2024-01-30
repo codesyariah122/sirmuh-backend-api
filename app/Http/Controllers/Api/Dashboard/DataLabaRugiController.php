@@ -26,10 +26,30 @@ class DataLabaRugiController extends Controller
     public function index(Request $request)
     {
         try{
-            $query = LabaRugi::select("labarugi.id","labarugi.tanggal","labarugi.kode","labarugi.kode_barang","labarugi.nama_barang","labarugi.penjualan","labarugi.hpp","labarugi.diskon","labarugi.labarugi","labarugi.operator","labarugi.pelanggan","labarugi.nama_pelanggan", 
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang','barang.hpp as hpp_barang', 'barang.harga_toko as harga_toko')
+            $currentMonth = now()->format('m');
+            $currentYear = now()->format('Y');
+
+            $query = LabaRugi::select(
+                "labarugi.id",
+                "labarugi.tanggal",
+                "labarugi.kode",
+                "labarugi.kode_barang",
+                "labarugi.nama_barang",
+                "labarugi.penjualan",
+                "labarugi.hpp",
+                "labarugi.diskon",
+                "labarugi.labarugi",
+                "labarugi.operator",
+                "labarugi.pelanggan",
+                "labarugi.nama_pelanggan", 
+                'barang.nama as barang_nama',
+                'barang.satuan as satuan_barang',
+                'barang.hpp as hpp_barang',
+                'barang.harga_toko as harga_toko'
+            )
             ->leftJoin('barang', 'labarugi.kode_barang', '=', 'barang.kode')
+            ->whereYear('labarugi.tanggal', $currentYear)
+            ->whereMonth('labarugi.tanggal', $currentMonth)
             ->orderByDesc('labarugi.tanggal')
             ->limit(10);
 

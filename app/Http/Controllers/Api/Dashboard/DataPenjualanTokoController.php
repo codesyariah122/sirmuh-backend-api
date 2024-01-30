@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi};
 use Auth;
 use PDF;
 
@@ -59,9 +59,12 @@ class DataPenjualanTokoController extends Controller
         }
 
         $query->whereDate('penjualan.tanggal', '=', $today);
-
         $penjualans = $query
-        ->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')])
+        ->where(function ($query) use ($user) {
+            if ($user !== "Vicky Andriani") {
+                $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user->name . '%')]);
+            }
+        })
         ->orderByDesc('penjualan.id')
         ->paginate(10);
 
@@ -118,7 +121,6 @@ class DataPenjualanTokoController extends Controller
                 
                 $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
 
-
                 $barangIds = array_column($dataBarangs, 'id');
                 $barangs = Barang::whereIn('id', $barangIds)->get();
                 // $updateStokBarang = Barang::findOrFail($data['barang']);
@@ -155,16 +157,17 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualan->pelanggan = $pelanggan->kode;
                 $newPenjualan->kode_kas = $kas->kode;
                 $newPenjualan->subtotal = $barang->hpp * $data['qty'];
+                $newPenjualan->diskon = $data['diskon'];
                 // $newPenjualan->kembali = $data['kembali'] ? $data['kembali'] : $data['bayar'] - ($barang->hpp * $data['qty']);
                 $newPenjualan->kembali = $data['kembali'];
-                $newPenjualan->jumlah = $data['bayar'] - ($data['bayar'] - ($barang->hpp * $data['qty'])) ;
+                $newPenjualan->jumlah = $data['jumlah'];
                 $newPenjualan->bayar = $data['bayar'];
                 $newPenjualan->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 $newPenjualan->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-                $newPenjualan->piutang = 0.00;
-                $newPenjualan->po = "False";
-                $newPenjualan->receive = "False";
-                $newPenjualan->jt = 0.00;
+                $newPenjualan->piutang = $data['pembayaran'] !== 'cash' ? $data['bayar'] : 0.00;
+                $newPenjualan->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPenjualan->receive = "True";
+                $newPenjualan->jt = $data['jt'] ?? 0.00;
                 $newPenjualan->keterangan = $data['keterangan'];
                 $newPenjualan->operator = $data['operator'];
 
@@ -187,6 +190,26 @@ class DataPenjualanTokoController extends Controller
                 $userOnNotif = Auth::user();
 
                 if($newPenjualan) {
+                   $hpp = $barang->hpp * $data['qty'];
+                   $diskon = $newPenjualan->diskon;
+                   $labarugi = $newPenjualan->bayar - $hpp - $diskon;
+
+                   $newLabaRugi = new LabaRugi;
+                   $newLabaRugi->tanggal = now()->toDateString();
+                   $newLabaRugi->kode = $newPenjualanData->kode;
+                   $newLabaRugi->kode_barang = $barang->kode;
+                   $newLabaRugi->nama_barang = $barang->nama;
+                   $newLabaRugi->penjualan = $newPenjualanData->bayar;
+                   $newLabaRugi->hpp = $barang->hpp;
+                   $newLabaRugi->diskon =  $newPenjualanData->diskon;
+                   $newLabaRugi->labarugi = $labarugi;
+                   $newLabaRugi->operator = $data['operator'];
+                   $newLabaRugi->keterangan = $data['keterangan'];
+                   $newLabaRugi->pelanggan = $pelanggan->kode;
+                   $newLabaRugi->nama_pelanggan = $pelanggan->nama;
+
+                   $newLabaRugi->save();
+
                  $newPenjualanSaved =  Penjualan::query()
                  ->select(
                     'penjualan.*',
@@ -203,7 +226,7 @@ class DataPenjualanTokoController extends Controller
                     'routes' => 'penjualan-toko',
                     'alert' => 'success',
                     'type' => 'add-data',
-                    'notif' => "Penjualan dengan kode {$newPenjualan->kode}, baru saja ditambahkan 🤙!",
+                    'notif' => "Penjualan dengan kode {$newPenjualan->kode}, berhasil 🤙!",
                     'data' =>$newPenjualan->kode,
                     'user' => $userOnNotif
                 ];
