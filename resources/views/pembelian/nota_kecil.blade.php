@@ -71,12 +71,11 @@
         <p>Tgl Transaksi : {{ $pembelian->tanggal }}</p>
         <p>Supplier : {{ $pembelian->nama_supplier }}</p>
         <p>Kode Supplier : {{$pembelian->supplier}}</p>
-        <p>
-            <address>
-                {{ $pembelian->alamat_supplier }}
-            </address>
-        </p>
+        <p>Alamat Supplier : {{ $pembelian->alamat_supplier }}</p>
         <p>Operator : {{ strtoupper($pembelian->operator) }}</p>
+        @if($pembelian->visa === 'HUTANG')
+        <p>Pembayaran : {{$pembelian->visa}}</p>
+        @endif
         <p class="text-center">===================================</p>
          <table width="100%" style="border: 0;">
         @foreach ($barangs as $item)
@@ -120,18 +119,32 @@
                 <td>Diskon:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>
             </tr>
+            @if($pembelian->visa === 'HUTANG')
+            <tr>
+                <td>Bayar DP:</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+            </tr>
+            @else
             <tr>
                 <td>Total Bayar:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
             </tr>
+            @endif
             <tr>
                 <td>Diterima:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diterima) }}</td>
             </tr>
+            @if($pembelian->visa === 'HUTANG')
+            <tr>
+                <td>Hutang:</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+            </tr>
+            @else
             <tr>
                 <td>Kembali:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
             </tr>
+            @endif
         </table>
 
         <p class="text-center">===================================</p>

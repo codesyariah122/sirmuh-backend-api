@@ -953,7 +953,7 @@ class DataWebFiturController extends Controller
         try {
             if($kode) {                
                 $listDrafts = ItemPembelian::whereDraft(1)
-                ->select("id", "kode", "nourut", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
+                ->select("id", "kode", "nourut", "kode_barang", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
                 ->whereKode($kode)
                 ->get();
                 return new ResponseDataCollect($listDrafts);

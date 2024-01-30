@@ -170,9 +170,14 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
-            $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
-            $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-            $newPembelian->hutang = $data['pembayaran'] !== 'cash' ? $data['bayar'] : 0.00;
+            if($data['hutang']) {
+                $newPembelian->lunas =false;
+                $newPembelian->visa = 'HUTANG';
+            } else {                
+                $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
+                $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
+            }
+            $newPembelian->hutang = $data['hutang'];
             $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
             $newPembelian->receive = "True";
             $newPembelian->jt = $data['jt'] ?? 0.00;
