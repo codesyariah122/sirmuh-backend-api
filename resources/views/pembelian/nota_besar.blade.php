@@ -76,7 +76,7 @@
                 <th>Nama</th>
                 <th>Harga Satuan</th>
                 <th>Jumlah</th>
-                <th>Diskon</th>
+                <th>Pembayaran</th>
                 <th>Subtotal</th>
             </tr>
         </thead>
@@ -88,7 +88,7 @@
                 <td>{{ $item->kode_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
                 <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
-                <td class="text-right">{{ $item->diskon }}</td>
+                <td class="text-right">{{ $item->visa }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
             </tr>
             @endforeach
@@ -110,10 +110,17 @@
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>
+            @if($pembelian->visa === 'HUTANG')
+            <tr>
+                <td colspan="6" class="text-right"><b>Hutang</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+            </tr>
+            @else
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</b></td>
             </tr>
+            @endif
         </tfoot>
     </table>
 
