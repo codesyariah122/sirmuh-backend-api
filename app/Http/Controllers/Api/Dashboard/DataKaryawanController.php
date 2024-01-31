@@ -12,6 +12,7 @@ use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Karyawan};
+use Auth;
 
 class DataKaryawanController extends Controller
 {
@@ -123,6 +124,26 @@ class DataKaryawanController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $karyawan = Karyawan::whereNull('deleted_at')
+            ->findOrFail($id);
+            $karyawan->delete();
+            $data_event = [
+                'alert' => 'error',
+                'routes' => 'karyawan',
+                'type' => 'removed',
+                'notif' => "{$karyawan->nama}, has move to trash, please check trash!",
+                'user' => Auth::user()
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Data supplier {$karyawan->nama} has move to trash, please check trash"
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

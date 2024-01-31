@@ -30,7 +30,8 @@ use App\Models\{
     Perusahaan, 
     SetupPerusahaan,
     Kas,
-    FakturTerakhir
+    FakturTerakhir,
+    Karyawan
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -115,6 +116,13 @@ class DataWebFiturController extends Controller
                 case 'DATA_SUPPLIER':
                 $deleted = Supplier::onlyTrashed()
                 ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->paginate(10);
+                break;
+
+                case 'DATA_KARYAWAN':
+                $deleted = Karyawan::onlyTrashed()
+                ->select('id', 'nama', 'kode', 'level')
+                ->with('users')
                 ->paginate(10);
                 break;
 
@@ -260,6 +268,22 @@ class DataWebFiturController extends Controller
                     'type' => 'restored',
                     'routes' => 'supplier',
                     'notif' => "Supplier, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_KARYAWAN':
+                $restored_karyawan = Karyawan::onlyTrashed()
+                ->findOrFail($id);
+                $restored_karyawan->restore();
+                $restored = Karyawan::findOrFail($id);
+                $name = $restored->nama;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'karyawan',
+                    'notif' => "Karyawan, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
@@ -426,6 +450,11 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_SUPPLIER':
                 $countTrash = Supplier::onlyTrashed()
+                ->get();
+                break;
+
+                case 'DATA_KARYAWAN':
+                $countTrash = Karyawan::onlyTrashed()
                 ->get();
                 break;
 
