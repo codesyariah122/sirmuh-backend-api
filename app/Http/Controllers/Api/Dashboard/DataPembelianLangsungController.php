@@ -74,7 +74,7 @@ class DataPembelianLangsungController extends Controller
             $pembelians = $query
             ->where(function ($query) use ($user) {
                 if ($user !== "Vicky Andriani") {
-                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')]);
                 }
             })
             ->where('pembelian.po', '=', 'False')

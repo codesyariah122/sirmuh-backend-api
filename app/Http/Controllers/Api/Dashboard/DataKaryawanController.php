@@ -23,22 +23,38 @@ class DataKaryawanController extends Controller
     public function index(Request $request)
     {
          $keywords = $request->query('keywords');
+         $kode = $request->query('kode');
+         $sortName = $request->query('sort_name');
+         $sortType = $request->query('sort_type');
 
         if($keywords) {
             $karyawans = Karyawan::whereNull('deleted_at')
             ->select('id', 'nama', 'kode', 'level')
             ->where('nama', 'like', '%'.$keywords.'%')
-            // ->orderByDesc('id', 'DESC')
             ->with('users')
-            ->orderBy('nama', 'ASC')
+            ->orderByDesc('id', 'DESC')
+            ->paginate(10);
+        } else if($kode) {
+            $karyawans = Karyawan::whereNull('deleted_at')
+            ->select('id', 'nama', 'kode', 'level')
+            ->where('kode', $kode)
+            ->with('users')
+            ->orderByDesc('id', 'DESC')
             ->paginate(10);
         } else {
-            $karyawans =  Karyawan::whereNull('deleted_at')
-            ->select('id', 'nama', 'kode', 'level')
-            // ->orderByDesc('id', 'DESC')
-            ->with('users')
-            ->orderBy('nama', 'ASC')
-            ->paginate(10);
+            if($sortName && $sortType) {
+                $karyawans =  Karyawan::whereNull('deleted_at')
+                ->select('id', 'nama', 'kode', 'level')
+                ->with('users')
+                ->orderBy($sortName, $sortType)
+                ->paginate(10);
+            } else {
+               $karyawans =  Karyawan::whereNull('deleted_at')
+               ->select('id', 'nama', 'kode', 'level')
+               ->with('users')
+               ->orderByDesc('id', 'DESC')
+               ->paginate(10);
+           }
         }
 
         return new ResponseDataCollect($karyawans);

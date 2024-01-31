@@ -84,6 +84,16 @@ class DataPurchaseOrderController extends Controller
     public function store(Request $request)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'kode_kas' => 'required',
+                'barangs' => 'required',
+            ]);
+
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
             $data = $request->all();
             $barangs = $data['barangs'];
             // if(is_array($barangs) || is_object($barangs)) {
@@ -99,7 +109,7 @@ class DataPurchaseOrderController extends Controller
             $formattedIncrement = sprintf('%03d', $increment);
 
             $generatedCode = 'R21-' . $currentDate . $formattedIncrement;
-            
+
             $supplier = Supplier::findOrFail($data['supplier']);
 
             $barangIds = array_column($dataBarangs, 'id');
@@ -125,6 +135,13 @@ class DataPurchaseOrderController extends Controller
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
+            if($kas->saldo < $data['diterima']) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Saldo tidak mencukupi!!"
+                ]);
+            }
+
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
@@ -134,16 +151,36 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
-            $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
-            $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-            $newPembelian->hutang = 0.00;
-            $newPembelian->po = "True";
-            $newPembelian->receive = "False";
-            $newPembelian->jt = 0.00;
+            if($data['hutang']) {
+                $newPembelian->lunas =false;
+                $newPembelian->visa = 'HUTANG';
+                $newPembelian->hutang = $data['hutang'];
+                $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPembelian->receive = "True";
+                $newPembelian->jt = 14;
+            } else {                
+                $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
+                $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
+                $newPembelian->hutang = $data['hutang'];
+                $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPembelian->receive = "True";
+                $newPembelian->jt = $data['jt'] ?? 0.00;
+            }
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
+            
+            $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
+            foreach($updateDrafts as $idx => $draft) {
+                $updateDrafts[$idx]->draft = 0;
+                $updateDrafts[$idx]->save();
+            }
+
+            $diterima = intval($newPembelian->diterima);
+            $updateKas = Kas::findOrFail($data['kode_kas']);
+            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
+            $updateKas->save();
 
             $userOnNotif = Auth::user();
 
@@ -160,8 +197,6 @@ class DataPurchaseOrderController extends Controller
                 ->where('pembelian.id', $newPembelian->id)
                 ->get();
 
-
-
                 $data_event = [
                     'routes' => 'pembelian-langsung',
                     'alert' => 'success',
@@ -175,7 +210,6 @@ class DataPurchaseOrderController extends Controller
 
                 return new RequestDataCollect($newPembelianSaved);
             }
-
         } catch (\Throwable $th) {
             throw $th;
         }
