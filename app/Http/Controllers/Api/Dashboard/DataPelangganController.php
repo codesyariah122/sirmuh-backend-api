@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
-use App\Helpers\{WebFeatureHelpers};
+use App\Helpers\{WebFeatureHelpers, UserHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Pelanggan, Penjualan};
 use Auth;
@@ -22,6 +22,13 @@ class DataPelangganController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    private $user_helpers;
+
+    public function __construct()
+    {
+        $this->user_helpers = new UserHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -97,7 +104,55 @@ class DataPelangganController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required',
+                'alamat' => 'required',
+                'telp' => 'required',
+                'email' => 'required|email|unique:users'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $kode = explode(' ', $request->nama);
+            $substringArray = [];
+
+            foreach ($kode as $i) {
+                $substringArray[] = substr($i, 0, 1);
+            }
+
+            $existing_pelanggan = Pelanggan::whereNama($request->nama)->first();
+
+            if($existing_pelanggan) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Pelanggan dengan nama {$existing_pelanggan->nama}, has already been taken✨!"
+                ]);
+            }
+
+            $new_pelanggan = new Pelanggan;
+            $new_pelanggan->kode = strtoupper(implode('', $substringArray));
+            $new_pelanggan->nama = $request->nama;
+            $new_pelanggan->email = $request->email;
+            $new_pelanggan->telp = $this->user_helpers->formatPhoneNumber($request->telp);
+            $new_pelanggan->alamat = $request->alamat;
+            $new_pelanggan->pekerjaan = $request->pekerjaan;
+            $new_pelanggan->save();
+
+            if($new_pelanggan) {
+                $newDataPelanggan = Pelanggan::whereId($new_pelanggan->id)->get();
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pelanggan dengan nama {$existing_pelanggan->nama}, successfully added✨!",
+                    'data' => $newDataPelanggan
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -109,8 +164,13 @@ class DataPelangganController extends Controller
     public function show($id)
     {
         try {
-            $pelanggan = Pelanggan::whereId($id)->get();
-            return new ResponseDataCollect($pelanggan);
+            $pelanggan = Pelanggan::select("id", "nama", "telp", "email", "alamat", "pekerjaan")
+            ->findOrFail($id);
+            return response()->json([
+                    'success' => true,
+                    'message' => "Detail data pelanggan {$pelanggan->nama}✨!",
+                    'data' => $pelanggan
+                ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -136,7 +196,27 @@ class DataPelangganController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $update_pelanggan = Pelanggan::findOrFail($id);
+            $update_pelanggan->kode = $request->kode ? $request->kode : $update_pelanggan->kode;
+            $update_pelanggan->nama = $request->nama ? $request->nama : $update_pelanggan->nama;
+            $update_pelanggan->email = $request->email ? $request->email : $update_pelanggan->email;
+            $update_pelanggan->telp = $request->telp ? $this->user_helpers->formatPhoneNumber($request->telp) : $update_pelanggan->telp;
+            $update_pelanggan->alamat = $request->alamat ? $request->alamat : $update_pelanggan->alamat;
+            $update_pelanggan->pekerjaan = $request->pekerjaan ? $request->pekerjaan : $update_pelanggan->pekerjaan;
+            $update_pelanggan->save();
+
+            if($update_pelanggan) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pelanggan dengan nama {$update_pelanggan->nama}, successfully updated✨!",
+                    'data' => $update_pelanggan
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

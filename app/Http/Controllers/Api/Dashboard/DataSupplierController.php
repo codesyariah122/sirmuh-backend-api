@@ -12,6 +12,7 @@ use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier};
+use Auth;
 
 class DataSupplierController extends Controller
 {
@@ -24,20 +25,37 @@ class DataSupplierController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $kode = $request->query('kode');
+            $sortName = $request->query('sort_name');
+            $sortType = $request->query('sort_type');
 
             if($keywords) {
                 $suppliers = Supplier::whereNull('deleted_at')
                 ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
-                ->where('nama', 'like', '%'.$keywords.'%')
-            // ->orderByDesc('id', 'DESC')
-                ->orderBy('nama', 'ASC')
+                ->where(function($query) use ($keywords) {
+                    $query->where('nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('kode', 'like', '%' . $keywords . '%');
+                })
+                ->orderByDesc('id', 'DESC')
+                ->paginate(10);
+            } else if($kode) {
+                $suppliers = Supplier::whereNull('deleted_at')
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->where('kode', 'like', '%' . $kode . '%')
+                ->orderByDesc('id', 'DESC')
                 ->paginate(10);
             } else {
-                $suppliers =  Supplier::whereNull('deleted_at')
-                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
-            // ->orderByDesc('id', 'DESC')
-                ->orderBy('nama', 'ASC')
-                ->paginate(10);
+                if($sortName && $sortType) {
+                    $suppliers =  Supplier::whereNull('deleted_at')
+                    ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                    ->orderBy($sortName, $sortType)
+                    ->paginate(10);
+                } else {
+                    $suppliers =  Supplier::whereNull('deleted_at')
+                    ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                    ->orderByDesc('id', 'DESC')
+                    ->paginate(10);
+                }
             }
 
             return new ResponseDataCollect($suppliers);
@@ -115,6 +133,25 @@ class DataSupplierController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $supplier = Supplier::findOrFail($id);
+            $supplier->delete();
+            $data_event = [
+                'alert' => 'error',
+                'routes' => 'data-supplier',
+                'type' => 'removed',
+                'notif' => "{$supplier->nama}, has move to trash, please check trash!",
+                'user' => Auth::user()
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Data pelanggan {$pelanggan->nama} has move to trash, please check trash"
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

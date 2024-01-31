@@ -332,6 +332,22 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_PELANGGAN':
+                $deleted = Pelanggan::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data pelanggan, {$deleted->nama} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'notif' => "Pelanggan, {$deleted->nama} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
                 default:
                 $deleted = [];
             endswitch;
@@ -364,6 +380,11 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_PELANGGAN':
                 $countTrash = Pelanggan::onlyTrashed()
+                ->get();
+                break;
+
+                case 'DATA_SUPPLIER':
+                $countTrash = Supplier::onlyTrashed()
                 ->get();
                 break;
 
