@@ -112,6 +112,12 @@ class DataWebFiturController extends Controller
                 ->paginate(10);
                 break;
 
+                case 'DATA_SUPPLIER':
+                $deleted = Supplier::onlyTrashed()
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->paginate(10);
+                break;
+
                 default:
                 $deleted = [];
                 break;
@@ -243,6 +249,22 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_SUPPLIER':
+                $restored_barang = Supplier::onlyTrashed()
+                ->findOrFail($id);
+                $restored_barang->restore();
+                $restored = Supplier::findOrFail($id);
+                $name = $restored->nama;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'supplier',
+                    'notif' => "Supplier, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
                 default:
                 $restored = [];
             endswitch;
@@ -326,6 +348,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'error',
                     'type' => 'destroyed',
+                    'routes' => 'data-barang',
                     'notif' => "Barang, {$deleted->nama} has permanently deleted!",
                     'data' => $deleted->deleted_at,
                     'user' => Auth::user()
@@ -342,7 +365,25 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'error',
                     'type' => 'destroyed',
+                    'routes' => 'data-pelanggan',
                     'notif' => "Pelanggan, {$deleted->nama} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_SUPPLIER':
+                $deleted = Supplier::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data supplier, {$deleted->nama} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'supplier',
+                    'notif' => "Supplier, {$deleted->nama} has permanently deleted!",
                     'data' => $deleted->deleted_at,
                     'user' => Auth::user()
                 ];

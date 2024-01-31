@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
-use App\Helpers\{WebFeatureHelpers};
+use App\Helpers\{WebFeatureHelpers, UserHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier};
 use Auth;
@@ -21,6 +21,13 @@ class DataSupplierController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    private $user_helpers;
+
+    public function __construct()
+    {
+        $this->user_helpers = new UserHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -82,7 +89,67 @@ class DataSupplierController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required',
+                'alamat' => 'required',
+                'telp' => 'required',
+                'email' => 'required|email|unique:users'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $kode = explode(' ', $request->nama);
+            $substringArray = [];
+
+            foreach ($kode as $i) {
+                $substringArray[] = substr($i, 0, 1);
+            }
+
+            $existing_supplier = Supplier::whereNama($request->nama)->first();
+
+            if($existing_supplier) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Pelanggan dengan nama {$existing_supplier->nama}, has already been taken✨!"
+                ]);
+            }
+
+            $new_supplier = new Supplier;
+            $new_supplier->kode = strtoupper(implode('', $substringArray));
+            $new_supplier->nama = $request->nama;
+            $new_supplier->email = $request->email;
+            $new_supplier->telp = $this->user_helpers->formatPhoneNumber($request->telp);
+            $new_supplier->alamat = htmlspecialchars(nl2br($request->alamat));
+            $new_supplier->no_npwp = $request->no_npwp;
+            $new_supplier->save();
+
+            if($new_supplier) {
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'supplier',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$new_supplier->nama}, baru saja ditambahkan 🤙!",
+                    'data' => $new_supplier->nama,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                $newDataSupplier = Supplier::findOrFail($new_supplier->id);
+                return response()->json([
+                    'success' => true,
+                    'message' => "Supplier dengan nama {$newDataSupplier->nama}, successfully added✨!",
+                    'data' => $newDataSupplier
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -94,9 +161,14 @@ class DataSupplierController extends Controller
     public function show($id)
     {
         try {
-            $suppliers = Supplier::whereId($id)
-            ->get();
-            return new ResponseDataCollect($suppliers);
+            $supplier = Supplier::whereNull('deleted_at')
+            ->select("id", "nama", "telp", "email", "alamat", "no_npwp")
+            ->findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'message' => "Detail data supplier {$supplier->nama}✨!",
+                'data' => $supplier
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -122,7 +194,60 @@ class DataSupplierController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required',
+                'alamat' => 'required',
+                'telp' => 'required',
+                'email' => 'required|email|unique:users'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $kode = explode(' ', $request->nama);
+            $substringArray = [];
+
+            foreach ($kode as $i) {
+                $substringArray[] = substr($i, 0, 1);
+            }
+
+        
+            $update_supplier = Supplier::whereNull('deleted_at')
+            ->findOrFail($id);
+            $update_supplier->kode = $request->kode ? strtoupper(implode('', $substringArray)) : $update_supplier->kode;
+            $update_supplier->nama = $request->nama ? $request->nama : $update_supplier->nama;
+            $update_supplier->email = $request->email ? $request->email : $update_supplier->email;
+            $update_supplier->telp = $request->telp ? $this->user_helpers->formatPhoneNumber($request->telp) : $update_supplier->telp;
+            $update_supplier->alamat = $request->alamat ? htmlspecialchars(nl2br($request->alamat)) : $update_supplier->alamat;
+            $update_supplier->no_npwp = $request->no_npwp ? $request->no_npwp : $update_supplier->no_npwp;
+            $update_supplier->save();
+
+            if($update_supplier) {
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'supplier',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$update_supplier->nama}, baru saja ditambahkan 🤙!",
+                    'data' => $update_supplier->nama,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                $newUpdateSupplier = Supplier::findOrFail($update_supplier->id);
+                return response()->json([
+                    'success' => true,
+                    'message' => "Supplier dengan nama {$newUpdateSupplier->nama}, successfully added✨!",
+                    'data' => $newUpdateSupplier
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -134,7 +259,8 @@ class DataSupplierController extends Controller
     public function destroy($id)
     {
         try {
-            $supplier = Supplier::findOrFail($id);
+            $supplier = Supplier::whereNull('deleted_at')
+            ->findOrFail($id);
             $supplier->delete();
             $data_event = [
                 'alert' => 'error',
@@ -148,7 +274,7 @@ class DataSupplierController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Data pelanggan {$pelanggan->nama} has move to trash, please check trash"
+                'message' => "Data supplier {$supplier->nama} has move to trash, please check trash"
             ]);
         } catch (\Throwable $th) {
             throw $th;

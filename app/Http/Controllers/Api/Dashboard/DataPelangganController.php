@@ -142,10 +142,22 @@ class DataPelangganController extends Controller
             $new_pelanggan->save();
 
             if($new_pelanggan) {
-                $newDataPelanggan = Pelanggan::whereId($new_pelanggan->id)->get();
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'data-pelanggan',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$new_pelanggan->nama}, baru saja ditambahkan 🤙!",
+                    'data' => $new_pelanggan->nama,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                $newDataPelanggan = Pelanggan::findOrFail($new_pelanggan->id);
                 return response()->json([
                     'success' => true,
-                    'message' => "Pelanggan dengan nama {$existing_pelanggan->nama}, successfully added✨!",
+                    'message' => "Pelanggan dengan nama {$newDataPelanggan->nama}, successfully added✨!",
                     'data' => $newDataPelanggan
                 ]);
             }
@@ -167,10 +179,10 @@ class DataPelangganController extends Controller
             $pelanggan = Pelanggan::select("id", "nama", "telp", "email", "alamat", "pekerjaan")
             ->findOrFail($id);
             return response()->json([
-                    'success' => true,
-                    'message' => "Detail data pelanggan {$pelanggan->nama}✨!",
-                    'data' => $pelanggan
-                ]);
+                'success' => true,
+                'message' => "Detail data pelanggan {$pelanggan->nama}✨!",
+                'data' => $pelanggan
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -228,7 +240,8 @@ class DataPelangganController extends Controller
     public function destroy($id)
     {
         try {
-            $pelanggan = Pelanggan::findOrFail($id);
+            $pelanggan = Pelanggan::whereNull('deleted_at')
+            ->findOrFail($id);
             $pelanggan->delete();
             $data_event = [
                 'alert' => 'error',
