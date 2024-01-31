@@ -12,6 +12,7 @@ use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Pelanggan, Penjualan};
+use Auth;
 
 
 class DataPelangganController extends Controller
@@ -146,6 +147,25 @@ class DataPelangganController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $pelanggan = Pelanggan::findOrFail($id);
+            $pelanggan->delete();
+            $data_event = [
+                'alert' => 'error',
+                'routes' => 'data-pelanggan',
+                'type' => 'removed',
+                'notif' => "{$pelanggan->nama}, has move to trash, please check trash!",
+                'user' => Auth::user()
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Data pelanggan {$pelanggan->nama} has move to trash, please check trash"
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

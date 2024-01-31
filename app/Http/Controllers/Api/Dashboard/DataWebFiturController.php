@@ -26,7 +26,8 @@ use App\Models\{
     ItemPembelian, 
     Supplier, 
     Penjualan, 
-    Pelanggan, Perusahaan, 
+    Pelanggan, 
+    Perusahaan, 
     SetupPerusahaan,
     Kas,
     FakturTerakhir
@@ -102,6 +103,12 @@ class DataWebFiturController extends Controller
                 case 'DATA_BARANG':
                 $deleted = Barang::onlyTrashed()
                 ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                ->paginate(10);
+                break;
+
+                case 'DATA_PELANGGAN':
+                $deleted = Pelanggan::onlyTrashed()
+                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
                 ->paginate(10);
                 break;
 
@@ -215,6 +222,22 @@ class DataWebFiturController extends Controller
                     'type' => 'restored',
                     'routes' => 'data-barang',
                     'notif' => "Barang, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_PELANGGAN':
+                $restored_barang = Pelanggan::onlyTrashed()
+                ->findOrFail($id);
+                $restored_barang->restore();
+                $restored = Pelanggan::findOrFail($id);
+                $name = $restored->nama;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'data-pelanggan',
+                    'notif' => "Pelanggan, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
@@ -338,6 +361,12 @@ class DataWebFiturController extends Controller
                 $countTrash = Barang::onlyTrashed()
                 ->get();
                 break;
+
+                case 'DATA_PELANGGAN':
+                $countTrash = Pelanggan::onlyTrashed()
+                ->get();
+                break;
+
                 default:
                 $countTrash = [];
             }
