@@ -413,6 +413,23 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_KARYAWAN':
+                $deleted = Karyawan::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data karyawan, {$deleted->nama} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'karyawan',
+                    'notif' => "Karyawan, {$deleted->nama} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
                 default:
                 $deleted = [];
             endswitch;

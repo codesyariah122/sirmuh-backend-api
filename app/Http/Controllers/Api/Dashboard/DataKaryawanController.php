@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api\Dashboard;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Karyawan};
+use App\Models\{User, Karyawan, Roles, Menu};
 use Auth;
 
 class DataKaryawanController extends Controller
@@ -21,6 +22,13 @@ class DataKaryawanController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers(null);
+    }
+
     public function index(Request $request)
     {
          $keywords = $request->query('keywords');
@@ -33,6 +41,7 @@ class DataKaryawanController extends Controller
             ->select('id', 'nama', 'kode', 'level')
             ->where('nama', 'like', '%'.$keywords.'%')
             ->with('users')
+            ->where('level', '!=' , 'ADMIN')
             ->orderByDesc('id', 'DESC')
             ->paginate(10);
         } else if($kode) {
@@ -40,6 +49,7 @@ class DataKaryawanController extends Controller
             ->select('id', 'nama', 'kode', 'level')
             ->where('kode', $kode)
             ->with('users')
+            ->where('level', '!=' , 'ADMIN')
             ->orderByDesc('id', 'DESC')
             ->paginate(10);
         } else {
@@ -47,12 +57,14 @@ class DataKaryawanController extends Controller
                 $karyawans =  Karyawan::whereNull('deleted_at')
                 ->select('id', 'nama', 'kode', 'level')
                 ->with('users')
+                ->where('level', '!=' , 'ADMIN')
                 ->orderBy($sortName, $sortType)
                 ->paginate(10);
             } else {
                $karyawans =  Karyawan::whereNull('deleted_at')
                ->select('id', 'nama', 'kode', 'level')
                ->with('users')
+               ->where('level', '!=' , 'ADMIN')
                ->orderByDesc('id', 'DESC')
                ->paginate(10);
            }
@@ -79,7 +91,83 @@ class DataKaryawanController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+             $validator = Validator::make($request->all(), [
+                'nama' => 'required',
+                'jabatan' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+            $generateName = str_replace(' ', '_', $request->nama);
+            $emailByName = $generateName . '@sirojulmuhtadin.com';
+            $roleUser = Roles::findOrFail($request->jabatan);
+            $roleName = substr($roleUser->name, 0, 3);
+
+            $lastRecord = Karyawan::where('kode', 'like', $roleName . '%')
+            ->orderBy('kode', 'desc')
+            ->first();
+
+            $lastNumber = 0;
+
+            if ($lastRecord) {
+                $lastNumber = intval(substr($lastRecord->kode, strlen($roleName)));
+            }
+
+
+            $newNumber = $lastNumber + 1;
+            $newCode = strtoupper($roleName) . sprintf('%03d', $newNumber);
+
+            $initial = $this->helpers->initials($request->nama);
+            $path = public_path().'/thumbnail_images/users/';
+            $fontPath = public_path('fonts/Oliciy.ttf');
+            $char = $initial;
+            $newAvatarName = rand(12, 34353) . time() . '_avatar.png';
+            $dest = $path . $newAvatarName;
+            $createAvatar = WebFeatureHelpers::makeAvatar($fontPath, $dest, $char);
+
+            $newUser = new User;
+            $newUser->name = $request->nama;
+            $newUser->photo = 'thumbnail_images/users/' . $newAvatarName;
+            $newUser->role = $request->jabatan;
+            $newUser->email = $emailByName;
+            $newUser->password = Hash::make($roleUser->name."@123654");
+            $newUser->save();
+
+            $userRole = Roles::findOrFail($newUser->role);
+            $userKaryawan = new Karyawan;
+            $userKaryawan->kode = $newCode;
+            $userKaryawan->nama = $newUser->name;
+            $userKaryawan->level = $userRole->name;
+            $userKaryawan->save();
+
+            $newUser->roles()->sync($userRole->id);
+            $newUser->karyawans()->sync($newUser->id);
+
+            $data_event = [
+                'type' => 'add_data',
+                'email' => $newUser->email,
+                'role' => $newUser->role,
+                'notif' => "{$newUser->name}, has been created ✨!"
+            ];
+
+            event(new EventNotification($data_event));
+
+            $newUserCreated = User::whereId($newUser->id)
+            ->with('roles')
+            ->with('karyawans')
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'New karyawan has been created ✨!',
+                'data'    => $newUserCreated
+            ]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -90,7 +178,17 @@ class DataKaryawanController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $karyawan = Karyawan::with('users')
+            ->findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'message' => "Detail data karyawan {$karyawan->nama}✨!",
+                'data' => $karyawan
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -113,7 +211,37 @@ class DataKaryawanController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $update_karyawan = Karyawan::whereNull('deleted_at')
+            ->findOrFail($id);
+            $update_karyawan->nama = $request->nama ? $request->nama : $update_karyawan->nama;
+            $update_karyawan->jabatan = $request->jabatan ? $request->karyawan : $update_karyawan->jabatan;
+            $update_karyawan->save();
+
+            if($update_karyawan) {
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'supplier',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$update_karyawan->nama}, baru saja ditambahkan 🤙!",
+                    'data' => $update_karyawan->nama,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                $updateDataKaryawan = Supplier::findOrFail($update_karyawan->id);
+                return response()->json([
+                    'success' => true,
+                    'message' => "Karyawan dengan nama {$updateDataKaryawan->nama}, successfully added✨!",
+                    'data' => $updateDataKaryawan
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
