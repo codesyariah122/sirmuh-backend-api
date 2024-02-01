@@ -35,6 +35,7 @@ class DataUserDataController extends Controller
             $user_login = User::whereEmail($user->email)
             ->with('roles')
             ->with('logins')
+            ->with('karyawans')
             ->firstOrFail();
             $menus = Menu::whereJsonContains('roles', $user_login->role)
             ->with([
@@ -179,7 +180,17 @@ class DataUserDataController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $user = User::with('karyawans')
+            ->findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'message' => 'User detail 🧑🏻‍💻',
+                'data' => $user
+            ], 200);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

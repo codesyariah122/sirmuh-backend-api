@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -43,11 +44,12 @@ use Auth;
 class DataWebFiturController extends Controller
 {
 
-    private $helpers;
+    private $helpers,$user_helpers;
 
     public function __construct()
     {
         $this->helpers = new WebFeatureHelpers;
+        $this->user_helpers = new UserHelpers;
     }
 
     public function web_data()
@@ -452,6 +454,23 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_KAS':
+                $deleted = Kas::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data kas, {$deleted->nama} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'kas',
+                    'notif' => "Kas, {$deleted->nama} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
                 default:
                 $deleted = [];
             endswitch;
@@ -720,80 +739,72 @@ class DataWebFiturController extends Controller
         }
     }
 
-    public function update_user_profile(Request $request)
+    public function update_user_profile(Request $request, $id)
     {
         try {
+            $isLogin = Auth::user();
+            $userToken = $isLogin->logins[0]->user_token_login;
 
-            $username = $request->user()->profiles[0]->username;
+            if($userToken) {
 
-            $prepare_profile = Profile::whereUsername($username)->with('users')->firstOrFail();
+                $prepare_user = User::findOrFail($id);
 
-            $check_avatar = explode('_', $prepare_profile->photo);
+                $check_avatar = explode('_', $prepare_user->photo);
 
-            $user_id = $prepare_profile->users[0]->id;
-            $update_user = User::findOrFail($user_id);
+                $update_user_karyawan = Karyawan::whereNama($prepare_user->name)->first();
 
-            // var_dump($check_avatar[2]); die;
+                $user_karyawan_update = Karyawan::findOrFail($update_user_karyawan->id);
+                $user_karyawan_update->alamat = $request->alamat;
+                $user_karyawan_update->save();
 
-            $update_user->name = $request->name ? $request->name : $update_user->name;
-            $update_user->email = $request->email ? $request->email : $update_user->email;
-            $update_user->phone = $request->phone ? $request->phone : $update_user->phone;
-            $update_user->status = $request->status ? $request->status : $update_user->status;
-            $update_user->save();
+                $user_id = $prepare_user->id;
+                $update_user = User::findOrFail($user_id);
 
-            $user_profiles = User::with('profiles')->findOrFail($update_user->id);
+                $update_user->name = $request->name ? $request->name : $update_user->name;
+                $update_user->email = $request->email ? $request->email : $update_user->email;
+                $update_user->phone = $request->phone ? $this->user_helpers->formatPhoneNumber($request->phone) : $update_user->phone;
 
-            $update_profile = Profile::findOrFail($user_profiles->profiles[0]->id);
-            // $update_profile->username = $request->name ? trim(preg_replace('/\s+/', '_', $request->name)) : $user_profiles->profiles[0]->username;
+                if ($check_avatar[2] === "avatar.png") {
+                    $old_photo = public_path($update_user->photo);
+                    if (file_exists($old_photo)) {
+                        unlink($old_photo);
+                    }
 
-            if ($check_avatar[2] === "avatar.png") {
-                $old_photo = public_path() . '/' . $update_user->profiles[0]->photo;
-                unlink($old_photo);
+                    $initial = $this->initials($update_user->name);
+                    $path = public_path() . '/thumbnail_images/users/';
+                    $fontPath = public_path('fonts/Oliciy.ttf');
+                    $char = $initial;
+                    $newAvatarName = rand(12, 34353) . time() . '_avatar.png';
+                    $dest = $path . $newAvatarName;
 
-                $initial = $this->initials($update_user->name);
-                $path = public_path() . '/thumbnail_images/users/';
-                $fontPath = public_path('fonts/Oliciy.ttf');
-                $char = $initial;
-                $newAvatarName = rand(12, 34353) . time() . '_avatar.png';
-                $dest = $path . $newAvatarName;
+                    $createAvatar = WebFeatureHelpers::makeAvatar($fontPath, $dest, $char);
+                    $photo = $createAvatar == true ? $newAvatarName : '';
 
-                $createAvatar = makeAvatar($fontPath, $dest, $char);
-                $photo = $createAvatar == true ? $newAvatarName : '';
+                    $save_path = 'thumbnail_images/users/';
+                    $update_user->photo = $save_path . $photo;
+                }
 
-                // store into database field photo
-                $save_path = 'thumbnail_images/users/';
-                $update_profile->photo = $save_path . $photo;
+                $update_user->save();
+
+                $new_user_updated = User::whereId($update_user->id)->with('karyawans')->get();
+
+                $data_event = [
+                    'type' => 'update-profile',
+                    'routes' => 'profile',
+                    'notif' => "{$update_user->name}, has been updated!",
+                ];
+
+                event(new EventNotification($data_event));
+
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Update user {$update_user->name}, berhasil",
+                    'data' => $new_user_updated
+                ]);
             }
-
-            $update_profile->about = $request->about ? $request->about : $user_profiles->profiles[0]->about;
-            $update_profile->address = $request->address ? $request->address : $user_profiles->profiles[0]->address;
-            $update_profile->post_code = $request->post_code ? $request->post_code : $user_profiles->profiles[0]->post_code;
-            $update_profile->city = $request->city ? $request->city : $user_profiles->profiles[0]->city;
-            $update_profile->district = $request->district ? $request->district : $user_profiles->profiles[0]->district;
-            $update_profile->province = $request->province ? $request->province : $user_profiles->profiles[0]->province;
-            $update_profile->country = $request->country ? $request->country : $user_profiles->profiles[0]->country;
-            $update_profile->save();
-
-            $new_user_updated = User::whereId($update_user->id)->with('profiles')->get();
-
-            $data_event = [
-                'type' => 'update-profile',
-                'notif' => "{$update_user->name}, has been updated!",
-            ];
-
-            event(new UpdateProfileEvent($data_event));
-
-
-            return response()->json([
-                'success' => true,
-                'message' => "Update user {$update_user->name}, berhasil",
-                'data' => $new_user_updated
-            ]);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ]);
+            throw $th;
         }
     }
 
@@ -832,9 +843,9 @@ class DataWebFiturController extends Controller
                 'notif' => "Your password, has been changes!",
             ];
 
-            event(new UpdateProfileEvent($data_event));
+            event(new EventNotification($data_event));
 
-            $user_has_update = User::with('profiles')
+            $user_has_update = User::with('karyawans')
             ->with('roles')
             ->findOrFail($user->id);
 

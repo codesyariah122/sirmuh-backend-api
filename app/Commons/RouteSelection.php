@@ -53,11 +53,6 @@ class RouteSelection {
 		// User data management
 		[
 			'endPoint' => '/user-data',
-			'method' => 'get',
-			'controllers' => [DataUserDataController::class, 'index']
-		],
-		[
-			'endPoint' => '/user-data',
 			'method' => 'resource',
 			'controllers' => DataUserDataController::class
 		],
@@ -450,6 +445,18 @@ class RouteSelection {
 			'endPoint' => '/laporan-pembelian-barang',
 			'method' => 'get',
 			'controllers' => [DataLaporanPembelianController::class, 'laporan_pembelian_barang']
+		],
+
+		// User update
+		[
+			'endPoint' => '/update-user-data/{id}',
+			'method' => 'put',
+			'controllers' => [DataWebFiturController::class, 'update_user_profile']
+		],
+		[
+			'endPoint' => '/change-password',
+			'method' => 'put',
+			'controllers' => [DataWebFiturController::class, 'change_password']
 		]
 
 	];
