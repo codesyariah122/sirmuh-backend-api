@@ -25,7 +25,8 @@ class DataKasController extends Controller
     {
         $keywords = $request->query('keywords');
         $kode = $request->query('kode');
-        // var_dump($kode); die;
+        $sortName = $request->query('sort_name');
+        $sortType = $request->query('sort_type');
 
         if($keywords) {
             $kas = Kas::whereNull('deleted_at')
@@ -41,11 +42,18 @@ class DataKasController extends Controller
             // ->orderByDesc('id', 'DESC')
             ->get();
         } else {
-            $kas =  Kas::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'saldo')
+            if($sortName && $sortType) {
+                $kas =  Kas::whereNull('deleted_at')
+                ->select('id', 'kode', 'nama', 'saldo')
+                ->orderBy($sortName, $sortType)
+                ->paginate(10);
+            }else{                
+                $kas =  Kas::whereNull('deleted_at')
+                ->select('id', 'kode', 'nama', 'saldo')
             // ->orderByDesc('id', 'DESC')
-            ->orderBy('saldo', 'DESC')
-            ->paginate(10);
+                ->orderBy('saldo', 'DESC')
+                ->paginate(10);
+            }
         }
 
         return new ResponseDataCollect($kas);
