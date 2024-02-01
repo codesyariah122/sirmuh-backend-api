@@ -37,7 +37,7 @@ use App\Models\{
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
-use Image;
+use Intervention\Image\Facades\Image;
 use Auth;
 
 
@@ -682,10 +682,10 @@ class DataWebFiturController extends Controller
         try {
             $user_id = $request->user()->id;
 
-            $update_user = User::with('profiles')
+            $update_user = User::with('roles')
             ->findOrFail($user_id);
 
-            $user_photo = $update_user->profiles[0]->photo;
+            $user_photo = $update_user->photo;
             
             $image = $request->file('photo');
 
@@ -698,6 +698,7 @@ class DataWebFiturController extends Controller
                 $filenametostore = Str::random(12) . '_' . time() . '.' . $extension;
 
                 $thumbImage = Image::make($image->getRealPath())->resize(100, 100);
+
                 $thumbPath = public_path() . '/thumbnail_images/users/' . $filenametostore;
 
                 if ($user_photo !== '' && $user_photo !== NULL) {
@@ -706,19 +707,20 @@ class DataWebFiturController extends Controller
                 }
 
                 Image::make($thumbImage)->save($thumbPath);
-                $new_profile = Profile::findOrFail($update_user->profiles[0]->id);
+                $new_profile = User::findOrFail($update_user->id);
                 
                 $new_profile->photo = "thumbnail_images/users/" . $filenametostore;
                 $new_profile->save();
 
-                $profile_has_update = Profile::with('users')->findOrFail($update_user->profiles[0]->id);
+                $profile_has_update = User::with('roles')->findOrFail($update_user->id);
 
                 $data_event = [
                     'type' => 'update-photo',
+                    'routes' => 'profile',
                     'notif' => "{$update_user->name} photo, has been updated!"
                 ];
 
-                event(new UpdateProfileEvent($data_event));
+                event(new EventNotification($data_event));
 
                 return response()->json([
                     'success' => true,
@@ -732,10 +734,7 @@ class DataWebFiturController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ]);
+            throw $th;
         }
     }
 

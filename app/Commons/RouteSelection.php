@@ -462,6 +462,11 @@ class RouteSelection {
 			'endPoint' => '/change-password',
 			'method' => 'put',
 			'controllers' => [DataWebFiturController::class, 'change_password']
+		],
+		[
+			'endPoint' => '/update-profile-photo',
+			'method' => 'post',
+			'controllers' => [DataWebFiturController::class, 'upload_profile_picture']
 		]
 
 	];
