@@ -30,20 +30,27 @@ class DataHutangController extends Controller
             $sortName = $request->query('sort_name');
             $sortType = $request->query('sort_type');
 
-            if($keywords) {
-                $hutangs = Hutang::orderByDesc('tanggal')
-                ->where('supplier', 'like', '%'.$keywords.'%')
-                ->paginate(10);
-            } else {
-                if($sortName && $sortType) {
-                    $hutangs = Hutang::orderBy($sortName, $sortType)
-                    ->paginate(10);
-                } else {
-                    $hutangs = Hutang::orderByDesc('id')
-                    ->paginate(10);
-                }
+            $query = DB::table('hutang')
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo')
+            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode');
+
+            if ($keywords) {
+                $query->where('hutang.supplier', 'like', '%' . $keywords . '%');
             }
-            return new ResponseDataCollect($hutangs);
+
+            if ($sortName && $sortType) {
+                $query->orderBy($sortName, $sortType);
+            } else {
+                $query->orderByDesc('hutang.id');
+            }
+
+            $hutangs = $query->paginate(10);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'List data hutang',
+                'data' => $hutangs
+            ], 200);
 
         } catch (\Throwable $th) {
             throw $th;

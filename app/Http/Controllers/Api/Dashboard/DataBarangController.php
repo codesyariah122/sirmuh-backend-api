@@ -90,6 +90,7 @@ class DataBarangController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $kode = $request->query('kode');
             $kategori = $request->query('kategori');
             $endDate = $request->query('tgl_terakhir');
             $barcode = $request->query('barcode');
@@ -107,6 +108,8 @@ class DataBarangController extends Controller
 
             if ($keywords) {
                 $query->where('barang.nama', 'like', '%' . $keywords . '%');
+            } elseif($kode) {
+                $query->where('barang.kode', 'like', '%' . $keywords . '%');
             } elseif ($kategori) {
                 $query->where('barang.kategori', $kategori);
             } elseif ($startDate) {

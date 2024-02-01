@@ -147,7 +147,7 @@ class DataPembelianLangsungController extends Controller
 
                 foreach ($dataBarangs as $dataBarang) {
                     if ($dataBarang['id'] == $barangId) {
-                        $qtyToUpdate = $dataBarang['qty'];
+                        $qtyToUpdate = $data['qty'] + $dataBarang['qty'];
                         break;
                     }
                 }
