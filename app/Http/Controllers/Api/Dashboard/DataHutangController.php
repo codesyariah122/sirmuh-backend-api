@@ -29,6 +29,8 @@ class DataHutangController extends Controller
             $keywords = $request->query('keywords');
             $sortName = $request->query('sort_name');
             $sortType = $request->query('sort_type');
+            $startDate = $request->query("start_date");
+            $endDate = $request->query("end_date");
 
             $query = DB::table('hutang')
             ->select('hutang.*', 'pembelian.jt as jatuh_tempo')
@@ -41,8 +43,11 @@ class DataHutangController extends Controller
             if ($sortName && $sortType) {
                 $query->orderBy($sortName, $sortType);
             } else {
-                $query->orderByDesc('hutang.id');
+                if($startDate && $endDate) {
+                    $query->whereBetween('hutang.tanggal', [$startDate, $endDate]);
+                }
             }
+            $query->orderByDesc('hutang.id');
 
             $hutangs = $query->paginate(10);
 

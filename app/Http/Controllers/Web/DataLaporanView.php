@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
-use App\Models\{Pembelian, Toko};
+use App\Models\{Pembelian, Toko, Hutang};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
@@ -111,6 +111,49 @@ class DataLaporanView extends Controller
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
 
             return $pdf->stream("laporan-periode-{$startDate}/{$endDate}.pdf");
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function laporan_hutang(Request $request, $id_perusahaan)
+    {
+        try {
+            $keywords = $request->keywords;
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Hutang::query()
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo')
+            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
+            ->limit(10);
+            // ->limit(10);
+
+            if ($startDate || $endDate) {
+                $periode = [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ];
+                $query->whereBetween('pembelian.tanggal', [$startDate, $endDate]);
+            }
+
+            $hutangs = $query
+            ->orderByDesc('pembelian.tanggal')
+            ->get();
+
+            // echo "<pre>";
+            // var_dump($hutangs); die;
+            // echo "</pre>";
+
+            $pdf = PDF::loadView('laporan.laporan-hutang.download', compact('hutangs','perusahaan', 'periode'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+
+            return $pdf->stream("laporan-hutang-{$startDate}/{$endDate}.pdf");
 
         } catch (\Throwable $th) {
             throw $th;
