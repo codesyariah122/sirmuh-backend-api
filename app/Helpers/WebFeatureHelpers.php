@@ -224,4 +224,21 @@ class WebFeatureHelpers
         return $text; 
     }
 
+    public function generateAcronym($inputString)
+    {
+        $cleanedString = preg_replace('/[^a-zA-Z0-9\s]/', '', $inputString);
+
+        $words = explode(' ', $cleanedString);
+        $acronym = '';
+        foreach ($words as $word) {
+            if (!empty($word)) {
+                $acronym .= strtoupper(substr($word, 0, 1));
+            }
+        }
+
+        $acronym .= rand(10, 99);
+
+        return $acronym;
+    }
+
 }

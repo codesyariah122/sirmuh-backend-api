@@ -126,6 +126,12 @@ class DataWebFiturController extends Controller
                 ->paginate(10);
                 break;
 
+                case 'DATA_KAS':
+                $deleted = Kas::onlyTrashed()
+                ->select('id', 'kode', 'nama', 'saldo')
+                ->paginate(10);
+                break;
+
                 default:
                 $deleted = [];
                 break;
@@ -283,6 +289,22 @@ class DataWebFiturController extends Controller
                     'alert' => 'info',
                     'type' => 'restored',
                     'routes' => 'karyawan',
+                    'notif' => "Karyawan, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_KAS':
+                $restored_kas = Kas::onlyTrashed()
+                ->findOrFail($id);
+                $restored_kas->restore();
+                $restored = Kas::findOrFail($id);
+                $name = $restored->nama;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'kas',
                     'notif' => "Karyawan, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
@@ -472,6 +494,11 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_KARYAWAN':
                 $countTrash = Karyawan::onlyTrashed()
+                ->get();
+                break;
+
+                case 'DATA_KAS':
+                $countTrash = Kas::onlyTrashed()
                 ->get();
                 break;
 
