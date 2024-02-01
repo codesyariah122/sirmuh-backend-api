@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang};
 use Auth;
 use PDF;
 
@@ -181,6 +181,24 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
                 $newPembelian->receive = "True";
                 $newPembelian->jt = 14;
+
+                // Masuk ke hutang
+                $masuk_hutang = new Hutang;
+                $masuk_hutang->kode = $data['ref_code'];
+                $masuk_hutang->tanggal = $currentDate;
+                $masuk_hutang->supplier = $supplier->kode;
+                $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->kode_kas = $newPembelian->kode_kas;
+                $masuk_hutang->operator = $data['operator'];
+                $masuk_hutang->save();
+
+                $item_hutang = new ItemHutang;
+                $item_hutang->kode = $data['ref_code'];
+                $item_hutang->kode_hutang = $masuk_hutang->kode;
+                $item_hutang->tgl_hutang = $currentDate;
+                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
+                $item_hutang->jumlah = $masuk_hutang->jumlah;
+                $item_hutang->save();
             } else {                
                 $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
                 $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';

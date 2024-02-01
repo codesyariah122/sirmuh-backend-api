@@ -446,6 +446,11 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataLaporanPembelianController::class, 'laporan_pembelian_barang']
 		],
+		[
+			'endPoint' => '/data-laporan-hutang',
+			'method' => 'resource',
+			'controllers' => DataHutangController::class
+		],
 
 		// User update
 		[

@@ -12,6 +12,10 @@ class Karyawan extends Model
     use SoftDeletes;
 
     protected $table = "karyawan";
+    protected $fillable = [
+    	'id',
+        'nama'
+    ];
 
     public function users()
     {

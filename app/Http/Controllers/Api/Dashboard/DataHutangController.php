@@ -4,7 +4,17 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Hutang;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Collection;
+use App\Events\{EventNotification};
+use App\Models\{Hutang};
+use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
+use Auth;
+
 
 class DataHutangController extends Controller
 {
@@ -13,16 +23,27 @@ class DataHutangController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $hutang = Hutang::paginate(10);
+            $keywords = $request->query('keywords');
+            $sortName = $request->query('sort_name');
+            $sortType = $request->query('sort_type');
 
-            return response()->json([
-              'success' => true,
-              'message' => 'List data hutang 💸',
-              'data' => $hutang
-          ], 200);
+            if($keywords) {
+                $hutangs = Hutang::orderByDesc('tanggal')
+                ->where('supplier', 'like', '%'.$keywords.'%')
+                ->paginate(10);
+            } else {
+                if($sortName && $sortType) {
+                    $hutangs = Hutang::orderBy($sortName, $sortType)
+                    ->paginate(10);
+                } else {
+                    $hutangs = Hutang::orderByDesc('id')
+                    ->paginate(10);
+                }
+            }
+            return new ResponseDataCollect($hutangs);
 
         } catch (\Throwable $th) {
             throw $th;

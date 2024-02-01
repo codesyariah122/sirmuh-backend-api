@@ -47,6 +47,7 @@ class DataUserDataController extends Controller
                 }
             ])
             ->get();
+            $karyawans = Karyawan::withTrashed()->whereNama($user->name)->get();
 
             if (count($user_login->logins) === 0) {
                 return response()->json([
@@ -59,14 +60,11 @@ class DataUserDataController extends Controller
                 'success' => true,
                 'message' => 'User is login 🧑🏻‍💻',
                 'data' => $user_login,
-                'menus' => $menus
+                'menus' => $menus,
+                'karyawans' => $karyawans
             ], 200);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage(),
-                'valid' => auth()->check()
-            ]);
+            throw $th;
         }
     }
 
@@ -182,6 +180,7 @@ class DataUserDataController extends Controller
     {
         try {
             $user = User::with('karyawans')
+            ->with('roles')
             ->findOrFail($id);
             return response()->json([
                 'success' => true,
