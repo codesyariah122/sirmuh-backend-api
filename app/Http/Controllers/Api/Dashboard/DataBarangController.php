@@ -99,10 +99,11 @@ class DataBarangController extends Controller
             $sortType = $request->query('sort_type');
             
             $query = Barang::whereNull('barang.deleted_at')
-            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired','itempembelian.qty', 'pembelian.hutang')
+            // ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired','itempembelian.qty', 'pembelian.hutang')
+            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode')
             ->with("kategoris")
-            ->with('suppliers');
-            // ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama')
+            ->with('suppliers')
+            ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama');
             // ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
             // ->leftJoin('pembelian', 'itempembelian.kode', '=', 'pembelian.kode');
             // ->orderBy('barang.nama', 'ASC');

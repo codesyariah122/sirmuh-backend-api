@@ -106,9 +106,12 @@ class DataHutangController extends Controller
     {
         try {
             $query =  DB::table('hutang')
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo')
-            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode');
-            $query->orderByDesc('hutang.id');
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah', 'pembelian.diterima','pembelian.bayar', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
+            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+            ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
+            ->leftJoin('barang', 'barang.kode', '=', 'itempembelian.kode_barang')
+            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode');
 
             $hutang = $query->where('hutang.id', $id)->get();
 
