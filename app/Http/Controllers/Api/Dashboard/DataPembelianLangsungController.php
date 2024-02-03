@@ -119,9 +119,7 @@ class DataPembelianLangsungController extends Controller
 
             $data = $request->all();
             $barangs = $data['barangs'];
-            // if(is_array($barangs) || is_object($barangs)) {
-            //     $dataBarangs = $data['barangs'];
-            // } else {}
+            
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');

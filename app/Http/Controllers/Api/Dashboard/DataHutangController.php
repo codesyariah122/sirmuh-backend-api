@@ -33,8 +33,12 @@ class DataHutangController extends Controller
             $endDate = $request->query("end_date");
 
             $query = DB::table('hutang')
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo')
-            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode');
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo', 'itempembelian.id as itempembelian_id', 'itempembelian.kode as itempembelian_kode', 'itempembelian.qty', 'itempembelian.subtotal','supplier.nama as nama_supplier', 'barang.kode as kode_barang', 'barang.nama as barang_nama', 'barang.hpp as barang_harga_beli')
+            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->where('pembelian.jt', '>', 0);
 
             if ($keywords) {
                 $query->where('hutang.supplier', 'like', '%' . $keywords . '%');
@@ -58,6 +62,15 @@ class DataHutangController extends Controller
             ], 200);
 
         } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function data_hutang()
+    {
+        try {
+
+        }catch (\Throwable $th) {
             throw $th;
         }
     }
@@ -91,7 +104,22 @@ class DataHutangController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $query =  DB::table('hutang')
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo')
+            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode');
+            $query->orderByDesc('hutang.id');
+
+            $hutang = $query->where('hutang.id', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail hutang',
+                'data' => $hutang
+            ], 200);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

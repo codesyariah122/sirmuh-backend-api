@@ -236,8 +236,8 @@ class RouteSelection {
 		],
 		[
 			'endPoint' => '/data-hutang',
-			'method' => 'get',
-			'controllers' => [DataHutangController::class, 'index']
+			'method' => 'resource',
+			'controllers' => DataHutangController::class
 		],
 		[
 			'endPoint' => '/pemakaian-barang',
