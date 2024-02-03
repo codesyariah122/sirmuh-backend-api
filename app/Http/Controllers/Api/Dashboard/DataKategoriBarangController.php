@@ -22,7 +22,7 @@ class DataKategoriBarangController extends Controller
 
             if($keywords) {
                 $barangs = Kategori::whereNull('deleted_at')
-                ->select('kode', 'description')
+                ->select('kode', 'nama', 'description')
                 ->where('kode', 'like', '%'.$keywords.'%')
                 ->orderByDesc('id', 'DESC')
                 ->paginate(10);

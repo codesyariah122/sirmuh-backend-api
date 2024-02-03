@@ -64,6 +64,11 @@ class RouteSelection {
 			'controllers' => DataBarangController::class
 		],
 		[
+			'endPoint' => '/data-barang-by-suppliers/{id_supplier}',
+			'method' => 'get',
+			'controllers' => [DataBarangController::class, 'barang_by_suppliers']
+		],
+		[
 			'endPoint' => '/barang-by-warehouse',
 			'method' => 'get',
 			'controllers' => [DataBarangController::class, 'barang_by_warehouse']

@@ -48,7 +48,7 @@ class DataPembelianLangsungController extends Controller
             $keywords = $request->query('keywords');
             $today = now()->toDateString();
 
-            $user = Auth::user()->name;
+            $user = Auth::user()->role;
 
             $query = Pembelian::query()
             ->select(
@@ -73,7 +73,7 @@ class DataPembelianLangsungController extends Controller
 
             $pembelians = $query
             ->where(function ($query) use ($user) {
-                if ($user !== "Vicky Andriani") {
+                if ($user !== 1) {
                     $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')]);
                 }
             })
@@ -140,21 +140,6 @@ class DataPembelianLangsungController extends Controller
             // $updateStokBarang = Barang::findOrFail($data['barang']);
             // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
             // $updateStokBarang->save();
-
-            foreach($barangs as $barang) {
-                $barangId = $barang->id;
-                $qtyToUpdate = 0;
-
-                foreach ($dataBarangs as $dataBarang) {
-                    if ($dataBarang['id'] == $barangId) {
-                        $qtyToUpdate = $data['qty'] + $dataBarang['qty'];
-                        break;
-                    }
-                }
-
-                $barang->toko = $barang->toko + $qtyToUpdate;
-                $barang->save();
-            }
 
             $kas = Kas::findOrFail($data['kode_kas']);
 

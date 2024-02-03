@@ -562,15 +562,15 @@ class DataBarangController extends Controller
 
         public function update(Request $request, $id)
         {
-            $barang_data = Barang::whereId($id)
-            ->with(['kategoris', 'suppliers'])
-            ->firstOrFail();
-
+            $barang_data = Barang::findOrFail($id);
+            $supplierId = NULL;
             try {
                 if(count($barang_data->suppliers) > 0) {
-                    $supplier = Supplier::whereNama($barang_data->kategori)->firstOrFail();
+                    $supplier = Supplier::findOrFail($barang_data->suppliers[0]->id);
+                    $supplierId = $supplier->id;
                 } else {
-                    $supplier = Supplier::whereNama($request->supplier)->firstOrFail();
+                    $supplier = Supplier::whereKode($request->supplier)->get();
+                    $supplierId = $supplier[0]->id;
                 }
 
                 if(count($barang_data->kategoris) > 0) {
@@ -600,7 +600,7 @@ class DataBarangController extends Controller
                 $update_barang->save();
 
                 $update_barang->kategoris()->sync($kategori->id);
-                $update_barang->suppliers()->sync($supplier->id);
+                $update_barang->suppliers()->sync($supplierId);
 
                 $data_event = [
                     'type' => 'updated',
@@ -686,6 +686,24 @@ class DataBarangController extends Controller
                 'data_item_pembelian' => $dataItemPembelian,
             ]);
         } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function barang_by_suppliers(Request $request, $id) 
+    {   try {
+           $query = DB::table('barang')
+           ->join('supplier', 'barang.supplier', '=', 'supplier.kode')
+           ->where('supplier.id', $id)
+           ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat');
+                // ->orderBy('barang.nama', 'ASC');
+
+           $barangs = $query
+           ->orderByDesc('barang.id')
+           ->get();
+
+            return new ResponseDataCollect($barangs);
+        }catch (\Throwable $th) {
             throw $th;
         }
     }

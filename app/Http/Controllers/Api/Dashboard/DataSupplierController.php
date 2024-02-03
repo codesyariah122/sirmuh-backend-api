@@ -43,13 +43,13 @@ class DataSupplierController extends Controller
                     $query->where('nama', 'like', '%' . $keywords . '%')
                     ->orWhere('kode', 'like', '%' . $keywords . '%');
                 })
-                ->orderByDesc('id', 'DESC')
+                ->orderBy('id', 'ASC')
                 ->paginate(10);
             } else if($kode) {
                 $suppliers = Supplier::whereNull('deleted_at')
                 ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
                 ->where('kode', 'like', '%' . $kode . '%')
-                ->orderByDesc('id', 'DESC')
+                ->orderBy('id', 'ASC')
                 ->paginate(10);
             } else {
                 if($sortName && $sortType) {
@@ -60,7 +60,7 @@ class DataSupplierController extends Controller
                 } else {
                     $suppliers =  Supplier::whereNull('deleted_at')
                     ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
-                    ->orderByDesc('id', 'DESC')
+                    ->orderBy('id', 'ASC')
                     ->paginate(10);
                 }
             }

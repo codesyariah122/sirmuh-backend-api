@@ -29,12 +29,12 @@ class DataPurchaseOrderController extends Controller
             $keywords = $request->query('keywords');
             $today = now()->toDateString();
 
-            $user = Auth::user()->name;
+            $user = Auth::user()->role;
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.*',
-                'itempembelian.*',
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
+                'itempembelian.kode','itempembelian.qty','itempembelian.satuan','itempembelian.subtotal','itempembelian.harga_setelah_diskon',
                 'supplier.nama as nama_supplier',
                 'supplier.alamat as alamat_supplier',
                 'barang.nama as nama_barang',
@@ -47,13 +47,17 @@ class DataPurchaseOrderController extends Controller
             ->limit(10);
 
             if ($keywords) {
-                $query->where('pembelian.nama', 'like', '%' . $keywords . '%');
+                $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
             $query->whereDate('pembelian.tanggal', '=', $today);
 
             $pembelians = $query
-            ->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')])
+            ->where(function ($query) use ($user) {
+                if ($user !== 1) {
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')]);
+                }
+            })
             ->where('pembelian.po', '=', 'True')
             ->orderByDesc('pembelian.id')
             ->paginate(10);

@@ -1014,25 +1014,33 @@ class DataWebFiturController extends Controller
             $type = $request->type;
 
             switch($type) {
-                case "pembelian-langsung":
-                foreach($barangs as $barang) {
-                    $updateBarang = Barang::findOrFail($barang['id']);
-                    $qtyBarang = intval($barang['qty']);
-                    $stokBarang = intval($updateBarang->toko);
-                    $updateBarang->toko = $stokBarang + $qtyBarang;
-                    $updateBarang->save();
-                }
-                break;
+             case "pembelian-langsung":
+             foreach ($barangs as $barang) {
+                $updateBarang = Barang::findOrFail($barang['id']);
+                $newStok = $updateBarang->toko + ($barang['qty']);
+                $updateBarang->toko = $newStok;
+                $updateBarang->save();
+            }
+            break;
                 case "penjualan-toko":
                 foreach($barangs as $barang) {
+                    $stok = Barang::findOrFail($barang['id']);
                     $updateBarang = Barang::findOrFail($barang['id']);
                     $qtyBarang = intval($barang['qty']);
-                    $stokBarang = intval($updateBarang->toko);
+                    $stokBarang = intval($stok->toko);
                     $updateBarang->toko = $stokBarang - $qtyBarang;
                     $updateBarang->save();
                 }
                 break;
             }
+
+            $data_event = [
+                'type' => 'updated',
+                'routes' => 'data-barang',
+                'notif' => "Stok barang, successfully update!"
+            ];
+
+            event(new EventNotification($data_event));
 
             return response()->json([
                 'success' => true,
@@ -1060,12 +1068,12 @@ class DataWebFiturController extends Controller
                     ->where('draft', 1)
                     ->first();
                     if ($existingItem) {
-                            // Jika sudah ada, update informasi yang diperlukan
+                        // Jika sudah ada, update informasi yang diperlukan
                         $existingItem->qty = intval($barang['qty']);
                         $existingItem->harga_beli = intval($barang['harga_beli']);
                         $existingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
 
-                            // Update atribut lainnya sesuai kebutuhan
+                        // Update atribut lainnya sesuai kebutuhan
                         $existingItem->save();
                         $lastItemPembelianId = $existingItem->id;
                     } else {
@@ -1091,7 +1099,6 @@ class DataWebFiturController extends Controller
                             $totalSetelahDiskon = $total - $diskonAmount;
                             $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
                         }
-
                             // if($barang['ppn']) {
                             //     $total = $dataBarang->hpp * $barang['qty'];
                             //     $ppnAmount = $barang['ppn'] / 100 * $total;
@@ -1103,104 +1110,120 @@ class DataWebFiturController extends Controller
                         $lastItemPembelianId = $draftItemPembelian->id;
                     }
                 }
-                    return response()->json([
-                        'draft' => true,
-                        'message' => 'Draft item pembelian successfully updated!',
-                        'data' => $kode,
-                        'itempembelian_id' => $lastItemPembelianId
-                    ], 200);
-                } else {
-                 return response()->json([
-                    'failed' => true,
-                    'message' => 'Draft item pembelian has no success updated!',
-                    'data' => $kode
-                ], 203);
-             }
-
-         } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
-    public function list_draft_itempembelian($kode)
-    {
-        try {
-            if($kode) {                
-                $listDrafts = ItemPembelian::whereDraft(1)
-                ->select("id", "kode", "nourut", "kode_barang", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
-                ->whereKode($kode)
-                ->get();
-                return new ResponseDataCollect($listDrafts);
-            } else {
                 return response()->json([
-                    'failed' => true,
-                    'message' => 'Draft item pembelian has no success updated!'
-                ], 203);
-            }
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+                    'draft' => true,
+                    'message' => 'Draft item pembelian successfully updated!',
+                    'data' => $kode,
+                    'itempembelian_id' => $lastItemPembelianId
+                ], 200);
+            } else {
+               return response()->json([
+                'failed' => true,
+                'message' => 'Draft item pembelian has no success updated!',
+                'data' => $kode
+            ], 203);
+           }
+
+       } catch (\Throwable $th) {
+        throw $th;
     }
+}
 
-    public function delete_item_pembelian($id)
-    {
-        try {
-            $itemPembelian = ItemPembelian::findOrFail($id);
-            $itemPembelian->forceDelete();
+public function list_draft_itempembelian($kode)
+{
+    try {
+        if($kode) {
+            $listDrafts = ItemPembelian::select(
+                'itempembelian.id',
+                'itempembelian.kode',
+                'itempembelian.nourut',
+                'itempembelian.kode_barang',
+                'itempembelian.nama_barang',
+                'itempembelian.satuan',
+                'itempembelian.qty',
+                'itempembelian.harga_beli',
+                'itempembelian.harga_toko',
+                'itempembelian.diskon',
+                'itempembelian.subtotal',
+                'itempembelian.expired',
+                'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp', 'barang.toko'
+            )
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->where('itempembelian.draft', 1)
+            ->where('itempembelian.kode', $kode)
+            ->get();
 
+            return new ResponseDataCollect($listDrafts);
+        } else {
             return response()->json([
-                'success' => true,
-                'message' => 'Item pembelian successfully deleted!'
-            ], 200);
-        } catch (\Throwable $th) {
-            throw $th;
+                'failed' => true,
+                'message' => 'Draft item pembelian has no success updated!'
+            ], 203);
         }
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 
-    public function update_item_penjualan(Request $request)
-    {
-        try {
-            $draft = $request->draft;
-            $kode = $request->kode;
-            $barangs = $request->barangs;
+public function delete_item_pembelian($id)
+{
+    try {
+        $itemPembelian = ItemPembelian::findOrFail($id);
+        $itemPembelian->forceDelete();
 
-            if($draft) {
-                foreach($barangs as $barang) {
-                    $dataBarang = Barang::whereKode($barang['kode'])->firstOrFail();
-                    $existingItem = ItemPenjualan::where('kode', $kode)
-                    ->where('kode_barang', $dataBarang->kode)
-                    ->where('draft', 1)
-                    ->first();
-                    if ($existingItem) {
-                        $existingItem->qty = intval($barang['qty']);
-                        $existingItem->subtotal = $dataBarang->hpp * $barang['qty'];
-                        $existingItem->diskon = $barang['diskon'];
-                        $existingItem->diskon_rupiah = $barang['diskon_rupiah'];
+        return response()->json([
+            'success' => true,
+            'message' => 'Item pembelian successfully deleted!'
+        ], 200);
+    } catch (\Throwable $th) {
+        throw $th;
+    }
+}
 
-                        $existingItem->save();
-                    } else {
-                        $draftItemPembelian = new ItemPenjualan;
-                        $draftItemPembelian->kode = $kode;
-                        $draftItemPembelian->draft = $draft;
-                        $draftItemPembelian->kode_barang = $dataBarang->kode;
-                        $draftItemPembelian->nama_barang = $dataBarang->nama;
-                        $draftItemPembelian->satuan = $dataBarang->satuan;
-                        $draftItemPembelian->qty = $barang['qty'];
-                        $draftItemPembelian->isi = $dataBarang->isi;
-                        $draftItemPembelian->nourut = $barang['nourut'];
-                        $draftItemPembelian->harga = $dataBarang->hpp;
-                        $draftItemPembelian->diskon = $barang['diskon'];
-                        $draftItemPembelian->hpp = $dataBarang->hpp;
-                        $draftItemPembelian->diskon_rupiah = $barang['diskon_rupiah'];
-                        $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
-                        $draftItemPembelian->isi = $dataBarang->isi;
+public function update_item_penjualan(Request $request)
+{
+    try {
+        $draft = $request->draft;
+        $kode = $request->kode;
+        $barangs = $request->barangs;
 
-                        if($barang['diskon']) {
-                            $total = $dataBarang->hpp * $barang['qty'];
-                            $diskonAmount = $barang['diskon'] / 100 * $total;
-                            $totalSetelahDiskon = $total - $diskonAmount;
-                            $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
-                        }
+        if($draft) {
+            foreach($barangs as $barang) {
+                $dataBarang = Barang::whereKode($barang['kode'])->firstOrFail();
+                $existingItem = ItemPenjualan::where('kode', $kode)
+                ->where('kode_barang', $dataBarang->kode)
+                ->where('draft', 1)
+                ->first();
+                if ($existingItem) {
+                    $existingItem->qty = intval($barang['qty']);
+                    $existingItem->subtotal = $dataBarang->hpp * $barang['qty'];
+                    $existingItem->diskon = $barang['diskon'];
+                    $existingItem->diskon_rupiah = $barang['diskon_rupiah'];
+
+                    $existingItem->save();
+                } else {
+                    $draftItemPembelian = new ItemPenjualan;
+                    $draftItemPembelian->kode = $kode;
+                    $draftItemPembelian->draft = $draft;
+                    $draftItemPembelian->kode_barang = $dataBarang->kode;
+                    $draftItemPembelian->nama_barang = $dataBarang->nama;
+                    $draftItemPembelian->satuan = $dataBarang->satuan;
+                    $draftItemPembelian->qty = $barang['qty'];
+                    $draftItemPembelian->isi = $dataBarang->isi;
+                    $draftItemPembelian->nourut = $barang['nourut'];
+                    $draftItemPembelian->harga = $dataBarang->hpp;
+                    $draftItemPembelian->diskon = $barang['diskon'];
+                    $draftItemPembelian->hpp = $dataBarang->hpp;
+                    $draftItemPembelian->diskon_rupiah = $barang['diskon_rupiah'];
+                    $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
+                    $draftItemPembelian->isi = $dataBarang->isi;
+
+                    if($barang['diskon']) {
+                        $total = $dataBarang->hpp * $barang['qty'];
+                        $diskonAmount = $barang['diskon'] / 100 * $total;
+                        $totalSetelahDiskon = $total - $diskonAmount;
+                        $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
+                    }
 
                                 // if($barang['ppn']) {
                                 //     $total = $dataBarang->hpp * $barang['qty'];
@@ -1209,104 +1232,104 @@ class DataWebFiturController extends Controller
                                 //     $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
                                 // }
 
-                        $draftItemPembelian->save();
-                    }
+                    $draftItemPembelian->save();
                 }
-                return response()->json([
-                    'draft' => true,
-                    'message' => 'Draft item pembelian successfully updated!',
-                    'data' => $kode
-                ], 200);
-            } else {
-             return response()->json([
-                'failed' => true,
-                'message' => 'Draft item pembelian has no success updated!',
+            }
+            return response()->json([
+                'draft' => true,
+                'message' => 'Draft item pembelian successfully updated!',
                 'data' => $kode
-            ], 203);
-         }
+            ], 200);
+        } else {
+           return response()->json([
+            'failed' => true,
+            'message' => 'Draft item pembelian has no success updated!',
+            'data' => $kode
+        ], 203);
+       }
 
-     } catch (\Throwable $th) {
+   } catch (\Throwable $th) {
+    throw $th;
+}
+}
+
+public function list_draft_itempenjualan($kode)
+{
+    try {
+        if($kode) {                
+            $listDrafts = ItemPembelian::whereDraft(1)
+            ->select("id", "kode", "nourut", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
+            ->whereKode($kode)
+            ->get();
+            return new ResponseDataCollect($listDrafts);
+        } else {
+            return response()->json([
+                'failed' => true,
+                'message' => 'Draft item pembelian has no success updated!'
+            ], 204);
+        }
+    } catch (\Throwable $th) {
         throw $th;
     }
-    }
+}
 
-    public function list_draft_itempenjualan($kode)
-    {
-        try {
-            if($kode) {                
-                $listDrafts = ItemPembelian::whereDraft(1)
-                ->select("id", "kode", "nourut", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
-                ->whereKode($kode)
-                ->get();
-                return new ResponseDataCollect($listDrafts);
-            } else {
-                return response()->json([
-                    'failed' => true,
-                    'message' => 'Draft item pembelian has no success updated!'
-                ], 204);
-            }
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
+public function delete_item_penjualan($id)
+{
+    try {
+        $itemPembelian = ItemPenjualan::findOrFail($id);
+        $itemPembelian->forceDelete();
 
-    public function delete_item_penjualan($id)
-    {
-        try {
-            $itemPembelian = ItemPenjualan::findOrFail($id);
-            $itemPembelian->forceDelete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Item penjualan successfully deleted!'
-            ], 200);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
-    public function check_saldo(Request $request, $id) 
-    {
-        try {
-            $entitas = intval($request->entitas);
-            $check_saldo = Kas::findOrFail($id);
-            $saldo = intval($check_saldo->saldo);
-            if($saldo < $entitas) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Saldo tidak mencukupi!'
-                ], 202);
-            }
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
-    public function update_faktur_terakhir(Request $request)
-    {
-        try {
-            $existingFaktur = FakturTerakhir::whereFaktur($request->faktur)
-            ->first();
-            $today = now()->toDateString();
-            if($existingFaktur === NULL) {
-                $updateFakturTerakhir = new FakturTerakhir;
-                $updateFakturTerakhir->faktur = $request->faktur;
-                $updateFakturTerakhir->save();
-
-            } else {
-               $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
-               ->first();
-               $updateFakturTerakhir->faktur = $request->faktur;
-               $updateFakturTerakhir->tanggal = $today;
-               $updateFakturTerakhir->save();
-
-           }
-           return response()->json([
+        return response()->json([
             'success' => true,
-            'message' => 'Faktur terakhir terupdate!'
+            'message' => 'Item penjualan successfully deleted!'
         ], 200);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
+
+public function check_saldo(Request $request, $id) 
+{
+    try {
+        $entitas = intval($request->entitas);
+        $check_saldo = Kas::findOrFail($id);
+        $saldo = intval($check_saldo->saldo);
+        if($saldo < $entitas) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Saldo tidak mencukupi!'
+            ], 202);
+        }
+    } catch (\Throwable $th) {
+        throw $th;
+    }
+}
+
+public function update_faktur_terakhir(Request $request)
+{
+    try {
+        $existingFaktur = FakturTerakhir::whereFaktur($request->faktur)
+        ->first();
+        $today = now()->toDateString();
+        if($existingFaktur === NULL) {
+            $updateFakturTerakhir = new FakturTerakhir;
+            $updateFakturTerakhir->faktur = $request->faktur;
+            $updateFakturTerakhir->save();
+
+        } else {
+         $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+         ->first();
+         $updateFakturTerakhir->faktur = $request->faktur;
+         $updateFakturTerakhir->tanggal = $today;
+         $updateFakturTerakhir->save();
+
+     }
+     return response()->json([
+        'success' => true,
+        'message' => 'Faktur terakhir terupdate!'
+    ], 200);
+ } catch (\Throwable $th) {
+    throw $th;
+}
+}
 }
