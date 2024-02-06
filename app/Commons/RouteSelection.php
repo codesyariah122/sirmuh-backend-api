@@ -143,6 +143,16 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataKaryawanController::class
 		],
+		[
+			'endPoint' => '/update-password-karyawan-user/{id}',
+			'method' => 'put',
+			'controllers' => [DataKaryawanController::class, 'update_password_user_karyawan']
+		],
+		[
+			'endPoint' => '/update-user-data-karyawan/{id}',
+			'method' => 'put',
+			'controllers' => [DataWebFiturController::class, 'update_user_profile_karyawan']
+		],
 		// End Karyawan
 
 		// User & role Management
@@ -477,8 +487,17 @@ class RouteSelection {
 			'endPoint' => '/update-profile-photo',
 			'method' => 'post',
 			'controllers' => [DataWebFiturController::class, 'upload_profile_picture']
+		],
+		[
+			'endPoint' => '/check-roles-access',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'check_roles_access']
+		],
+		[
+			'endPoint' => '/check-password-access',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'check_password_access']
 		]
-
 	];
 
 	public static function getListRoutes()

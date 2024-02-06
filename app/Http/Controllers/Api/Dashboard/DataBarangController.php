@@ -660,8 +660,8 @@ class DataBarangController extends Controller
             $user = Auth::user();
 
             $userRole = Roles::findOrFail($user->role);
-            
-            if($userRole === "MASTER" && $userRole === "ADMIN" && $userRole === "GUDANG") {                
+                
+            if($userRole->name === "MASTER" && $userRole->name === "ADMIN" && $userRole->name === "GUDANG") {                
                 $delete_barang = Barang::whereNull('deleted_at')
                 ->findOrFail($id);
 

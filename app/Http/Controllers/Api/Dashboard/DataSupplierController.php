@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers, UserHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier};
+use App\Models\{User, Roles, Barang, Kategori, SatuanBeli, SatuanJual, Supplier};
 use Auth;
 
 class DataSupplierController extends Controller
@@ -259,23 +259,34 @@ class DataSupplierController extends Controller
     public function destroy($id)
     {
         try {
-            $supplier = Supplier::whereNull('deleted_at')
-            ->findOrFail($id);
-            $supplier->delete();
-            $data_event = [
-                'alert' => 'error',
-                'routes' => 'data-supplier',
-                'type' => 'removed',
-                'notif' => "{$supplier->nama}, has move to trash, please check trash!",
-                'user' => Auth::user()
-            ];
+            $user = Auth::user();
 
-            event(new EventNotification($data_event));
+            $userRole = Roles::findOrFail($user->role);
 
-            return response()->json([
-                'success' => true,
-                'message' => "Data supplier {$supplier->nama} has move to trash, please check trash"
-            ]);
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "GUDANG") {
+                $supplier = Supplier::whereNull('deleted_at')
+                ->findOrFail($id);
+                $supplier->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'data-supplier',
+                    'type' => 'removed',
+                    'notif' => "{$supplier->nama}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data supplier {$supplier->nama} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
         } catch (\Throwable $th) {
             throw $th;
         }

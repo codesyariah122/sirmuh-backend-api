@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
@@ -212,26 +213,27 @@ class DataKaryawanController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $roles = Roles::findOrFail($request->jabatan);
             $update_karyawan = Karyawan::whereNull('deleted_at')
             ->findOrFail($id);
             $update_karyawan->nama = $request->nama ? $request->nama : $update_karyawan->nama;
-            $update_karyawan->jabatan = $request->jabatan ? $request->karyawan : $update_karyawan->jabatan;
+            $update_karyawan->level = $roles->name;
             $update_karyawan->save();
 
             if($update_karyawan) {
                 $userOnNotif = Auth::user();
                 $data_event = [
-                    'routes' => 'supplier',
+                    'routes' => 'karyawan',
                     'alert' => 'success',
                     'type' => 'add-data',
-                    'notif' => "{$update_karyawan->nama}, baru saja ditambahkan 🤙!",
+                    'notif' => "{$update_karyawan->nama}, berhasil diupdate 🤙!",
                     'data' => $update_karyawan->nama,
                     'user' => $userOnNotif
                 ];
 
                 event(new EventNotification($data_event));
 
-                $updateDataKaryawan = Supplier::findOrFail($update_karyawan->id);
+                $updateDataKaryawan = Karyawan::findOrFail($update_karyawan->id);
                 return response()->json([
                     'success' => true,
                     'message' => "Karyawan dengan nama {$updateDataKaryawan->nama}, successfully added✨!",
@@ -253,23 +255,86 @@ class DataKaryawanController extends Controller
     public function destroy($id)
     {
         try {
-            $karyawan = Karyawan::whereNull('deleted_at')
-            ->findOrFail($id);
-            $karyawan->delete();
+            $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+                
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "GUDANG") {                
+                $karyawan = Karyawan::whereNull('deleted_at')
+                ->findOrFail($id);
+                $karyawan->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'karyawan',
+                    'type' => 'removed',
+                    'notif' => "{$karyawan->nama}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data supplier {$karyawan->nama} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function update_password_user_karyawan(Request $request, $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'new_password'  => [
+                    'required', 'confirmed', Password::min(8)
+                    ->mixedCase()
+                    ->letters()
+                    ->numbers()
+                    ->symbols()
+                ]
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $user = User::findOrFail($id);
+
+
+            // if (!Hash::check($request->current_password, $user->password)) {
+            //     return response()->json([
+            //         'error' => true,
+            //         'message' => 'The current password is incorrect!!'
+            //     ]);
+            // }
+
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
             $data_event = [
-                'alert' => 'error',
-                'routes' => 'karyawan',
-                'type' => 'removed',
-                'notif' => "{$karyawan->nama}, has move to trash, please check trash!",
-                'user' => Auth::user()
+                'type' => 'change-password',
+                'notif' => "Your password, has been changes!",
             ];
 
             event(new EventNotification($data_event));
 
+            $user_has_update = User::with('karyawans')
+            ->with('roles')
+            ->findOrFail($user->id);
+
             return response()->json([
                 'success' => true,
-                'message' => "Data supplier {$karyawan->nama} has move to trash, please check trash"
+                'message' => "Your password successfully updates!",
+                'data' => $user_has_update
             ]);
+
         } catch (\Throwable $th) {
             throw $th;
         }
