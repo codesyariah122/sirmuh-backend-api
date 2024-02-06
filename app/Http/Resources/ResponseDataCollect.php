@@ -15,9 +15,9 @@ class ResponseDataCollect extends ResourceCollection
     public function toArray($request)
     {
         $collects = collect($this->collection);
-
-        $collects = $collects->map(function($barang) {
-            return $barang;
+        
+        $collects = $collects->map(function($item) {
+            return $item;
         });
 
         return [

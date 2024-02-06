@@ -169,7 +169,7 @@ class WebFeatureHelpers
     public function terbilang($angka)
     {
         $angka = abs($angka);
-        $baca  = array('', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
+        $baca  = array('', 'satu', 'dua ', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
         $terbilang = '';
 
         if ($angka < 12) {
@@ -177,17 +177,17 @@ class WebFeatureHelpers
         } elseif ($angka < 20) {
             $terbilang = $this->terbilang($angka - 10) . ' belas';
         } elseif ($angka < 100) {
-            $terbilang = $this->terbilang(floor($angka / 10)) . ' puluh' . $this->terbilang($angka % 10);
+            $terbilang = $this->terbilang(floor($angka / 10)) . ' puluh ' . $this->terbilang($angka % 10);
         } elseif ($angka < 200) {
             $terbilang = ' seratus' . $this->terbilang($angka - 100);
         } elseif ($angka < 1000) {
-            $terbilang = $this->terbilang(floor($angka / 100)) . ' ratus' . $this->terbilang($angka % 100);
+            $terbilang = $this->terbilang(floor($angka / 100)) . ' ratus ' . $this->terbilang($angka % 100);
         } elseif ($angka < 2000) {
             $terbilang = ' seribu' . $this->terbilang($angka - 1000);
         } elseif ($angka < 1000000) {
-            $terbilang = $this->terbilang(floor($angka / 1000)) . ' ribu' . $this->terbilang($angka % 1000);
+            $terbilang = $this->terbilang(floor($angka / 1000)) . ' ribu ' . $this->terbilang($angka % 1000);
         } elseif ($angka < 1000000000) {
-            $terbilang = $this->terbilang(floor($angka / 1000000)) . ' juta' . $this->terbilang($angka % 1000000);
+            $terbilang = $this->terbilang(floor($angka / 1000000)) . ' juta ' . $this->terbilang($angka % 1000000);
         }
 
         return $terbilang;

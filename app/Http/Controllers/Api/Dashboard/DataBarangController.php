@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier, ItemPembelian};
+use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier, ItemPembelian, Roles};
 use Auth;
 
 class DataBarangController extends Controller 
@@ -91,39 +91,44 @@ class DataBarangController extends Controller
         try {
             $keywords = $request->query('keywords');
             $kode = $request->query('kode');
-            $kategori = $request->query('kategori');
+            $supplier = $request->query('supplier');
             $endDate = $request->query('tgl_terakhir');
             $barcode = $request->query('barcode');
             $startDate = $request->query('start_date');
             $sortName = $request->query('sort_name');
             $sortType = $request->query('sort_type');
             
-            $query = Barang::whereNull('barang.deleted_at')
-            // ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired','itempembelian.qty', 'pembelian.hutang')
-            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode')
-            ->with("kategoris")
-            ->with('suppliers')
-            ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama');
+            // $query = Barang::whereNull('barang.deleted_at')
+            // // ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired','itempembelian.qty', 'pembelian.hutang')
+            // ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuan', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.supplier', 'supplier.nama as supplier_nama', 'barang.kode_barcode')
+            // ->with("kategoris")
+            // ->with('suppliers')
+            // ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama');
             // ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
             // ->leftJoin('pembelian', 'itempembelian.kode', '=', 'pembelian.kode');
             // ->orderBy('barang.nama', 'ASC');
 
+            $query = Barang::join('supplier', 'barang.supplier', '=', 'supplier.kode')
+           ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp','barang.harga_toko','barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'barang.kode_barcode', 'barang.ada_expired_date', 'barang.expired','barang.tgl_terakhir','supplier.kode as kode_supplier','supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat')
+           ->when($keywords, function ($query) use ($keywords) {
+                return $query->where('barang.nama', 'like', '%' . $keywords . '%');
+            })
+           ->when($kode, function ($query) use ($kode) {
+                return $query->where('barang.kode', 'like', '%' . $kode . '%');
+            })
+           ->when($supplier, function ($query) use ($supplier) {
+                return $query->where('barang.supplier', $supplier );
+            })
+           ->when($startDate, function ($query) use ($startDate) {
+                return $query->where('barang.tgl_terakhir', $startDate );
+            })
+           ->when($endDate, function ($query) use ($endDate) {
+                return $query->where('barang.tgl_terakhir', $endDate );
+            })
+           ->when($barcode, function ($query) use ($barcode) {
+                return $query->where('barang.kode_barcode', $barcode );
+            });
 
-            if ($keywords) {
-                $query->where('barang.nama', 'like', '%' . $keywords . '%');
-            } elseif($kode) {
-                $query->where('barang.kode', 'like', '%' . $keywords . '%');
-            } elseif ($kategori) {
-                $query->where('barang.kategori', $kategori);
-            } elseif ($startDate) {
-                $query->where('barang.tgl_terakhir', $startDate);
-            } elseif ($endDate) {
-                $query->where('barang.tgl_terakhir', $endDate);
-            } elseif ($startDate && $endDate) { // Add this block
-                $query->whereBetween('barang.tgl_terakhir', [$startDate, $endDate]);
-            } elseif ($barcode) {
-                $query->whereKodeBarcode($barcode);
-            }
 
             if($sortName && $sortType) {
                 $barangs = $query
@@ -139,6 +144,8 @@ class DataBarangController extends Controller
                 $kodeBarcode = $item->kode_barcode;
                 $this->feature_helpers->generateQrCode($kodeBarcode);
             }
+
+            // var_dump($barangs); die;
 
             return new ResponseDataCollect($barangs);
 
@@ -158,16 +165,26 @@ class DataBarangController extends Controller
            $sortName = $request->query('sort_name');
            $sortType = $request->query('sort_type');
 
+           $query = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
+            ->whereNull('deleted_at')
+            ->groupBy('id','kode', 'nama', 'satuan')
+            ->when($keywords, function ($query) use ($keywords) {
+                return $query->where(function ($query) use ($keywords) {
+                    $query->where('nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('kode', 'like', '%' . $keywords . '%');
+                });
+            })
+            ->when($kategori, function ($query) use ($kategori) {
+                return $query->where('kategori', $kategori );
+            });
+            
+
            if($sortName && $sortType) {
-             $barangs = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
-            ->whereNull('deleted_at')
-            ->groupBy('id','kode', 'nama', 'satuan')
-            ->orderBy($sortName, $sortType)
-            ->get();
+               $barangs = $query
+               ->orderBy($sortName, $sortType)
+               ->get();
            } else {
-            $barangs = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
-            ->whereNull('deleted_at')
-            ->groupBy('id','kode', 'nama', 'satuan')
+            $barangs =$query
             ->orderBy('nama', 'ASC')
             ->get();
            }
@@ -640,25 +657,36 @@ class DataBarangController extends Controller
         public function destroy($id)
         {
          try {
-            $delete_barang = Barang::whereNull('deleted_at')
-            ->findOrFail($id);
+            $user = Auth::user();
 
-            $delete_barang->delete();
+            $userRole = Roles::findOrFail($user->role);
+            
+            if($userRole === "MASTER" && $userRole === "ADMIN" && $userRole === "GUDANG") {                
+                $delete_barang = Barang::whereNull('deleted_at')
+                ->findOrFail($id);
 
-            $data_event = [
-                'alert' => 'error',
-                'routes' => 'data-barang',
-                'type' => 'removed',
-                'notif' => "{$delete_barang->nama}, has move to trash, please check trash!",
-                'user' => Auth::user()
-            ];
+                $delete_barang->delete();
 
-            event(new EventNotification($data_event));
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'data-barang',
+                    'type' => 'removed',
+                    'notif' => "{$delete_barang->nama}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
 
-            return response()->json([
-                'success' => true,
-                'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
-            ]);
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data barang {$delete_barang->nama} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
         } catch (\Throwable $th) {
             throw $th;
         }

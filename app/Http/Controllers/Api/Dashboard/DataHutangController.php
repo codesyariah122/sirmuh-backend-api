@@ -42,7 +42,7 @@ class DataHutangController extends Controller
             $endDate = $request->query("end_date");
 
             $query = DB::table('hutang')
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo', 'itempembelian.id as itempembelian_id', 'itempembelian.kode as itempembelian_kode', 'itempembelian.qty', 'itempembelian.subtotal','itempembelian.satuan','supplier.nama as nama_supplier', 'barang.kode as kode_barang', 'barang.nama as barang_nama', 'barang.hpp as barang_harga_beli')
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo', 'pembelian.jumlah as jumlah_pembelian', 'pembelian.bayar', 'pembelian.diterima', 'itempembelian.id as itempembelian_id', 'itempembelian.kode as itempembelian_kode', 'itempembelian.qty', 'itempembelian.subtotal','itempembelian.satuan','supplier.nama as nama_supplier', 'barang.kode as kode_barang', 'barang.nama as barang_nama', 'barang.hpp as barang_harga_beli')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
             ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
@@ -115,7 +115,7 @@ class DataHutangController extends Controller
     {
         try {
             $query =  DB::table('hutang')
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
             ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
@@ -154,7 +154,25 @@ class DataHutangController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $query =  DB::table('hutang')
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
+            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+            ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
+            ->leftJoin('barang', 'barang.kode', '=', 'itempembelian.kode_barang')
+            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode');
+
+            $hutang = $query->where('hutang.id', $id)->first();
+
+            $bayar = intval($request->bayar);
+            $kasId = $request->kas_id;
+
+            var_dump($hutang->jumlah); die;
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -172,7 +190,7 @@ class DataHutangController extends Controller
     {
         try {
             $query =  DB::table('hutang')
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah', 'pembelian.diterima','pembelian.bayar', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
             ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
@@ -186,25 +204,32 @@ class DataHutangController extends Controller
                 // masuk lunas
                 $kembali = $bayar - $jmlHutang;
                 $formatKembali = $this->helpers->format_uang($kembali);
-                $kembaliTerbilang = ''.ucwords($this->helpers->terbilang($kembali). ' Rupiah');
+                $kembaliTerbilang = ''.ucwords($this->helpers->terbilang($jmlHutang). ' Rupiah');
                 $data = [
                     'lunas' => true,
-                    'message' => 'Hutang telah terbayar lunas 🏦💵💵',
+                    'jmlHutang' => $this->helpers->format_uang($jmlHutang),
+                    'message' => 'Pembayaran hutang telah terbayar lunas 🏦💵💵',
+                    'bayar' => $bayar,
+                    'bayarRupiah' => $this->helpers->format_uang($bayar),
                     'kembali' => $kembali,
                     'formatRupiah' => $formatKembali,
-                    'terbilang' => $kembaliTerbilang
-
+                    'terbilang' => $kembaliTerbilang,
+                    'kasId' => $hutang->kas_id
                 ];
             } else {
                 $sisaHutang = $jmlHutang - $bayar;
                 $formatSisaHutang = $this->helpers->format_uang($sisaHutang);
-                $sisaHutangTerbilang = ''.ucwords($this->helpers->terbilang($sisaHutang). ' Rupiah');
+                $sisaHutangTerbilang = ''.ucwords($this->helpers->terbilang($jmlHutang). ' Rupiah');
                 $data = [
                     'lunas' => false,
-                    'message' => 'Hutang masuk dalam angsuran 💱',
+                    'message' => 'Pembayaran hutang masuk dalam angsuran 💱',
+                    'jmlHutang' => $this->helpers->format_uang($jmlHutang),
+                    'bayar' => $bayar,
+                    'bayarRupiah' => $this->helpers->format_uang($bayar),
                     'sisaHutang' => $sisaHutang,
                     'formatRupiah' => $formatSisaHutang,
-                    'terbilang' => $sisaHutangTerbilang
+                    'terbilang' => $sisaHutangTerbilang,
+                    'kasId' => $hutang->kas_id
 
                 ];
             }
