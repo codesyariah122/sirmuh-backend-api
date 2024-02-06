@@ -240,6 +240,11 @@ class RouteSelection {
 			'controllers' => DataHutangController::class
 		],
 		[
+			'endPoint' => '/check-bayar-hutang/{id}',
+			'method' => 'get',
+			'controllers' => [DataHutangController::class, 'check_bayar_hutang']
+		],
+		[
 			'endPoint' => '/pemakaian-barang',
 			'method' => 'resource',
 			'controllers' => DataPemakaianBarangController::class

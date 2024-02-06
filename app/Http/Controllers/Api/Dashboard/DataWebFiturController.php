@@ -962,7 +962,7 @@ class DataWebFiturController extends Controller
             'total_with_ppn' => $this->helpers->format_uang($totalWithPPN),
             'bayar' => $totalWithPPN,
             'bayarrp' => $this->helpers->format_uang((intval($diskon) && intval($ppn)) ? $totalWithPPN : $total),
-            'terbilang' => ucwords($this->helpers->terbilang($totalWithPPN). ' Rupiah')
+            'terbilang' => ''.ucwords($this->helpers->terbilang($totalWithPPN). ' Rupiah')
         ];
 
         return new ResponseDataCollect($data);
@@ -1001,7 +1001,7 @@ class DataWebFiturController extends Controller
             'bayarrp' => $this->helpers->format_uang($bayar),
             'terbilang' => ucwords($this->helpers->terbilang($bayar). ' Rupiah'),
             'kembalirp' => $this->helpers->format_uang($kembali),
-            'kembali_terbilang' => ucwords($this->helpers->terbilang($kembali). ' Rupiah'),
+            'kembali_terbilang' => '' . ucwords($this->helpers->terbilang($kembali). ' Rupiah'),
         ];
 
         return response()->json($data);
