@@ -151,7 +151,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-            $newPembelian->draft = $data['draft'] ? 1 : 0;
+            $newPembelian->draft = $data['draft'] ?? 0;
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->jumlah = $data['jumlah'];
