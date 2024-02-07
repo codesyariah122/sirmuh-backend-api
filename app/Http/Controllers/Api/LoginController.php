@@ -82,9 +82,18 @@ class LoginController extends Controller
 
                             $users = User::with('logins')
                             ->with('roles')
+                            ->with('karyawans')
                             ->where('email', $request->email)
                             ->whereIsLogin($user[0]->is_login)
                             ->firstOrFail();
+
+                            $menus = Menu::whereJsonContains('roles', $users->role)
+                            ->with([
+                                'sub_menus' => function ($query) use ($users) {
+                                    $query->whereJsonContains('roles', $users->role)
+                                    ->with('child_sub_menus');
+                                }])
+                            ->get();
 
                             event(new ForbidenLoginEvent($data_event));
 
@@ -92,7 +101,8 @@ class LoginController extends Controller
                                 'is_login' => true,
                                 'message' => "Akun sedang digunakan {$last_login}, silahkan cek email anda!",
                                 'quote' => 'Please check the notification again!',
-                                'data' => $users
+                                'data' => $users,
+                                'menus' => $menus
                             ]);
                         }
 
