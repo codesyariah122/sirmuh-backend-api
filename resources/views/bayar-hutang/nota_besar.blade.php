@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Pembelian - {{$kode}}</title>
+    <title>Nota Pembayaran Hutang -  {{$kode}}</title>
 
     <style>
         table td {
@@ -44,81 +44,84 @@
             <td>
                 No
             </td>
-            <td>: {{ $pembelian->kode }}</td>
+            <td>: {{ $hutang->kode }}</td>
         </tr>
         <tr>
             <td>Type</td>
-            <td>: {{$pembelian->po === 'True' ? "Purchase Order" : "Pembelian Langsung"}}</td>
+            <td>: {{$hutang->po === 'True' ? "Purchase Order" : "Pembelian Langsung"}}</td>
         <tr>
             <td>
                 Supplier
             </td>
-            <td>: {{ $pembelian->nama_supplier }}
-                @if($pembelian->alamat_supplier)
+            <td>: {{ $hutang->nama_supplier }}
+                @if($hutang->alamat_supplier)
                 <br>
                 <address>
-                    {{ $pembelian->alamat_supplier ?? '-' }}
+                    {{ $hutang->alamat_supplier ?? '-' }}
                 </address>
                 @endif
                 <br>
             </td>
         </tr>
         <tr>
-            <td>Operator : {{ strtoupper($pembelian->operator) }}</td>
+            <td>Operator : {{ strtoupper($hutang->operator) }}</td>
+            <td>Lunas : @if($hutang->lunas === 1 || $hutang->lunas === '1' || $hutang->lunas === 'true') ✅ @else ⛔ @endif</td>
         </tr>
     </table>
 
     <table class="data" width="100%">
         <thead>
             <tr>
-                <th>No</th>
-                <th>Kode</th>
-                <th>Nama</th>
-                <th>Harga Satuan</th>
+                <th>Kode Barang</th>
+                <th>Nama Barang</th>
+                <th>Harga Beli</th>
+                <th>Qty</th>
                 <th>Jumlah</th>
-                <th>Pembayaran</th>
-                <th>Subtotal</th>
+                <th>Dibayarkan</th>
+                <th>Hutang</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($barangs as $key => $item)
             <tr>
-                <td class="text-center">{{ $key+1 }}</td>
-                <td>{{ $item->nama_barang }}</td>
-                <td>{{ $item->kode_barang }}</td>
-                <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
-                <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
-                <td class="text-right">{{ $item->visa }}</td>
-                <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
+                <td>{{ $hutang->nama_barang }}</td>
+                <td>{{ $hutang->kode_barang }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
+                <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->diterima) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
             </tr>
-            @endforeach
         </tbody>
         <tfoot>
             <tr>
                 <td colspan="6" class="text-right"><b>Total Harga</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
-                <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
-            </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Total Bayar</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
+                <td class="text-right"><b>{{  $helpers->format_uang($hutang->diskon) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima) }}</b></td>
             </tr>
-            @if($pembelian->visa === 'HUTANG')
+            @if($hutang->visa === 'HUTANG')
             <tr>
                 <td colspan="6" class="text-right"><b>Hutang</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->hutang) }}</b></td>
+            </tr>
+            <tr>
+                <td colspan="6" class="text-right"><b>Diangsur</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_hutang - $hutang->jumlah) }}</b></td>
+            </tr>
+            <tr>
+                <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah) }}</b></td>
             </tr>
             @else
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima - $hutang->jumlah) }}</b></td>
             </tr>
             @endif
         </tfoot>
@@ -131,7 +134,7 @@
                 Kasir
                 <br>
                 <br>
-                {{ strtoupper($pembelian->operator) }}
+                {{ strtoupper($hutang->operator) }}
             </td>
         </tr>
     </table> --}}

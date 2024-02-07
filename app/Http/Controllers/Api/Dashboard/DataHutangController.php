@@ -349,7 +349,7 @@ class DataHutangController extends Controller
             case "nota-besar":
             $pdf = PDF::loadView('bayar-hutang.nota_besar', compact('hutang', 'kode', 'toko', 'nota_type', 'helpers'));
             $pdf->setPaper(0, 0, 609, 440, 'portrait');
-            return $pdf->stream('Bayar-Hutang-' . $hutangs[0]->kode . '.pdf');
+            return $pdf->stream('Bayar-Hutang-' . $hutang->kode . '.pdf');
             break;
         }
     }

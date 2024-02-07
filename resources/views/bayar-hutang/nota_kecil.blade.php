@@ -116,10 +116,10 @@
                 <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
             </tr>
             <tr>
-                <td>Dibayarkan:</td>
+                <td>Diangsur:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_hutang - $hutang->jumlah) }}</td>
             </tr>
-            @if($hutang->hutang)
+            @if($hutang->visa === "HUTANG")
             <tr>
                 <td>Sisa Hutang:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
