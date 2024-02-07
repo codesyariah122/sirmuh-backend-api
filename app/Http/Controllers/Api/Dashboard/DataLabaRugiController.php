@@ -50,7 +50,7 @@ class DataLabaRugiController extends Controller
             ->leftJoin('barang', 'labarugi.kode_barang', '=', 'barang.kode')
             ->whereYear('labarugi.tanggal', $currentYear)
             ->whereMonth('labarugi.tanggal', $currentMonth)
-            ->orderByDesc('labarugi.tanggal')
+            ->orderByDesc('labarugi.id')
             ->limit(10);
 
             $keywords = $request->query('keywords');

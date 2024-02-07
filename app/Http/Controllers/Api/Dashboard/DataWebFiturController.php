@@ -587,12 +587,12 @@ class DataWebFiturController extends Controller
                 $totalData = Barang::whereNull('deleted_at')
                 ->get();
                 $totals = count($totalData);
-                $barangLimits = Barang::whereNull('deleted_at')
-                ->orderBy('toko')
-                // ->where('toko', 'NOT LIKE', '0.%') 
+                $barangLimits = Barang::whereNull('barang.deleted_at')
+                ->select('barang.kode', 'barang.nama', 'barang.toko', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+                ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                 ->where('toko', 'LIKE', '-%')
+                ->orderBy('toko')
                 ->limit(10)
-                ->select('kode', 'nama', 'satuan', 'toko')
                 ->get();
                 
                 $sendResponse = [

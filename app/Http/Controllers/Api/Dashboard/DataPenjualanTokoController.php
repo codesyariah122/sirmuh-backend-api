@@ -145,7 +145,7 @@ class DataPenjualanTokoController extends Controller
             $newPenjualanToko->bayar = $data['bayar'];
             if($data['piutang']) {
                 $newPenjualanToko->angsuran = $data['bayar'];
-                $newPenjualanToko->lunas =false;
+                $newPenjualanToko->lunas = "False";
                 $newPenjualanToko->visa = 'HUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
                 $newPenjualanToko->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
@@ -170,7 +170,7 @@ class DataPenjualanTokoController extends Controller
                 $item_piutang->jumlah = $masuk_hutang->jumlah;
                 $item_piutang->save();
             } else {                
-                $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? true : false;
+                $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
                 $newPenjualanToko->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
@@ -200,7 +200,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
                 $hpp = $itemPenjualanBarang->hpp * $data['qty'];
                 $diskon = $newPenjualanToko->diskon;
-                $labarugi = $newPenjualanToko->bayar - $hpp - $diskon;
+                $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
 
                 $newLabaRugi = new LabaRugi;
                 $newLabaRugi->tanggal = now()->toDateString();
