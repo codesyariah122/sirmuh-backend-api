@@ -164,7 +164,7 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->hutang = $data['hutang'];
                 $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
                 $newPembelian->receive = "True";
-                $newPembelian->jt = 14;
+                $newPembelian->jt = $data['jt'];
 
                 // Masuk ke hutang
                 $masuk_hutang = new Hutang;
@@ -189,7 +189,7 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->hutang = $data['hutang'];
                 $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
                 $newPembelian->receive = "True";
-                $newPembelian->jt = $data['jt'] ?? 0.00;
+                $newPembelian->jt = 0.00;
             }
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];

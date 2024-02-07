@@ -29,7 +29,7 @@ class DataPurchaseOrderController extends Controller
             $keywords = $request->query('keywords');
             $today = now()->toDateString();
 
-            $user = Auth::user()->role;
+            $user = Auth::user();
 
             $query = Pembelian::query()
             ->select(
@@ -54,9 +54,9 @@ class DataPurchaseOrderController extends Controller
 
             $pembelians = $query
             ->where(function ($query) use ($user) {
-                if ($user !== 1) {
-                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')]);
-                }
+                if ($user->role !== 1) {
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                } 
             })
             ->where('pembelian.po', '=', 'True')
             ->orderByDesc('pembelian.id')
@@ -100,9 +100,7 @@ class DataPurchaseOrderController extends Controller
 
             $data = $request->all();
             $barangs = $data['barangs'];
-            // if(is_array($barangs) || is_object($barangs)) {
-            //     $dataBarangs = $data['barangs'];
-            // } else {}
+            
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
@@ -121,21 +119,6 @@ class DataPurchaseOrderController extends Controller
             // $updateStokBarang = Barang::findOrFail($data['barang']);
             // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
             // $updateStokBarang->save();
-
-            foreach($barangs as $barang) {
-                $barangId = $barang->id;
-                $qtyToUpdate = 0;
-
-                foreach ($dataBarangs as $dataBarang) {
-                    if ($dataBarang['id'] == $barangId) {
-                        $qtyToUpdate = $dataBarang['qty'];
-                        break;
-                    }
-                }
-
-                $barang->toko = $barang->toko + $qtyToUpdate;
-                $barang->save();
-            }
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
@@ -161,14 +144,32 @@ class DataPurchaseOrderController extends Controller
                 $newPembelian->hutang = $data['hutang'];
                 $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
                 $newPembelian->receive = "True";
-                $newPembelian->jt = 14;
+                $newPembelian->jt = $data['jt'];
+
+                // Masuk ke hutang
+                $masuk_hutang = new Hutang;
+                $masuk_hutang->kode = $data['ref_code'];
+                $masuk_hutang->tanggal = $currentDate;
+                $masuk_hutang->supplier = $supplier->kode;
+                $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->kode_kas = $newPembelian->kode_kas;
+                $masuk_hutang->operator = $data['operator'];
+                $masuk_hutang->save();
+
+                $item_hutang = new ItemHutang;
+                $item_hutang->kode = $data['ref_code'];
+                $item_hutang->kode_hutang = $masuk_hutang->kode;
+                $item_hutang->tgl_hutang = $currentDate;
+                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
+                $item_hutang->jumlah = $masuk_hutang->jumlah;
+                $item_hutang->save();
             } else {                
                 $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
                 $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
                 $newPembelian->hutang = $data['hutang'];
                 $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
                 $newPembelian->receive = "True";
-                $newPembelian->jt = $data['jt'] ?? 0.00;
+                $newPembelian->jt = 0.00;
             }
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
@@ -202,7 +203,7 @@ class DataPurchaseOrderController extends Controller
                 ->get();
 
                 $data_event = [
-                    'routes' => 'pembelian-langsung',
+                    'routes' => 'purchase-order',
                     'alert' => 'success',
                     'type' => 'add-data',
                     'notif' => "Pembelian dengan kode {$newPembelian->kode}, baru saja ditambahkan 🤙!",
