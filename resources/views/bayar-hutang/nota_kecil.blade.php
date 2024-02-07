@@ -115,10 +115,17 @@
                 <td>Dibayarkan:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->bayar) }}</td>
             </tr>
+            @if($hutang->hutang > $hutang->bayar)
+            <tr>
+                <td>Kembali:</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->bayar) }}</td>
+            </tr>
+            @else
             <tr>
                 <td>Kembali:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->bayar - $hutang->hutang) }}</td>
             </tr>
+            @endif
             <tr>
                 <td>Status:</td>
                 <td class="text-right">{{ $hutang->visa }}</td>

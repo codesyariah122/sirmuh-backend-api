@@ -199,7 +199,7 @@ class DataHutangController extends Controller
                 $updatePembelian->visa = "HUTANG";
                 $updatePembelian->save();
                 $updateHutang = Hutang::findOrFail($hutang->id);
-                $updateHutang->jumlah = $bayar - $jmlHutang;
+                $updateHutang->jumlah = $jmlHutang - $bayar;
                 $updateHutang->ket = $request->ket ?? "";
                 $updateHutang->save();
 
