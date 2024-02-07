@@ -75,7 +75,11 @@
         <p>Kode Supplier : {{$hutang->supplier}}</p>
         <p>Alamat Supplier : {{ $hutang->alamat_supplier }}</p>
         <p>Operator : {{ strtoupper($hutang->operator) }}</p>
-        
+        {{-- @php
+        var_dump($hutang->jumlah_hutang); 
+        var_dump($hutang->jumlah);
+        die;
+        @endphp --}}
         <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
             <tr>
@@ -113,12 +117,12 @@
             </tr>
             <tr>
                 <td>Dibayarkan:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->bayar) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_hutang - $hutang->jumlah) }}</td>
             </tr>
-            @if($hutang->hutang > $hutang->bayar)
+            @if($hutang->hutang)
             <tr>
-                <td>Kembali:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->bayar) }}</td>
+                <td>Sisa Hutang:</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
             </tr>
             @else
             <tr>

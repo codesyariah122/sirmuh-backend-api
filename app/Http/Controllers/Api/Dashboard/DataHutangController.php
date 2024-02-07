@@ -307,6 +307,8 @@ class DataHutangController extends Controller
         $query = Hutang::query()
         ->select(
             'hutang.*',
+            'itemhutang.jumlah as hutang_jumlah',
+            'itemhutang.jumlah_hutang as jumlah_hutang',
             'pembelian.tanggal as tanggal_pembelian',
             'pembelian.supplier',
             'pembelian.kode_kas',
@@ -329,6 +331,7 @@ class DataHutangController extends Controller
             'kas.nama',
             'kas.saldo'
         )
+        ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode')
         ->leftJoin('pembelian', 'pembelian.kode', '=', 'hutang.kode')
         ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
         ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
