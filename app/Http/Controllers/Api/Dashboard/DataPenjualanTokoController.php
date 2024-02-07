@@ -40,7 +40,7 @@ class DataPenjualanTokoController extends Controller
 
          $query = Penjualan::query()
          ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar','penjualan.kembali','penjualan.tax','penjualan.diskon','penjualan.lunas','penjualan.operator','penjualan.jt','penjualan.piutang',
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar','penjualan.kembali','penjualan.tax','penjualan.diskon','penjualan.lunas','penjualan.operator','penjualan.jt as tempo','penjualan.piutang',
             'itempenjualan.kode', 'itempenjualan.qty','itempenjualan.subtotal','itempenjualan.ppn','itempenjualan.diskon','itempenjualan.diskon_rupiah',
             'pelanggan.nama as pelanggan_nama',
             'pelanggan.alamat as pelanggan_alamat',
@@ -138,12 +138,11 @@ class DataPenjualanTokoController extends Controller
             $newPenjualanToko = new Penjualan;
             $newPenjualanToko->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPenjualanToko->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-            $newPenjualanToko->draft = $data['draft'] ?? 0;
+            $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
             $newPenjualanToko->pelanggan = $pelanggan->kode;
             $newPenjualanToko->kode_kas = $kas->kode;
             $newPenjualanToko->jumlah = $data['jumlah'];
             $newPenjualanToko->bayar = $data['bayar'];
-            $newPenjualanToko->diterima = $data['diterima'];
             if($data['piutang']) {
                 $newPenjualanToko->lunas =false;
                 $newPenjualanToko->visa = 'HUTANG';
@@ -162,13 +161,13 @@ class DataPenjualanTokoController extends Controller
                 $masuk_hutang->operator = $data['operator'];
                 $masuk_hutang->save();
 
-                $item_hutang = new ItemPiutang;
-                $item_hutang->kode = $data['ref_code'];
-                $item_hutang->kode_hutang = $masuk_hutang->kode;
-                $item_hutang->tgl_hutang = $currentDate;
-                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
-                $item_hutang->jumlah = $masuk_hutang->jumlah;
-                $item_hutang->save();
+                $item_piutang = new ItemPiutang;
+                $item_piutang->kode = $data['ref_code'];
+                $item_piutang->kode_piutang = $masuk_hutang->kode;
+                $item_piutang->tgl_piutang = $currentDate;
+                $item_piutang->jumlah_piutang = $masuk_hutang->jumlah;
+                $item_piutang->jumlah = $masuk_hutang->jumlah;
+                $item_piutang->save();
             } else {                
                 $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? true : false;
                 $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
@@ -188,7 +187,7 @@ class DataPenjualanTokoController extends Controller
                 $updateDrafts[$idx]->save();
             }
 
-            $diterima = intval($newPenjualanToko->diterima);
+            $diterima = intval($newPenjualanToko->bayar);
             $updateKas = Kas::findOrFail($data['kode_kas']);
             $updateKas->saldo = intval($updateKas->saldo) - $diterima;
             $updateKas->save();
@@ -203,7 +202,7 @@ class DataPenjualanTokoController extends Controller
                     'pelanggan.nama as nama_pelanggan',
                     'pelanggan.alamat as alamat_pelanggan'
                 )
-                ->leftJoin('itemenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+                ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
                 ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
                 ->where('penjualan.id', $newPenjualanToko->id)
                 ->get();

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Penjualan -  {{$kode}}</title>
+    <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
 
     <?php
     $style = '
@@ -56,7 +56,7 @@
     </head>
     <body onload="window.print()">
         <button class="btn-print" style="position: absolute; right: 1rem; top: rem;" onclick="window.print()">Print</button>
-       
+
         <div class="clear-both" style="clear: both;"></div>
         <p>No: {{ $penjualan->kode }}</p>
         <p>Type: Penjualan Toko</p>
@@ -77,6 +77,7 @@
             </address>
         </p>
         <p>Operator : {{ strtoupper($penjualan->operator) }}</p>
+        <p>Jenis Pembayaran : {{$penjualan->visa}}</p>
         <p class="text-center">===================================</p>
          <table width="100%" style="border: 0;">
         @foreach ($barangs as $item)
@@ -104,18 +105,28 @@
                 <td>Diskon:</td>
                 <td class="text-right">{{ $helpers->format_uang($penjualan->diskon) }}%</td>
             </tr>
+            @if($penjualan->lunas === "True")
             <tr>
                 <td>Total Bayar:</td>
                 <td class="text-right">{{$item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
+            @else
             <tr>
                 <td>Diterima:</td>
                 <td class="text-right">{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar)}}</td>
             </tr>
+            @endif
+            @if($penjualan->lunas !== "True")
+            <tr>
+                <td>Piutang:</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->piutang) }}</td>
+            </tr>
+            @else
             <tr>
                 <td>Kembali:</td>
                 <td class="text-right">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
             </tr>
+            @endif
         </table>
 
         <p class="text-center">===================================</p>

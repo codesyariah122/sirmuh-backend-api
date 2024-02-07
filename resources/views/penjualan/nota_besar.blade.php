@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Penjualan - {{$kode}}</title>
+    <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
 
     <style>
         table td {
@@ -64,6 +64,14 @@
                 <br>
             </td>
         </tr>
+        @if($penjualan->lunas !== "True")
+        <tr>
+            <td>
+                Jenis Pembayaran
+            </td>
+            <td>: {{ $penjualan->visa }}</td>
+        </tr>
+        @endif
     </table>
 
     <table class="data" width="100%" style="margin-top:15px;">
@@ -82,9 +90,9 @@
             @foreach ($barangs as $key => $item)
             <tr>
                 <td class="text-center">{{ $key+1 }}</td>
-                <td>{{ $item->kode }}</td>
-                <td>{{ $item->kode_kas }}</td>
-                <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->hpp) }}</td>
+                <td class="text-center">{{ $item->kode }}</td>
+                <td class="text-center">{{ $item->kode_kas }}</td>
+                <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->hpp) }}</td>
                 <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->diskon }}%</td>
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
@@ -93,25 +101,34 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" class="text-right"><b>Total Harga</b></td>
+                <td colspan="6" class="text-right"><b>Total</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($penjualan->diskon) }}%</b></td>
             </tr>
+            @if($penjualan->lunas === "True")
             <tr>
                 <td colspan="6" class="text-right"><b>Total Bayar</b></td>
                 <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
+            @endif
             <tr>
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
+            @if($penjualan->lunas === "True")
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</b></td>
             </tr>
+            @else
+            <tr>
+                <td colspan="6" class="text-right"><b>Masuk Piutang</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->piutang) }}</b></td>
+            </tr>
+            @endif
         </tfoot>
     </table>
 
