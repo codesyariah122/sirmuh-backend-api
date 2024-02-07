@@ -430,8 +430,9 @@ class DataBarangController extends Controller
                 // ->with('kategoris')
                 // ->firstOrFail();
                 $dataBarang = Barang::where('barang.id', $id)
-                ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian')
+                ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                 ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
+                ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                 ->where('itempembelian.draft','=', 1)
                 ->whereNull('barang.deleted_at')
                 ->limit(1)
