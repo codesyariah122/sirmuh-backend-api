@@ -144,6 +144,7 @@ class DataPenjualanTokoController extends Controller
             $newPenjualanToko->jumlah = $data['jumlah'];
             $newPenjualanToko->bayar = $data['bayar'];
             if($data['piutang']) {
+                $newPenjualanToko->angsuran = $data['bayar'];
                 $newPenjualanToko->lunas =false;
                 $newPenjualanToko->visa = 'HUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
@@ -189,12 +190,35 @@ class DataPenjualanTokoController extends Controller
 
             $diterima = intval($newPenjualanToko->bayar);
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
+            $updateKas->saldo = intval($updateKas->saldo) + $diterima;
             $updateKas->save();
 
             $userOnNotif = Auth::user();
 
             if($newPenjualanToko) {
+                $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
+                $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
+                $hpp = $itemPenjualanBarang->hpp * $data['qty'];
+                $diskon = $newPenjualanToko->diskon;
+                $labarugi = $newPenjualanToko->bayar - $hpp - $diskon;
+
+                $newLabaRugi = new LabaRugi;
+                $newLabaRugi->tanggal = now()->toDateString();
+                $newLabaRugi->kode = $newPenjualanData->kode;
+                $newLabaRugi->kode_barang = $itemPenjualanBarang->kode_barang;
+                $newLabaRugi->nama_barang = $itemPenjualanBarang->nama_barang;
+                $newLabaRugi->penjualan = $newPenjualanData->bayar;
+                $newLabaRugi->hpp = $itemPenjualanBarang->hpp;
+                $newLabaRugi->diskon =  $newPenjualanData->diskon;
+                $newLabaRugi->labarugi = $labarugi;
+                $newLabaRugi->operator = $data['operator'];
+                $newLabaRugi->keterangan = "PENJUALAN BARANG";
+                $newLabaRugi->pelanggan = $pelanggan->kode;
+                $newLabaRugi->nama_pelanggan = $pelanggan->nama;
+
+                $newLabaRugi->save();
+
+
                 $newPenjualanTokoSaved =  Penjualan::query()
                 ->select(
                     'penjualan.*',

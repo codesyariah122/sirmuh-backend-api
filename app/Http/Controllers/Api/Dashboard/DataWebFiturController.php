@@ -1242,6 +1242,7 @@ class DataWebFiturController extends Controller
             $draft = $request->draft;
             $kode = $request->kode;
             $barangs = $request->barangs;
+            $lastItemPembelianId = NULL;
 
             if($draft) {
                 foreach($barangs as $barang) {
@@ -1257,6 +1258,8 @@ class DataWebFiturController extends Controller
                         $existingItem->diskon_rupiah = $barang['diskon_rupiah'];
 
                         $existingItem->save();
+
+                        $lastItemPembelianId = $existingItem->id;
                     } else {
                         $draftItemPembelian = new ItemPenjualan;
                         $draftItemPembelian->kode = $kode;
@@ -1289,12 +1292,15 @@ class DataWebFiturController extends Controller
                                     // }
 
                         $draftItemPembelian->save();
+                        $lastItemPembelianId = $draftItemPembelian->id;
                     }
                 }
                 return response()->json([
                     'draft' => true,
                     'message' => 'Draft item pembelian successfully updated!',
-                    'data' => $kode
+                    'data' => $kode,
+                    'itempembelian_id' => $lastItemPembelianId
+
                 ], 200);
             } else {
                return response()->json([
@@ -1325,9 +1331,10 @@ class DataWebFiturController extends Controller
                     'itempenjualan.diskon',
                     'itempenjualan.subtotal',
                     'itempenjualan.expired',
-                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp as harga_beli_barang', 'barang.harga_toko', 'barang.toko'
+                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp as harga_beli_barang', 'barang.harga_toko', 'barang.toko', 'barang.supplier', 'supplier.nama as nama_supplier', 'supplier.kode as supplier_kode'
                 )
                 ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+                ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                 ->where('itempenjualan.draft', 1)
                 ->where('itempenjualan.kode', $kode)
                 ->get();

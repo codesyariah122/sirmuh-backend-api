@@ -48,7 +48,7 @@ class DataPembelianLangsungController extends Controller
             $keywords = $request->query('keywords');
             $today = now()->toDateString();
 
-            $user = Auth::user()->role;
+            $user = Auth::user();
 
             $query = Pembelian::query()
             ->select(
@@ -71,11 +71,12 @@ class DataPembelianLangsungController extends Controller
 
             $query->whereDate('pembelian.tanggal', '=', $today);
 
+
             $pembelians = $query
             ->where(function ($query) use ($user) {
-                if ($user !== 1) {
-                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user . '%')]);
-                }
+                if ($user->role !== 1) {
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                } 
             })
             ->where('pembelian.po', '=', 'False')
             ->orderByDesc('pembelian.id')
@@ -151,7 +152,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-            $newPembelian->draft = $data['draft'] ?? 0;
+            $newPembelian->draft = $data['draft'] ? 1 : 0;
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->jumlah = $data['jumlah'];
