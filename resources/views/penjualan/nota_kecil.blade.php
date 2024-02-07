@@ -84,9 +84,9 @@
                 <td colspan="3">{{ $item->nama_barang }}</td>
             </tr>
             <tr>
-                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->hpp) }}</td>
+                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->harga_toko) }}</td>
                 <td></td>
-                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->hpp) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_toko) }}</td>
             </tr>
         @endforeach
     </table>

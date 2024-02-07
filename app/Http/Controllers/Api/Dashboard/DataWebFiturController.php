@@ -1312,17 +1312,32 @@ class DataWebFiturController extends Controller
     public function list_draft_itempenjualan($kode)
     {
         try {
-            if($kode) {                
-                $listDrafts = ItemPembelian::whereDraft(1)
-                ->select("id", "kode", "nourut", "nama_barang", "satuan", "qty", "harga_beli", "harga_toko", "diskon", "subtotal", "expired")
-                ->whereKode($kode)
+            if($kode) {
+                $listDrafts = ItemPenjualan::select(
+                    'itempenjualan.id',
+                    'itempenjualan.kode',
+                    'itempenjualan.nourut',
+                    'itempenjualan.kode_barang',
+                    'itempenjualan.nama_barang',
+                    'itempenjualan.satuan',
+                    'itempenjualan.qty',
+                    'itempenjualan.hpp',
+                    'itempenjualan.diskon',
+                    'itempenjualan.subtotal',
+                    'itempenjualan.expired',
+                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp as harga_beli_barang', 'barang.harga_toko', 'barang.toko'
+                )
+                ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+                ->where('itempenjualan.draft', 1)
+                ->where('itempenjualan.kode', $kode)
                 ->get();
+
                 return new ResponseDataCollect($listDrafts);
             } else {
                 return response()->json([
                     'failed' => true,
-                    'message' => 'Draft item pembelian has no success updated!'
-                ], 204);
+                    'message' => 'Draft item penjualan has no success updated!'
+                ], 203);
             }
         } catch (\Throwable $th) {
             throw $th;

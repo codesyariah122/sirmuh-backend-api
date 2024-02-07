@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang};
 use Auth;
 use PDF;
 
@@ -95,152 +95,136 @@ class DataPenjualanTokoController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'pelanggan' => 'required',
                 'kode_kas' => 'required',
-                'barangs' => 'required'
+                'barangs' => 'required',
             ]);
+
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
-            } else {
-                $data = $request->all();
-                $barangs = $data['barangs'];
-                // if(is_array($barangs) || is_object($barangs)) {
-                //     $dataBarangs = $data['barangs'];
-                // } else {}
-                $dataBarangs = json_decode($barangs, true);
+            }
 
-                $currentDate = now()->format('ymd');
+            $data = $request->all();
+            $barangs = $data['barangs'];
+            
+            $dataBarangs = json_decode($barangs, true);
 
-                $lastIncrement = Penjualan::max('id') ?? 0;
-                $increment = $lastIncrement + 1;
+            $currentDate = now()->format('ymd');
 
-                $formattedIncrement = sprintf('%03d', $increment);
+            $lastIncrement = Penjualan::max('id') ?? 0;
+            $increment = $lastIncrement + 1;
 
-                $generatedCode = 'R43-' . $currentDate . $formattedIncrement;
-                
-                $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
+            $formattedIncrement = sprintf('%03d', $increment);
 
-                $barangIds = array_column($dataBarangs, 'id');
-                $barangs = Barang::whereIn('id', $barangIds)->get();
-                // $updateStokBarang = Barang::findOrFail($data['barang']);
-                // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
-                // $updateStokBarang->save();
+            $generatedCode = 'R43-' . $currentDate . $formattedIncrement;
 
-                foreach($barangs as $barang) {
-                    $barangId = $barang->id;
-                    $qtyToUpdate = 0;
+            $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
 
-                    foreach ($dataBarangs as $dataBarang) {
-                        if ($dataBarang['id'] == $barangId) {
-                            $qtyToUpdate = $dataBarang['qty'];
-                            break;
-                        }
-                    }
+            $barangIds = array_column($dataBarangs, 'id');
+            $barangs = Barang::whereIn('id', $barangIds)->get();
+            // $updateStokBarang = Barang::findOrFail($data['barang']);
+            // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
+            // $updateStokBarang->save();
 
-                    $barang->toko = $barang->toko + $qtyToUpdate;
-                    $barang->save();
-                }
+            $kas = Kas::findOrFail($data['kode_kas']);
 
-                $kas = Kas::findOrFail($data['kode_kas']);
+            if($kas->saldo < $data['diterima']) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Saldo tidak mencukupi!!"
+                ]);
+            }
 
-                // if($kas->saldo < $data['diterima']) {
-                //     return response()->json([
-                //         'error' => true,
-                //         'message' => "Saldo tidak mencukupi!!"
-                //     ]);
-                // }
+            $newPenjualanToko = new Penjualan;
+            $newPenjualanToko->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
+            $newPenjualanToko->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
+            $newPenjualanToko->draft = $data['draft'] ?? 0;
+            $newPenjualanToko->pelanggan = $pelanggan->kode;
+            $newPenjualanToko->kode_kas = $kas->kode;
+            $newPenjualanToko->jumlah = $data['jumlah'];
+            $newPenjualanToko->bayar = $data['bayar'];
+            $newPenjualanToko->diterima = $data['diterima'];
+            if($data['piutang']) {
+                $newPenjualanToko->lunas =false;
+                $newPenjualanToko->visa = 'HUTANG';
+                $newPenjualanToko->piutang = $data['piutang'];
+                $newPenjualanToko->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPenjualanToko->receive = "True";
+                $newPenjualanToko->jt = 14;
 
-                $newPenjualan = new Penjualan;
-                $newPenjualan->tanggal = $currentDate;
-                $newPenjualan->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-                $newPenjualan->pelanggan = $pelanggan->kode;
-                $newPenjualan->kode_kas = $kas->kode;
-                $newPenjualan->subtotal = $barang->hpp * $data['qty'];
-                $newPenjualan->diskon = $data['diskon'];
-                // $newPenjualan->kembali = $data['kembali'] ? $data['kembali'] : $data['bayar'] - ($barang->hpp * $data['qty']);
-                $newPenjualan->kembali = $data['kembali'];
-                $newPenjualan->jumlah = $data['jumlah'];
-                $newPenjualan->bayar = $data['bayar'];
-                $newPenjualan->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
-                $newPenjualan->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-                $newPenjualan->piutang = $data['pembayaran'] !== 'cash' ? $data['bayar'] : 0.00;
-                $newPenjualan->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
-                $newPenjualan->receive = "True";
-                $newPenjualan->jt = $data['jt'] ?? 0.00;
-                $newPenjualan->keterangan = $data['keterangan'];
-                $newPenjualan->operator = $data['operator'];
+                // Masuk ke hutang
+                $masuk_hutang = new Piutang;
+                $masuk_hutang->kode = $data['ref_code'];
+                $masuk_hutang->tanggal = $currentDate;
+                $masuk_hutang->pelanggan = $pelanggan->kode;
+                $masuk_hutang->jumlah = $data['piutang'];
+                $masuk_hutang->kode_kas = $newPenjualanToko->kode_kas;
+                $masuk_hutang->operator = $data['operator'];
+                $masuk_hutang->save();
 
-                $newPenjualan->save();
+                $item_hutang = new ItemPiutang;
+                $item_hutang->kode = $data['ref_code'];
+                $item_hutang->kode_hutang = $masuk_hutang->kode;
+                $item_hutang->tgl_hutang = $currentDate;
+                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
+                $item_hutang->jumlah = $masuk_hutang->jumlah;
+                $item_hutang->save();
+            } else {                
+                $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? true : false;
+                $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
+                $newPenjualanToko->piutang = $data['piutang'];
+                $newPenjualanToko->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPenjualanToko->receive = "True";
+                $newPenjualanToko->jt = $data['jt'] ?? 0.00;
+            }
+            $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
+            $newPenjualanToko->operator = $data['operator'];
 
-                $updateDrafts = ItemPenjualan::whereKode($newPenjualan->kode)->get();
-                foreach($updateDrafts as $idx => $draft) {
-                    $updateDrafts[$idx]->draft = 0;
-                    $updateDrafts[$idx]->save();
-                }
+            $newPenjualanToko->save();
+            
+            $updateDrafts = ItemPenjualan::whereKode($newPenjualanToko->kode)->get();
+            foreach($updateDrafts as $idx => $draft) {
+                $updateDrafts[$idx]->draft = 0;
+                $updateDrafts[$idx]->save();
+            }
 
-                // $updateQty = ItemPenjualan::findOrFail($newItemPenjualan->id);
-                // $updateQty->qty = $newItemPenjualan->qty + $data['qty'];
-                $newPenjualanData = Penjualan::findOrFail($newPenjualan->id);
-                $diterima = intval($newPenjualanData->jumlah);
-                $updateKas = Kas::findOrFail($data['kode_kas']);
-                $updateKas->saldo = intval($updateKas->saldo) + intval($diterima);
-                $updateKas->save();
+            $diterima = intval($newPenjualanToko->diterima);
+            $updateKas = Kas::findOrFail($data['kode_kas']);
+            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
+            $updateKas->save();
 
-                $userOnNotif = Auth::user();
+            $userOnNotif = Auth::user();
 
-                if($newPenjualan) {
-                   $hpp = $barang->hpp * $data['qty'];
-                   $diskon = $newPenjualan->diskon;
-                   $labarugi = $newPenjualan->bayar - $hpp - $diskon;
-
-                   $newLabaRugi = new LabaRugi;
-                   $newLabaRugi->tanggal = now()->toDateString();
-                   $newLabaRugi->kode = $newPenjualanData->kode;
-                   $newLabaRugi->kode_barang = $barang->kode;
-                   $newLabaRugi->nama_barang = $barang->nama;
-                   $newLabaRugi->penjualan = $newPenjualanData->bayar;
-                   $newLabaRugi->hpp = $barang->hpp;
-                   $newLabaRugi->diskon =  $newPenjualanData->diskon;
-                   $newLabaRugi->labarugi = $labarugi;
-                   $newLabaRugi->operator = $data['operator'];
-                   $newLabaRugi->keterangan = "PENJUALAN BARANG";
-                   $newLabaRugi->pelanggan = $pelanggan->kode;
-                   $newLabaRugi->nama_pelanggan = $pelanggan->nama;
-
-                   $newLabaRugi->save();
-
-                 $newPenjualanSaved =  Penjualan::query()
-                 ->select(
+            if($newPenjualanToko) {
+                $newPenjualanTokoSaved =  Penjualan::query()
+                ->select(
                     'penjualan.*',
                     'itempenjualan.*',
                     'pelanggan.nama as nama_pelanggan',
                     'pelanggan.alamat as alamat_pelanggan'
                 )
-                 ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-                 ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-                 ->where('penjualan.id',$newPenjualan->id)
-                 ->get();
+                ->leftJoin('itemenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+                ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+                ->where('penjualan.id', $newPenjualanToko->id)
+                ->get();
 
-                 $data_event = [
+                $data_event = [
                     'routes' => 'penjualan-toko',
                     'alert' => 'success',
                     'type' => 'add-data',
-                    'notif' => "Penjualan dengan kode {$newPenjualan->kode}, berhasil 🤙!",
-                    'data' =>$newPenjualan->kode,
+                    'notif' => "Penjualan dengan kode {$newPenjualanToko->kode}, baru saja ditambahkan 🤙!",
+                    'data' => $newPenjualanToko->kode,
                     'user' => $userOnNotif
                 ];
 
                 event(new EventNotification($data_event));
 
-                return new RequestDataCollect($newPenjualanSaved);
+                return new RequestDataCollect($newPenjualanTokoSaved);
             }
+        } catch (\Throwable $th) {
+            throw $th;
         }
-
-    } catch (\Throwable $th) {
-        throw $th;
     }
-}
 
 public function cetak_nota($type, $kode, $id_perusahaan)
 {
@@ -264,6 +248,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         'pelanggan.alamat as pelanggan_alamat',
         'barang.nama as barang_nama',
         'barang.satuan as barang_satuan',
+        'barang.harga_toko as harga_toko',
         DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
     )
     ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
