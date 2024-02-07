@@ -201,7 +201,20 @@ class DataHutangController extends Controller
                 $updateHutang = Hutang::findOrFail($hutang->id);
                 $updateHutang->jumlah = $jmlHutang - $bayar;
                 if($bayar < $jmlHutang) {
+                   $angsuranTerakhir = PembayaranAngsuran::where('kode', $hutang->kode)
+                   ->orderBy('angsuran_ke', 'desc')
+                   ->first();
 
+                   $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
+
+                    $angsuran = new PembayaranAngsuran;
+                    $angsuran->kode = $hutang->kode;
+                    $angsuran->tanggal = $hutang->tanggal;
+                    $angsuran->angsuran_ke = $angsuranKeBaru;
+                    $angsuran->kode_pelanggan = NULL;
+                    $angsuran->kode_faktur = NULL;
+                    $angsuran->jumlah = $jmlHutang;
+                    $angsuran->save();
                 }
                 $updateHutang->bayar = $bayar;
                 $updateHutang->ket = $request->ket ?? "";
