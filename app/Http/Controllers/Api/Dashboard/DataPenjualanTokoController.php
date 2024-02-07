@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir};
 use Auth;
 use PDF;
 
@@ -218,6 +218,10 @@ class DataPenjualanTokoController extends Controller
 
                 $newLabaRugi->save();
 
+                $simpanFaktur = new FakturTerakhir;
+                $simpanFaktur->faktur = $newPenjualanData->kode;
+                $simpanFaktur->tanggal = $newPenjualanData->tanggal;
+                $simpanFaktur->save();
 
                 $newPenjualanTokoSaved =  Penjualan::query()
                 ->select(

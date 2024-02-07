@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
-use App\Models\{Toko, Hutang, Pembelian, ItemPembelian};
+use App\Models\{Toko, Hutang, Pembelian, ItemPembelian,PembayaranAngsuran};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use Auth;
@@ -200,6 +200,10 @@ class DataHutangController extends Controller
                 $updatePembelian->save();
                 $updateHutang = Hutang::findOrFail($hutang->id);
                 $updateHutang->jumlah = $jmlHutang - $bayar;
+                if($bayar < $jmlHutang) {
+
+                }
+                $updateHutang->bayar = $bayar;
                 $updateHutang->ket = $request->ket ?? "";
                 $updateHutang->save();
 
