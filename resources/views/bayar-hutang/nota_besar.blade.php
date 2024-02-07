@@ -65,7 +65,7 @@
         </tr>
         <tr>
             <td>Operator : {{ strtoupper($hutang->operator) }}</td>
-            <td>Lunas : @if($hutang->lunas === 1 || $hutang->lunas === '1' || $hutang->lunas === 'true') ✅ @else ⛔ @endif</td>
+            <td>Lunas : @if($hutang->lunas === 1) Lunas; @else Angsuran @endif</td>
         </tr>
     </table>
 
