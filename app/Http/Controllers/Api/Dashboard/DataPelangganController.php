@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers, UserHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pelanggan, Penjualan};
+use App\Models\{Pelanggan, Penjualan,Roles};
 use Auth;
 
 
