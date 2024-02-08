@@ -1466,7 +1466,7 @@ class DataWebFiturController extends Controller
             if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN" && $userRole->name !== "GUDANG") { 
                 return response()->json([
                     'error' => true,
-                    'message' => 'Error hak akses 🚫'
+                    'message' => 'Hak akses tidak di ijinkan 🚫'
                 ]);
             } else {
                 return response()->json([
@@ -1489,7 +1489,7 @@ class DataWebFiturController extends Controller
             if ($userRole->name !== "MASTER") { 
                 return response()->json([
                     'error' => true,
-                    'message' => 'Error hak akses 🚫'
+                    'message' => 'Hak akses tidak di ijinkan 🚫'
                 ]);
             } else {
                 return response()->json([
