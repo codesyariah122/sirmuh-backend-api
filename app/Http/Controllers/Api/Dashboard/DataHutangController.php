@@ -450,6 +450,7 @@ class DataHutangController extends Controller
         ->where('hutang.kode', $kode);
 
         $hutang = $query->first();
+        $angsurans = PembayaranAngsuran::whereKode($hutang->kode)->get();
 
         $setting = "";
 
@@ -465,10 +466,10 @@ class DataHutangController extends Controller
 
         switch ($type) {
             case "nota-kecil":
-            return view('bayar-hutang.nota_kecil', compact('hutang', 'kode', 'toko', 'nota_type', 'helpers'));
+            return view('bayar-hutang.nota_kecil', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
             break;
             case "nota-besar":
-            $pdf = PDF::loadView('bayar-hutang.nota_besar', compact('hutang', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf = PDF::loadView('bayar-hutang.nota_besar', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
             $pdf->setPaper(0, 0, 609, 440, 'portrait');
             return $pdf->stream('Bayar-Hutang-' . $hutang->kode . '.pdf');
             break;

@@ -116,10 +116,12 @@
                 <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
             </tr>
             @if($hutang->visa === "HUTANG")
+            @foreach($angsurans as $angsuran)
             <tr>
-                <td>Angsuran ke {{$hutang->angsuran_ke}}:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->bayar_angsuran) }}</td>
+                <td>Angsuran ke {{$angsuran->angsuran_ke}}:</td>
+                <td class="text-right">{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</td>
             </tr>
+            @endforeach
             <tr>
                 <td>Sisa Hutang:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jml_hutang) }}</td>
@@ -130,10 +132,17 @@
                 <td class="text-right">{{ $helpers->format_uang($hutang->bayar - $hutang->hutang) }}</td>
             </tr>
             @endif
+            @if(count($angsurans) > 0)
             <tr>
                 <td>Status:</td>
-                <td class="text-right">{{ $hutang->angsuran_ke > 0 ? 'Angsuran' : $hutang->visa }}</td>
+                <td class="text-right">{{ intval($hutang->jml_hutang) === 0 ? "Lunas" : "Angsuran" }}</td>
             </tr>
+            @else
+            <tr>
+                <td>Status:</td>
+                <td class="text-right">Hutang</td>
+            </tr>
+            @endif
         </table>
 
         <p class="text-center">===================================</p>

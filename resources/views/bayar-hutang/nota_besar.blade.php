@@ -65,7 +65,7 @@
         </tr>
         <tr>
             <td>Operator : {{ strtoupper($hutang->operator) }}</td>
-            <td>Lunas : @if($hutang->lunas === 1) Lunas; @else Angsuran @endif</td>
+            <td>Status : @if(intval($hutang->jml_hutang) === 0) Lunas @else Angsuran @endif</td>
         </tr>
     </table>
 
@@ -88,7 +88,7 @@
                 <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
                 <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->diterima) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->hutang) }}</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
             </tr>
         </tbody>
@@ -110,13 +110,17 @@
                 <td colspan="6" class="text-right"><b>Hutang</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->hutang) }}</b></td>
             </tr>
+            @if($hutang->angsuran_ke > 0)
+            @foreach($angsurans as $angsuran)
             <tr>
-                <td colspan="6" class="text-right"><b>Diangsur</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_hutang - $hutang->jumlah) }}</b></td>
+                <td colspan="6" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
+            @endforeach
+            @endif
             <tr>
                 <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
             </tr>
             @else
             <tr>
