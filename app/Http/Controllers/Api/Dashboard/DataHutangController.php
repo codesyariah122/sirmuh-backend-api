@@ -155,6 +155,15 @@ class DataHutangController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'bayar' => 'required',
+            ]);
+
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+            
             $query =  Hutang::query()
             ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
@@ -228,6 +237,10 @@ class DataHutangController extends Controller
                 ], 200);
             }
 
+            $dataKas = Kas::findOrFail($hutang->kas_id);
+            $dataKas->saldo = intval($dataKas->saldo) - $bayar;
+            $dataKas->save();
+
             $userOnNotif = Auth::user();
 
             $data_event = [
@@ -237,9 +250,9 @@ class DataHutangController extends Controller
                     'notif' => $notifEvent,
                     'data' => $hutang->kode,
                     'user' => $userOnNotif
-                ];
+            ];
 
-                event(new EventNotification($data_event));
+            event(new EventNotification($data_event));
 
         } catch (\Throwable $th) {
             throw $th;
