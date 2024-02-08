@@ -115,14 +115,14 @@
                 <td>Hutang:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
             </tr>
-            <tr>
-                <td>Diangsur:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_hutang - $hutang->jumlah) }}</td>
-            </tr>
             @if($hutang->visa === "HUTANG")
             <tr>
+                <td>Angsuran ke {{$hutang->angsuran_ke}}:</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->bayar_angsuran) }}</td>
+            </tr>
+            <tr>
                 <td>Sisa Hutang:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jml_hutang) }}</td>
             </tr>
             @else
             <tr>
@@ -132,7 +132,7 @@
             @endif
             <tr>
                 <td>Status:</td>
-                <td class="text-right">{{ $hutang->visa }}</td>
+                <td class="text-right">{{ $hutang->angsuran_ke > 0 ? 'Angsuran' : $hutang->visa }}</td>
             </tr>
         </table>
 
