@@ -32,7 +32,8 @@ use App\Models\{
     SetupPerusahaan,
     Kas,
     FakturTerakhir,
-    Karyawan
+    Karyawan,
+    Biaya
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -130,6 +131,12 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_KAS':
                 $deleted = Kas::onlyTrashed()
+                ->select('id', 'kode', 'nama', 'saldo')
+                ->paginate(10);
+                break;
+
+                case 'DATA_BIAYA':
+                $deleted = Biaya::onlyTrashed()
                 ->select('id', 'kode', 'nama', 'saldo')
                 ->paginate(10);
                 break;
@@ -307,7 +314,23 @@ class DataWebFiturController extends Controller
                     'alert' => 'info',
                     'type' => 'restored',
                     'routes' => 'kas',
-                    'notif' => "Karyawan, {$name} has been restored!",
+                    'notif' => "Kas, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_BIAYA':
+                $restored_biaya = Biaya::onlyTrashed()
+                ->findOrFail($id);
+                $restored_biaya->restore();
+                $restored = Biaya::findOrFail($id);
+                $name = $restored->nama;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'biaya',
+                    'notif' => "Biaya, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
@@ -471,6 +494,23 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_BIAYA':
+                $deleted = Biaya::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data biaya, {$deleted->nama} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'biaya',
+                    'notif' => "Biaya, {$deleted->nama} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
                 default:
                 $deleted = [];
             endswitch;
@@ -518,6 +558,11 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_KAS':
                 $countTrash = Kas::onlyTrashed()
+                ->get();
+                break;
+
+                case 'DATA_BIAYA':
+                $countTrash = Biaya::onlyTrashed()
                 ->get();
                 break;
 

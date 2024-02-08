@@ -176,7 +176,8 @@ class DataPelangganController extends Controller
     public function show($id)
     {
         try {
-            $pelanggan = Pelanggan::select("id", "nama", "telp", "email", "alamat", "pekerjaan")
+            $pelanggan = Pelanggan::whereNull('deleted_at')
+            ->select("id", "nama", "telp", "email", "alamat", "pekerjaan")
             ->findOrFail($id);
             return response()->json([
                 'success' => true,
@@ -240,23 +241,34 @@ class DataPelangganController extends Controller
     public function destroy($id)
     {
         try {
-            $pelanggan = Pelanggan::whereNull('deleted_at')
-            ->findOrFail($id);
-            $pelanggan->delete();
-            $data_event = [
-                'alert' => 'error',
-                'routes' => 'data-pelanggan',
-                'type' => 'removed',
-                'notif' => "{$pelanggan->nama}, has move to trash, please check trash!",
-                'user' => Auth::user()
-            ];
+            $user = Auth::user();
 
-            event(new EventNotification($data_event));
+            $userRole = Roles::findOrFail($user->role);
+                
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "KASIR") {
+                $pelanggan = Pelanggan::whereNull('deleted_at')
+                ->findOrFail($id);
+                $pelanggan->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'data-pelanggan',
+                    'type' => 'removed',
+                    'notif' => "{$pelanggan->nama}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
 
-            return response()->json([
-                'success' => true,
-                'message' => "Data pelanggan {$pelanggan->nama} has move to trash, please check trash"
-            ]);
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data pelanggan {$pelanggan->nama} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
         } catch (\Throwable $th) {
             throw $th;
         }

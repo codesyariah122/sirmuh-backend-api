@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Biaya};
+use App\Models\{Biaya,Roles};
+use Auth;
 
 class DataBiayaController extends Controller
 {
@@ -23,20 +24,33 @@ class DataBiayaController extends Controller
     public function index(Request $request)
     {
         $keywords = $request->query('keywords');
+        $kode = $request->query('kode');
+        $sort = $request->query('sort');
 
         if($keywords) {
             $biaya = Biaya::whereNull('deleted_at')
-            ->select('kode', 'nama')
+            ->select('id', 'kode', 'nama')
             ->where('nama', 'like', '%'.$keywords.'%')
             // ->orderByDesc('id', 'DESC')
             ->orderBy('nama', 'ASC')
             ->paginate(10);
-        } else {
-            $biaya =  Biaya::whereNull('deleted_at')
-            ->select('kode', 'nama')
-            // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
+        } elseif($kode) {
+            $biaya = Biaya::whereNull('deleted_at')
+            ->select('id','kode', 'nama')
+            ->where('kode', $kode)
             ->paginate(10);
+        } else {
+            if($sort === "by-id") {
+                $biaya = Biaya::whereNull('deleted_at')
+                 ->select('id','kode', 'nama')
+                 ->orderByDesc('id')
+                 ->paginate(10);
+               } else {            
+                $biaya =  Biaya::whereNull('deleted_at')
+                ->select('id','kode', 'nama')
+                ->orderBy('nama', 'ASC')
+                ->paginate(10);
+            }
         }
 
         return new ResponseDataCollect($biaya);
@@ -60,7 +74,61 @@ class DataBiayaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $kode = explode(' ', $request->nama);
+            $substringArray = [];
+
+            foreach ($kode as $i) {
+                $substringArray[] = substr($i, 0, 1);
+            }
+
+            $existing_biaya = Biaya::whereNama($request->nama)->first();
+
+            if($existing_biaya) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Biaya dengan nama {$existing_biaya->nama}, has already been taken✨!"
+                ]);
+            }
+
+            $new_biaya = new Biaya;
+            $new_biaya->kode = strtoupper(implode('', $substringArray));
+            $new_biaya->nama = $request->nama;
+            $new_biaya->saldo = $request->saldo;
+            $new_biaya->save();
+
+            if($new_biaya) {
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'biaya',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$new_biaya->nama}, baru saja ditambahkan 🤙!",
+                    'data' => $new_biaya->nama,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                $newDataBiaya = Biaya::findOrFail($new_biaya->id);
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pelanggan dengan nama {$newDataBiaya->nama}, successfully added✨!",
+                    'data' => $newDataBiaya
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -71,7 +139,18 @@ class DataBiayaController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $biaya = Biaya::whereNull('deleted_at')
+            ->select("id", "kode", "nama", "saldo")
+            ->findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'message' => "Detail data biaya {$biaya->nama}✨!",
+                'data' => $biaya
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -94,7 +173,55 @@ class DataBiayaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $new_biaya = Biaya::findOrFail($id);
+            if($request->nama) {
+                $kode = explode(' ', $request->nama);
+                $substringArray = [];
+
+                foreach ($kode as $i) {
+                    $substringArray[] = substr($i, 0, 1);
+                } 
+                $new_biaya->kode = strtoupper(implode('', $substringArray));
+            } else {
+                $new_biaya->kode = $newBiaya->kode;
+            }
+            $new_biaya->nama = $request->nama;
+            $new_biaya->saldo = $request->saldo;
+            $new_biaya->save();
+
+            if($new_biaya) {
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'biaya',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "{$new_biaya->nama}, berhasil diupdate 🤙!",
+                    'data' => $new_biaya->nama,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                $newDataBiaya = Biaya::findOrFail($new_biaya->id);
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pelanggan dengan nama {$newDataBiaya->nama}, successfully added✨!",
+                    'data' => $newDataBiaya
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -105,6 +232,37 @@ class DataBiayaController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+                
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "KASIR") { 
+                $biaya = Biaya::whereNull('deleted_at')
+                ->findOrFail($id);
+                $biaya->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'data-biaya',
+                    'type' => 'removed',
+                    'notif' => "biaya dengan nama {$biaya->nama}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data pbiaya {$biaya->nama} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

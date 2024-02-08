@@ -122,6 +122,11 @@ class RouteSelection {
 			'controllers' => [DataBiayaController::class, 'index']
 		],
 		[
+			'endPoint' => '/data-biaya',
+			'method' => 'resource',
+			'controllers' => DataBiayaController::class
+		],
+		[
 			'endPoint' => '/data-canvas',
 			'method' => 'get',
 			'controllers' => [DataCanvasController::class, 'index']
