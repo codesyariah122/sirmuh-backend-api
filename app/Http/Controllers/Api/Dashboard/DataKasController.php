@@ -213,7 +213,7 @@ class DataKasController extends Controller
             $kas->delete();
             $data_event = [
                 'alert' => 'error',
-                'routes' => 'karyawan',
+                'routes' => 'kas',
                 'type' => 'removed',
                 'notif' => "{$kas->nama}, has move to trash, please check trash!",
                 'user' => Auth::user()

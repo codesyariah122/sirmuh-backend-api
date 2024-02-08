@@ -60,6 +60,7 @@ class DataHutangController extends Controller
                     $query->whereBetween('hutang.tanggal', [$startDate, $endDate]);
                 }
             }
+
             $query->orderByDesc('hutang.id');
 
             $hutangs = $query->paginate(10);
@@ -155,6 +156,7 @@ class DataHutangController extends Controller
     public function update(Request $request, $id)
     {
         try {
+
             $validator = Validator::make($request->all(), [
                 'bayar' => 'required',
             ]);
@@ -196,6 +198,23 @@ class DataHutangController extends Controller
                 
                 $notifEvent = "Hutang dengan kode {$hutang->kode}, Lunas 🛒💸💰";
 
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) - $bayar;
+                $updateKas->save();
+
+                $userOnNotif = Auth::user();
+
+                $data_event = [
+                    'routes' => 'bayar-hutang',
+                    'alert' => 'success',
+                    'type' => 'update-data',
+                    'notif' => $notifEvent,
+                    'data' => $hutang->kode,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
                 return response()->json([
                     'success' => true,
                     'message' => "Hutang dengan kode {$hutang->kode}, Lunas 🛒💸💰",
@@ -232,29 +251,29 @@ class DataHutangController extends Controller
                 $updateHutang->save();
 
                 $notifEvent =  "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸";
-                return response()->json([
-                    'success' => true,
-                    'message' => "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸",
-                    'data' => $hutang
-                ], 200);
-            }
 
-            $updateKas = Kas::findOrFail($dataKas->id);
-            $updateKas->saldo = intval($dataKas->saldo) - $bayar;
-            $updateKas->save();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) - $bayar;
+                $updateKas->save();
 
-            $userOnNotif = Auth::user();
+                $userOnNotif = Auth::user();
 
-            $data_event = [
+                $data_event = [
                     'routes' => 'bayar-hutang',
                     'alert' => 'success',
                     'type' => 'update-data',
                     'notif' => $notifEvent,
                     'data' => $hutang->kode,
                     'user' => $userOnNotif
-            ];
+                ];
 
-            event(new EventNotification($data_event));
+                event(new EventNotification($data_event));
+                return response()->json([
+                    'success' => true,
+                    'message' => "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸",
+                    'data' => $hutang
+                ], 200);
+            }
 
         } catch (\Throwable $th) {
             throw $th;
