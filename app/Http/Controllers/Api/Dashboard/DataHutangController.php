@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
-use App\Models\{Toko, Hutang, Pembelian, ItemPembelian,PembayaranAngsuran};
+use App\Models\{Toko, Hutang, Pembelian, ItemPembelian,PembayaranAngsuran,Kas};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use Auth;
@@ -163,7 +163,7 @@ class DataHutangController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
-            
+
             $query =  Hutang::query()
             ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
@@ -178,6 +178,8 @@ class DataHutangController extends Controller
             $jmlHutang = intval($hutang->jumlah);
             $kasId = $request->kas_id;
 
+            $dataKas = Kas::findOrFail($hutang->kas_id);
+            
             if($bayar >= $jmlHutang) {
                 // delete hutang, update pembelian, itempembelian
                 $dataPembelian = Pembelian::whereKode($hutang->kode)->first();
@@ -237,9 +239,9 @@ class DataHutangController extends Controller
                 ], 200);
             }
 
-            $dataKas = Kas::findOrFail($hutang->kas_id);
-            $dataKas->saldo = intval($dataKas->saldo) - $bayar;
-            $dataKas->save();
+            $updateKas = Kas::findOrFail($dataKas->id);
+            $updateKas->saldo = intval($dataKas->saldo) - $bayar;
+            $updateKas->save();
 
             $userOnNotif = Auth::user();
 
