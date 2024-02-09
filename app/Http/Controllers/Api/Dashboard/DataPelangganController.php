@@ -177,7 +177,7 @@ class DataPelangganController extends Controller
     {
         try {
             $pelanggan = Pelanggan::whereNull('deleted_at')
-            ->select("id", "nama", "telp", "email", "alamat", "pekerjaan")
+            ->select("id", "nama", "telp", "email", "alamat", "pekerjaan", 'saldo_piutang', 'max_piutang')
             ->findOrFail($id);
             return response()->json([
                 'success' => true,
