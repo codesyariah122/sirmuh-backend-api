@@ -138,45 +138,48 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
-            if($data['hutang']) {
-                $newPembelian->lunas =false;
-                $newPembelian->visa = 'HUTANG';
-                $newPembelian->hutang = $data['hutang'];
-                $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
-                $newPembelian->receive = "True";
-                $newPembelian->jt = $data['jt'];
 
-                // Masuk ke hutang
-                $masuk_hutang = new Hutang;
-                $masuk_hutang->kode = $data['ref_code'];
-                $masuk_hutang->tanggal = $currentDate;
-                $masuk_hutang->supplier = $supplier->kode;
-                $masuk_hutang->jumlah = $data['hutang'];
-                $masuk_hutang->kode_kas = $newPembelian->kode_kas;
-                $masuk_hutang->operator = $data['operator'];
-                $masuk_hutang->save();
+            $newPembelian->lunas =false;
+            $newPembelian->visa = 'HUTANG';
+            $newPembelian->hutang = $data['hutang'];
+            $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+            $newPembelian->receive = "True";
+            $newPembelian->jt = $data['jt'];
 
-                $item_hutang = new ItemHutang;
-                $item_hutang->kode = $data['ref_code'];
-                $item_hutang->kode_hutang = $masuk_hutang->kode;
-                $item_hutang->tgl_hutang = $currentDate;
-                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
-                $item_hutang->jumlah = $masuk_hutang->jumlah;
-                $item_hutang->save();
-            } else {                
-                $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
-                $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-                $newPembelian->hutang = $data['hutang'];
-                $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
-                $newPembelian->receive = "True";
-                $newPembelian->jt = 0.00;
-            }
+            // Masuk ke hutang
+            $masuk_hutang = new Hutang;
+            $masuk_hutang->kode = $data['ref_code'];
+            $masuk_hutang->tanggal = $currentDate;
+            $masuk_hutang->supplier = $supplier->kode;
+            $masuk_hutang->jumlah = $data['hutang'];
+            $masuk_hutang->kode_kas = $newPembelian->kode_kas;
+            $masuk_hutang->operator = $data['operator'];
+            $masuk_hutang->save();
+
+            $item_hutang = new ItemHutang;
+            $item_hutang->kode = $data['ref_code'];
+            $item_hutang->kode_hutang = $masuk_hutang->kode;
+            $item_hutang->tgl_hutang = $currentDate;
+            $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
+            $item_hutang->jumlah = $masuk_hutang->jumlah;
+            $item_hutang->save();
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
+
+            $angsuran = new PembayaranAngsuran;
+            $angsuran->kode = $masuk_hutang->kode;
+            $angsuran->tanggal = $masuk_hutang->tanggal;
+            $angsuran->angsuran_ke = $angsuranKeBaru;
+            $angsuran->kode_pelanggan = NULL;
+            $angsuran->kode_faktur = NULL;
+            $angsuran->bayar_angsuran = $data['diterima'];
+            $angsuran->jumlah = $item_hutang->jumlah_hutang;
+            $angsuran->save();
             
             $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
+
             foreach($updateDrafts as $idx => $draft) {
                 $updateDrafts[$idx]->draft = 0;
                 $updateDrafts[$idx]->save();

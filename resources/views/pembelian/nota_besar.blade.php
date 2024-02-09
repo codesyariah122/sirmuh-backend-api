@@ -95,13 +95,24 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" class="text-right"><b>Total Harga</b></td>
+                <td colspan="6" class="text-right"><b>Total Bayar</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
             </tr>
+            
+            @if($pembelian->visa === 'HUTANG')
+            <tr>
+                <td colspan="6" class="text-right"><b>Bayar DP</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
+            </tr>
+            <tr>
+                <td colspan="6" class="text-right"><b>Hutang</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+            </tr>
+            @else
             <tr>
                 <td colspan="6" class="text-right"><b>Total Bayar</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
@@ -110,12 +121,6 @@
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>
-            @if($pembelian->visa === 'HUTANG')
-            <tr>
-                <td colspan="6" class="text-right"><b>Hutang</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
-            </tr>
-            @else
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</b></td>

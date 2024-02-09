@@ -94,7 +94,7 @@
         <p class="text-center">-----------------------------------</p>
         <table width="100%" style="border: 0;">
             <tr>
-                <td>Total Harga:</td>
+                <td>Total Bayar:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
             </tr>
             <tr>

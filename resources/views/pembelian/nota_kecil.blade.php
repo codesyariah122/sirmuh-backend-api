@@ -83,7 +83,7 @@
                 <td colspan="3">{{ $item->nama_barang }} - {{$item->kode_barang}}</td>
             </tr>
             <tr>
-                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->jumlah) }}</td>
+                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->harga_beli) }}</td>
                 <td></td>
                 <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_beli) }}</td>
             </tr>
@@ -92,7 +92,7 @@
         <p class="text-center">-----------------------------------</p>
         <table width="100%" style="border: 0;">
             <tr>
-                <td>Total Harga:</td>
+                <td>Total Bayar:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
             </tr>
             @if(count($barangs) > 0)
@@ -129,11 +129,11 @@
                 <td>Total Bayar:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
             </tr>
-            @endif
             <tr>
                 <td>Diterima:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diterima) }}</td>
             </tr>
+            @endif
             @if($pembelian->visa === 'HUTANG')
             <tr>
                 <td>Hutang:</td>
