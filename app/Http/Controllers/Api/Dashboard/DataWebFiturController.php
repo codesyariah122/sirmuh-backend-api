@@ -1158,14 +1158,23 @@ class DataWebFiturController extends Controller
         try {
             $draft = $request->draft;
             $kode = $request->kode;
+            $kd_barang = $request->kd_barang;
+            $supplierId;
             $barangs = $request->barangs;
+
+            foreach($barangs as $barang) {
+                $supplierId = $barang['supplier_id'];
+            }
+
             $lastItemPembelianId = NULL;
+       
+            $supplier = Supplier::findOrFail($supplierId);
+
                 if($draft) {
                     foreach($barangs as $barang) {
-                        $dataBarang = Barang::whereKode($barang['kode'])->firstOrFail();
+                        $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
                         // Update Barang
-                        $existingItem = ItemPembelian::where('kode', $kode)
-                        ->where('kode_barang', $dataBarang->kode)
+                        $existingItem = ItemPembelian::where('kode_barang', $dataBarang->kode)
                         ->where('draft', 1)
                         ->first();
                         if ($existingItem) {
@@ -1173,7 +1182,6 @@ class DataWebFiturController extends Controller
                             $existingItem->qty = intval($barang['qty']);
                             $existingItem->harga_beli = intval($barang['harga_beli']);
                             $existingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
-
                             // Update atribut lainnya sesuai kebutuhan
                             $existingItem->save();
                             $lastItemPembelianId = $existingItem->id;
@@ -1183,6 +1191,7 @@ class DataWebFiturController extends Controller
                             $draftItemPembelian->draft = $draft;
                             $draftItemPembelian->kode_barang = $dataBarang->kode;
                             $draftItemPembelian->nama_barang = $dataBarang->nama;
+                            $draftItemPembelian->supplier = $supplier->kode;
                             $draftItemPembelian->satuan = $dataBarang->satuan;
                             $draftItemPembelian->qty = $barang['qty'];
                             $draftItemPembelian->isi = $dataBarang->isi;
@@ -1218,10 +1227,68 @@ class DataWebFiturController extends Controller
                         'itempembelian_id' => $lastItemPembelianId
                     ], 200);
                 } else {
-                       return response()->json([
+                    foreach($barangs as $barang) {
+                        $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
+                        // Update Barang
+
+                        $existingItem = ItemPembelian::where('kode_barang', $dataBarang->kode)
+                        ->where('draft', 1)
+                        ->first();
+                        
+                        // echo "<pre>";
+                        // var_dump($existingItem); 
+                        // echo "</pre>";
+                        // die;
+
+                        if ($existingItem) {
+                            $updateExistingItem = ItemPembelian::findOrFail($existingItem->id);
+                            // Jika sudah ada, update informasi yang diperlukan
+                            $updateExistingItem->qty = intval($barang['qty']);
+                            $updateExistingItem->harga_beli = intval($barang['harga_beli']);
+                            $updateExistingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
+                            // Update atribut lainnya sesuai kebutuhan
+                            $updateExistingItem->save();
+                            $lastItemPembelianId = $updateExistingItem->id;
+                        } else {
+                            $draftItemPembelian = new ItemPembelian;
+                            $draftItemPembelian->kode = $kode;
+                            $draftItemPembelian->draft = 1;
+                            $draftItemPembelian->kode_barang = $dataBarang->kode;
+                            $draftItemPembelian->nama_barang = $dataBarang->nama;
+                            $draftItemPembelian->supplier = $supplier->kode;
+                            $draftItemPembelian->satuan = $dataBarang->satuan;
+                            $draftItemPembelian->qty = $barang['qty'];
+                            $draftItemPembelian->isi = $dataBarang->isi;
+                            $draftItemPembelian->nourut = $barang['nourut'];
+                            $draftItemPembelian->harga_beli = $barang['harga_beli'] ?? $dataBarang->hpp;
+                            $draftItemPembelian->harga_toko = $dataBarang->harga_toko;
+                            $draftItemPembelian->harga_cabang = $dataBarang->harga_cabang;
+                            $draftItemPembelian->harga_partai = $dataBarang->harga_partai;
+                            $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
+                            $draftItemPembelian->isi = $dataBarang->isi;
+
+                            if($barang['diskon']) {
+                                $total = $dataBarang->hpp * $barang['qty'];
+                                $diskonAmount = $barang['diskon'] / 100 * $total;
+                                $totalSetelahDiskon = $total - $diskonAmount;
+                                $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
+                            }
+                                // if($barang['ppn']) {
+                                //     $total = $dataBarang->hpp * $barang['qty'];
+                                //     $ppnAmount = $barang['ppn'] / 100 * $total;
+                                //     $totalSetelahPpn = $total - $diskonAmount;
+                                //     $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
+                                // }
+
+                            $draftItemPembelian->save();
+                            $lastItemPembelianId = $draftItemPembelian->id;
+                        }
+                    }
+                    return response()->json([
                         'failed' => true,
-                        'message' => 'Draft item pembelian has no success updated!',
-                        'data' => $kode
+                        'message' => 'Draft item pembelian successfully updated!',
+                        'data' => $kode,
+                        'itempembelian_id' => $lastItemPembelianId
                     ], 203);
                 }
 
@@ -1240,18 +1307,21 @@ class DataWebFiturController extends Controller
                     'itempembelian.nourut',
                     'itempembelian.kode_barang',
                     'itempembelian.nama_barang',
+                    'itempembelian.supplier',
                     'itempembelian.satuan',
                     'itempembelian.qty',
                     'itempembelian.harga_beli',
                     'itempembelian.harga_toko',
                     'itempembelian.diskon',
                     'itempembelian.subtotal',
-                    'itempembelian.expired',
-                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp', 'barang.toko'
+                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp', 'barang.toko','barang.ada_expired_date', 'barang.expired',
+                    'supplier.id as id_supplier'
                 )
+                ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
                 ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
                 ->where('itempembelian.draft', 1)
                 ->where('itempembelian.kode', $kode)
+                ->orderByDesc('itempembelian.id')
                 ->get();
 
                 return new ResponseDataCollect($listDrafts);

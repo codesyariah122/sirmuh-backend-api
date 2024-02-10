@@ -41,11 +41,8 @@ class DataHutangController extends Controller
             $startDate = $request->query("start_date");
             $endDate = $request->query("end_date");
 
-            $query = Hutang::select('hutang.*', 'pembelian.jt as jatuh_tempo', 'pembelian.jumlah as jumlah_pembelian', 'pembelian.bayar', 'pembelian.diterima','pembelian.lunas','pembelian.visa','pembelian.hutang', 'itempembelian.id as itempembelian_id', 'itempembelian.kode as itempembelian_kode', 'itempembelian.qty', 'itempembelian.subtotal','itempembelian.satuan','supplier.nama as nama_supplier', 'barang.kode as kode_barang', 'barang.nama as barang_nama', 'barang.hpp as barang_harga_beli')
-            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            $query = Hutang::select('hutang.id','hutang.kode', 'hutang.tanggal', 'hutang.jumlah', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian','pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas')
+            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
             ->where('pembelian.jt', '>', 0);
 
             if ($keywords) {

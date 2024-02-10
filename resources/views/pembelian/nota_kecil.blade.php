@@ -69,9 +69,9 @@
         <br/>
         <p>No : {{ $pembelian->kode }}</p>
         <p>Tgl Transaksi : {{ $pembelian->tanggal }}</p>
-        <p>Supplier : {{ $pembelian->nama_supplier }}</p>
+       {{--  <p>Supplier : {{ $pembelian->nama_supplier }}</p>
         <p>Kode Supplier : {{$pembelian->supplier}}</p>
-        <p>Alamat Supplier : {{ $pembelian->alamat_supplier }}</p>
+        <p>Alamat Supplier : {{ $pembelian->alamat_supplier }}</p> --}}
         <p>Operator : {{ strtoupper($pembelian->operator) }}</p>
         @if($pembelian->visa === 'HUTANG')
         <p>Pembayaran : {{$pembelian->visa}}</p>
@@ -80,12 +80,21 @@
          <table width="100%" style="border: 0;">
         @foreach ($barangs as $item)
             <tr>
+                <td colspan="3">({{$pembelian->nama_supplier}}/{{$pembelian->supplier}})</td>
+            </tr>
+            <tr>
                 <td colspan="3">{{ $item->nama_barang }} - {{$item->kode_barang}}</td>
             </tr>
             <tr>
                 <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->harga_beli) }}</td>
                 <td></td>
                 <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_beli) }}</td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
+            </tr>
+            <tr>
+                <td colspan="3"></td>
             </tr>
         @endforeach
     </table>
@@ -95,7 +104,7 @@
                 <td>Total Bayar:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
             </tr>
-            @if(count($barangs) > 0)
+            {{-- @if(count($barangs) > 0)
                 <tr>
                     <td>Total Item:</td>
                     <td>
@@ -114,7 +123,7 @@
                        {{round($pembelian->qty)}}
                     </td>
                 </tr>
-            @endif
+            @endif --}}
             <tr>
                 <td>Diskon:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>

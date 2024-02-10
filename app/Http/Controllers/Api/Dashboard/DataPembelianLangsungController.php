@@ -53,16 +53,7 @@ class DataPembelianLangsungController extends Controller
             $query = Pembelian::query()
             ->select(
                 'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
-                'itempembelian.kode','itempembelian.qty','itempembelian.satuan','itempembelian.subtotal','itempembelian.harga_setelah_diskon',
-                'supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang'
             )
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-            ->orderByDesc('pembelian.id')
             ->limit(10);
 
             if ($keywords) {
@@ -119,6 +110,10 @@ class DataPembelianLangsungController extends Controller
             }
 
             $data = $request->all();
+            // echo "<pre>";
+            // var_dump($data); die;
+            // echo "</pre>";
+
             $barangs = $data['barangs'];
             
             $dataBarangs = json_decode($barangs, true);
@@ -153,11 +148,13 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
             $newPembelian->draft = $data['draft'] ? 1 : 0;
-            $newPembelian->supplier = $supplier->kode;
+            // $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
+
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
+
             if($data['hutang']) {
                 $newPembelian->lunas =false;
                 $newPembelian->visa = 'HUTANG';
@@ -280,7 +277,7 @@ class DataPembelianLangsungController extends Controller
             'barang.satuan as satuan_barang'
         )
         ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-        ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+        ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
         ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
         ->orderByDesc('pembelian.id')
             // ->whereDate('pembelian.tanggal', '=', $today)
@@ -312,28 +309,33 @@ class DataPembelianLangsungController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($kode)
+    public function show($id)
     {
         try {
-            $today = now()->toDateString();
-
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.*',
-                'itempembelian.*',
-                'supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po',
+                'supplier.id as id_supplier','supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
             )
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
+            ->where('pembelian.id', $id)
+            ->where('pembelian.po', 'False')
+            ->first();
+
+            $items = ItemPembelian::query()
+            ->select('itempembelian.*', 'barang.kode', 'barang.nama')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-            ->orderByDesc('pembelian.id')
-            ->whereDate('pembelian.tanggal', '=', $today)
-            ->where('pembelian.kode', $kode)
+            ->where('itempembelian.kode', $pembelian->kode)
             ->get();
-            return new RequestDataCollect($pembelian);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Detail pembelian {$pembelian->kode}",
+                'data' => $pembelian,
+                'items' => $items
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

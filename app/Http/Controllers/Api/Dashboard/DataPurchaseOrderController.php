@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran};
 use Auth;
 use PDF;
 
@@ -34,16 +34,7 @@ class DataPurchaseOrderController extends Controller
             $query = Pembelian::query()
             ->select(
                 'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
-                'itempembelian.kode','itempembelian.qty','itempembelian.satuan','itempembelian.subtotal','itempembelian.harga_setelah_diskon',
-                'supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang'
             )
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-            ->orderByDesc('pembelian.id')
             ->limit(10);
 
             if ($keywords) {
@@ -145,6 +136,9 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
             $newPembelian->receive = "True";
             $newPembelian->jt = $data['jt'];
+            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
+            $newPembelian->operator = $data['operator'];
+            $newPembelian->save();
 
             // Masuk ke hutang
             $masuk_hutang = new Hutang;
@@ -163,10 +157,12 @@ class DataPurchaseOrderController extends Controller
             $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
             $item_hutang->jumlah = $masuk_hutang->jumlah;
             $item_hutang->save();
-            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
-            $newPembelian->operator = $data['operator'];
 
-            $newPembelian->save();
+            $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
+                ->orderBy('angsuran_ke', 'desc')
+                ->first();
+
+                $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
 
             $angsuran = new PembayaranAngsuran;
             $angsuran->kode = $masuk_hutang->kode;
@@ -231,7 +227,34 @@ class DataPurchaseOrderController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $pembelian = Pembelian::query()
+            ->select(
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po',
+                'supplier.id as id_supplier','supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
+            )
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
+            ->where('pembelian.id', $id)
+            ->where('pembelian.po', 'True')
+            ->first();
+
+            $items = ItemPembelian::query()
+            ->select('itempembelian.*', 'barang.kode', 'barang.nama')
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->where('itempembelian.kode', $pembelian->kode)
+            ->get();
+            
+            return response()->json([
+                'success' => true,
+                'message' => "Detail pembelian {$pembelian->kode}",
+                'data' => $pembelian,
+                'items' => $items
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

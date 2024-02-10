@@ -436,7 +436,7 @@ class DataBarangController extends Controller
                 // ->with('kategoris')
                 // ->firstOrFail();
                 $dataBarang = Barang::where('barang.id', $id)
-                ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+                ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian','supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                 ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
                 ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                 ->where('itempembelian.draft','=', 1)
@@ -444,25 +444,35 @@ class DataBarangController extends Controller
                 ->limit(1)
                 ->first();
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Detail data barang {$dataBarang->nama}",
-                    'data' => $dataBarang
-                ]);
-            } catch (\Throwable $th) {
-                $dataBarang = Barang::where('id', $id)
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->with(['suppliers' => function($query) {
-                    $query->select('kode', 'nama');
-                }])
-                ->with('kategoris')
-                ->firstOrFail();
+                if($dataBarang === NULL) {
+                    $dataBarang = Barang::where('barang.id', $id)
+                    ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+                    ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
+                    ->whereNull('barang.deleted_at')
+                    ->first();
+                }
 
                 return response()->json([
                     'success' => true,
                     'message' => "Detail data barang {$dataBarang->nama}",
                     'data' => $dataBarang
                 ]);
+            } catch (\Throwable $th) {
+                // $dataBarang = Barang::where('id', $id)
+                // ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                // ->with(['suppliers' => function($query) {
+                //     $query->select('kode', 'nama');
+                // }])
+                // ->with('kategoris')
+                // ->firstOrFail();
+
+                // return response()->json([
+                //     'success' => true,
+                //     'message' => "Detail data barang {$dataBarang->nama}, dari catch!!",
+                //     'data' => $dataBarang
+                // ]);
+
+                throw $th;
             }
         }
 
