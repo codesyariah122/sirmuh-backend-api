@@ -61,11 +61,7 @@ class DataHutangController extends Controller
 
             $hutangs = $query->paginate(10);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'List data hutang',
-                'data' => $hutangs
-            ], 200);
+            return new ResponseDataCollect($hutangs);
 
         } catch (\Throwable $th) {
             throw $th;
@@ -112,7 +108,7 @@ class DataHutangController extends Controller
     {
         try {
             $query =  Hutang::query()
-            ->select('hutang.*', 'itemhutang.jumlah_hutang', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->select('hutang.*', 'itemhutang.jumlah_hutang', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas','supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli','itempembelian.subtotal','barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
             ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')

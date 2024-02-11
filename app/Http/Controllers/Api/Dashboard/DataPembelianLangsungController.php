@@ -314,20 +314,19 @@ class DataPembelianLangsungController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po',
-                'supplier.id as id_supplier','supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
             )
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->where('pembelian.id', $id)
             ->where('pembelian.po', 'False')
             ->first();
 
             $items = ItemPembelian::query()
-            ->select('itempembelian.*', 'barang.kode', 'barang.nama')
+            ->select('itempembelian.*', 'barang.kode', 'barang.nama', 'barang.hpp as harga_beli_barang', 'supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
+            ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
             ->where('itempembelian.kode', $pembelian->kode)
+            ->orderByDesc('itempembelian.id')
             ->get();
 
             return response()->json([
