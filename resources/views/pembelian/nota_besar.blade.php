@@ -103,10 +103,6 @@
             </tr>
             @else
             <tr>
-                <td colspan="7" class="text-right"><b>Total Bayar</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
-            </tr>
-            <tr>
                 <td colspan="7" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>

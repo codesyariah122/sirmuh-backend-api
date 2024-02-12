@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ItemPembelian extends Model
+class Histori extends Model
 {
-	use HasFactory;
-	use SoftDeletes;
-	
-	public $table = 'itempembelian';
+    use HasFactory;
+    use SoftDeletes;
+
+    protected $table = 'histori';
+
 }

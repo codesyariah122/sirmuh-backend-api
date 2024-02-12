@@ -1092,6 +1092,21 @@ class DataWebFiturController extends Controller
         return new ResponseDataCollect($data);
     }
 
+    public function generate_terbilang(Request $request)
+    {
+        try {
+            $jml = $request->query('jml');
+            $terbilang = ucwords($this->helpers->terbilang($jml). " Rupiah");
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil nilai terbilang rupiah',
+                'data' => $terbilang
+            ]);
+        } catch(\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function loadFormPenjualan($diskon = 0, $total = 0, $bayar = 0)
     {
         $diterima   = $total - ($diskon / 100 * $total);

@@ -13,10 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('faktur_terakhir', function (Blueprint $table) {
+        Schema::table('histori', function (Blueprint $table) {
             $table->id()->first();
-            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
+            $table->timestamp('deleted_at')->nullable();
         });
     }
 
@@ -27,7 +27,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('faktur_terakhir', function (Blueprint $table) {
+        Schema::table('histori', function (Blueprint $table) {
+            $table->dropColumn('id');
             $table->dropColumn('deleted_at');
         });
     }

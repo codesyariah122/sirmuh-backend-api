@@ -394,6 +394,11 @@ class RouteSelection {
 			'method' => 'post',
 			'controllers' => [DataWebFiturController::class, 'update_stok_barang']
 		],
+		[
+			'endPoint' => '/generate-terbilang',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'generate_terbilang']
+		],
 		// ItemPembelian
 		[
 			'endPoint' => '/update-item-pembelian',
