@@ -147,7 +147,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-            $newPembelian->draft = $data['draft'] ? 1 : 0;
+            $newPembelian->draft = 0;
             // $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
 
@@ -360,7 +360,75 @@ class DataPembelianLangsungController extends Controller
      */
     public function update(Request $request, $id)
     {
+        try {
+            $data = $request->all();
+
+            $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
+            $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+
+            $updatePembelian = Pembelian::findOrFail($id);
+
+            $kas = Kas::whereKode($data['kode_kas'])->first();
         
+            if(intval($kas->saldo) < $diterima) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Saldo tidak mencukupi!!"
+                ]);
+            }
+
+            $updatePembelian->draft = 0;
+            $updatePembelian->kode_kas = $kas->kode;
+            $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
+            $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
+            $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
+            if($diterima > $updatePembelian->jumlah) {
+                $updatePembelian->lunas = 1;
+                $updatePembelian->visa = "LUNAS";
+            } else if($diterima == $updatePembelian->jumlah) {
+                $updatePembelian->lunas = 1;
+                $updatePembelian->visa = "UANG PAS";
+            } else {
+                $updatePembelian->lunas = 0;
+                $updatePembelian->visa = "HUTANG";
+            }
+
+            $updatePembelian->save();
+
+            if($updatePembelian) {
+                $userOnNotif = Auth::user();
+
+                $updatePembelianSaved =  Pembelian::query()
+                ->select(
+                    'pembelian.*',
+                    'itempembelian.*',
+                    'supplier.nama as nama_supplier',
+                    'supplier.alamat as alamat_supplier'
+                )
+                ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+                ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+                ->where('pembelian.id', $updatePembelian->id)
+                ->first();
+
+                $data_event = [
+                    'routes' => 'pembelian-langsung',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
+                    'data' => $updatePembelian->kode,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data pembelian , berhasil diupdate 👏🏿"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

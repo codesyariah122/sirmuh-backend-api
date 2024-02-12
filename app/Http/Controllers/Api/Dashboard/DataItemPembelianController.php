@@ -78,12 +78,60 @@ class DataItemPembelianController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $dataPembelian = Pembelian::findOrFail($id);
-            $dataItemPembelian = ItemPembelian::whereKode($dataPembelian->kode)->get();
+            $itemId = $request->item_id;
 
-            foreach($dataItemPembelian as $itemPembelian) {
-                var_dump($itemPembelian->subtotal);
+            $dataPembelian = Pembelian::findOrFail($id);
+
+            $updateItemPembelian = ItemPembelian::findOrFail($itemId);
+
+            $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)->first();
+
+            $stokBarangUpdate = Barang::findOrFail($dataBarang->id);
+
+            if($request->qty) {
+                $updateItemPembelian->qty = intval($request->qty);
+                $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
+
+                $stokBarangUpdate->toko = $dataBarang->toko + $request->qty;
             }
+
+            if($request->harga_beli) {
+                $updateItemPembelian->harga_beli = intval($request->harga_beli);
+                $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga_beli);
+
+                $stokBarangUpdate->hpp = $request->harga_beli;
+            }
+
+            $updateItemPembelian->save();
+            
+            $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
+
+            $totalSubtotal = $dataItemPembelian->sum('subtotal');
+
+            $stokBarangUpdate->save();
+
+            $dataPembelian->jumlah = $totalSubtotal;
+            $dataPembelian->bayar = $totalSubtotal;
+            $dataPembelian->diterima = $totalSubtotal;
+            $dataPembelian->save();
+
+            $data_event = [
+                'type' => 'updated',
+                'routes' => 'pembelian-langsung-edit',
+                'notif' => "Update itempembelian, successfully update!"
+            ];
+
+            event(new EventNotification($data_event));
+
+            $newUpdateItem = ItemPembelian::findOrFail($itemId);
+            $newDataPembelian = Pembelian::findOrFail($dataPembelian->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item pembelian update!',
+                'data' => $newDataPembelian,
+                'items' => $newUpdateItem
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
