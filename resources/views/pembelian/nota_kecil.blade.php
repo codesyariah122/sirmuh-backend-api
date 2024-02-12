@@ -135,10 +135,6 @@
             </tr>
             @else
             <tr>
-                <td>Total Bayar:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
-            </tr>
-            <tr>
                 <td>Diterima:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diterima) }}</td>
             </tr>

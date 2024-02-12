@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas, Hutang, ItemHutang, PembayaranAngsuran};
 use Auth;
 
 class DataItemPembelianController extends Controller
@@ -77,7 +77,16 @@ class DataItemPembelianController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $dataPembelian = Pembelian::findOrFail($id);
+            $dataItemPembelian = ItemPembelian::whereKode($dataPembelian->kode)->get();
+
+            foreach($dataItemPembelian as $itemPembelian) {
+                var_dump($itemPembelian->subtotal);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
