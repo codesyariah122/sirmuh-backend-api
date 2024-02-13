@@ -395,6 +395,10 @@ class DataPembelianLangsungController extends Controller
 
             $updatePembelian->save();
 
+            $updateKas = Kas::findOrFail($kas->id);
+            $updateKas->saldo = intval($dataKas->saldo) - intval($updatePembelian->diterima);
+            $updateKas->save();
+
             if($updatePembelian) {
                 $userOnNotif = Auth::user();
 

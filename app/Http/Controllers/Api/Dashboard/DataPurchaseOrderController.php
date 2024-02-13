@@ -230,7 +230,7 @@ class DataPurchaseOrderController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->where('pembelian.id', $id)
@@ -238,7 +238,7 @@ class DataPurchaseOrderController extends Controller
             ->first();
 
             $items = ItemPembelian::query()
-            ->select('itempembelian.*', 'barang.kode', 'barang.nama', 'barang.hpp as harga_beli_barang', 'supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
+            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang', 'barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
             ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
             ->where('itempembelian.kode', $pembelian->kode)
@@ -276,7 +276,81 @@ class DataPurchaseOrderController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $data = $request->all();
+
+            $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
+            $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+            $hutang = $data['hutang'];
+
+            $updatePembelian = Pembelian::findOrFail($id);
+
+            $kas = Kas::whereKode($data['kode_kas'])->first();
+        
+            if(intval($kas->saldo) < $diterima) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Saldo tidak mencukupi!!"
+                ]);
+            }
+
+            $updatePembelian->draft = 0;
+            $updatePembelian->kode_kas = $kas->kode;
+            $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
+            $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
+            $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
+            if($diterima > $updatePembelian->jumlah) {
+                $updatePembelian->lunas = 1;
+                $updatePembelian->visa = "LUNAS";
+            } else if($diterima == $updatePembelian->jumlah) {
+                $updatePembelian->lunas = 1;
+                $updatePembelian->visa = "UANG PAS";
+            } else {
+                $updatePembelian->lunas = 0;
+                $updatePembelian->visa = "HUTANG";
+                $updatePembelian->hutang = $hutang;
+            }
+
+            $updatePembelian->save();
+
+            $updateKas = Kas::findOrFail($kas->id);
+            $updateKas->saldo = intval($kas->saldo) + intval($updatePembelian->diterima);
+            $updateKas->save();
+
+            if($updatePembelian) {
+                $userOnNotif = Auth::user();
+
+                $updatePembelianSaved =  Pembelian::query()
+                ->select(
+                    'pembelian.*',
+                    'itempembelian.*',
+                    'supplier.nama as nama_supplier',
+                    'supplier.alamat as alamat_supplier'
+                )
+                ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+                ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+                ->where('pembelian.id', $updatePembelian->id)
+                ->first();
+
+                $data_event = [
+                    'routes' => 'pembelian-langsung',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
+                    'data' => $updatePembelian->kode,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data pembelian , berhasil diupdate 👏🏿"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
