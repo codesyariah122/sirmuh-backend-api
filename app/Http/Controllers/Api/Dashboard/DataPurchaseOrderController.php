@@ -309,6 +309,23 @@ class DataPurchaseOrderController extends Controller
                 $updatePembelian->lunas = 0;
                 $updatePembelian->visa = "HUTANG";
                 $updatePembelian->hutang = $hutang;
+
+                $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
+                $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
+                $updateHutang = Hutang::findOrFail($dataHutang->id);
+                $updateHutang->jumlah = $updatePembelian->hutang;
+                $updateHutang->save();
+                $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
+                $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
+                $updateItemHutang->jumlah = $updatePembelian->hutang;
+                $updateItemHutang->save();
+                $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
+                ->where('angsuran_ke', 1)
+                ->first();
+                $updateAngsuran = PembayaranAngsuran::findOrFail($dataPembayaranAngsuran->id);
+                $updateAngsuran->bayar_angsuran = $updatePembelian->diterima;
+                $updateAngsuran->jumlah = $updatePembelian->hutang;
+                $updateAngsuran->save();
             }
 
             $updatePembelian->save();
