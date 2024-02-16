@@ -49,7 +49,7 @@
         </tr>
         <tr>
             <td>Type</td>
-            <td>: Penjualan Toko</td>
+            <td>: {{$penjualan->po == "True" ? "Penjualan P.O" : "Penjualan Toko"}}</td>
         <tr>
             <td>
                 Pelanggan
@@ -92,7 +92,7 @@
                 <td class="text-center">{{ $key+1 }}</td>
                 <td class="text-center">{{ $item->kode }}</td>
                 <td class="text-center">{{ $item->kode_kas }}</td>
-                <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->hpp) }}</td>
+                <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
                 <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->diskon }}%</td>
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>

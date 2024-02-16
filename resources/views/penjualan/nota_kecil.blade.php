@@ -59,7 +59,7 @@
 
         <div class="clear-both" style="clear: both;"></div>
         <p>No: {{ $penjualan->kode }}</p>
-        <p>Type: Penjualan Toko</p>
+        <p>Type: {{$penjualan->po == "True" ? 'Penjualan P.O' : 'Penjualan Toko'}}</p>
         <p class="text-center">===================================</p>
         <p>
             <img src="{{  Storage::url('tokos/' . $toko['logo']) }}" width="70">
@@ -70,7 +70,6 @@
         <p>No : {{ $penjualan->kode }}</p>
         <p>Tgl Transaksi : {{ $penjualan->tanggal }}</p>
         <p>Pelanggan : {{ $penjualan->pelanggan_nama }}</p>
-        <p>Kode pelanggan : {{$penjualan->pelanggan}}</p>
         <p>
             <address>
                 {{ $penjualan->alamat_supplier }}
@@ -82,7 +81,7 @@
          <table width="100%" style="border: 0;">
         @foreach ($barangs as $item)
             <tr>
-                <td colspan="3">{{ $item->nama_barang }}</td>
+                <td colspan="3">{{ $item->nama_barang }} - ({{$item->kode_barang}}|{{$item->supplier}})</td>
             </tr>
             <tr>
                 <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->harga_toko) }}</td>
@@ -91,7 +90,7 @@
             </tr>
         @endforeach
     </table>
-        <p class="text-center">-----------------------------------</p>
+        <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
             <tr>
                 <td>Total Harga:</td>
@@ -99,7 +98,14 @@
             </tr>
             <tr>
                 <td>Total Item:</td>
-                <td class="text-right">{{ round($penjualan->qty) }}</td>
+                <td>
+                    @foreach ($barangs as $item)
+                    <tr>
+                        <td>{{ $item->nama_barang }} : </td>
+                        <td>{{ round($item->qty)." ".$item->satuan }}</td>
+                    </tr>
+                    @endforeach
+                </td>
             </tr>
             <tr>
                 <td>Diskon:</td>
@@ -109,6 +115,10 @@
             <tr>
                 <td>Total Bayar:</td>
                 <td class="text-right">{{$item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
+            </tr>
+            <tr>
+                <td>Diterima : </td>
+                <td class="text-right">{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar)}}</td>
             </tr>
             @else
             <tr>

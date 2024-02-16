@@ -90,6 +90,10 @@ class DataPurchaseOrderController extends Controller
             }
 
             $data = $request->all();
+            // echo "<pre>";
+            // var_dump($data); die;
+            // echo "</pre>";
+
             $barangs = $data['barangs'];
             
             $dataBarangs = json_decode($barangs, true);
@@ -120,62 +124,86 @@ class DataPurchaseOrderController extends Controller
                 ]);
             }
 
+            $dataItemPembelian = ItemPembelian::whereKode($data['ref_code'])->first();
+            $subtotal = intval($dataItemPembelian->subtotal);
+
             $newPembelian = new Pembelian;
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
-            $newPembelian->draft = $data['draft'] ? 1 : 0;
-            $newPembelian->supplier = $supplier->kode;
+            $newPembelian->draft = 0;
+            // $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
+
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
 
-            $newPembelian->lunas =false;
-            $newPembelian->visa = 'HUTANG';
-            $newPembelian->hutang = $data['hutang'];
-            $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
-            $newPembelian->receive = "True";
-            $newPembelian->jt = $data['jt'];
-            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
-            $newPembelian->operator = $data['operator'];
-            $newPembelian->save();
+            // echo "<pre>";
+            // var_dump($data['masuk_hutang']); 
+            // echo "</pre>";
+            // die;
 
-            // Masuk ke hutang
-            $masuk_hutang = new Hutang;
-            $masuk_hutang->kode = $data['ref_code'];
-            $masuk_hutang->tanggal = $currentDate;
-            $masuk_hutang->supplier = $supplier->kode;
-            $masuk_hutang->jumlah = $data['hutang'];
-            $masuk_hutang->kode_kas = $newPembelian->kode_kas;
-            $masuk_hutang->operator = $data['operator'];
-            $masuk_hutang->save();
+            if($data['pembayaran'] !== "cash") {
+                $newPembelian->lunas = "False";
+                $newPembelian->visa = 'HUTANG';
+                $newPembelian->hutang = $data['hutang'];
+                $newPembelian->po = 'True';
+                $newPembelian->receive = "False";
+                $newPembelian->jt = $data['jt'];
 
-            $item_hutang = new ItemHutang;
-            $item_hutang->kode = $data['ref_code'];
-            $item_hutang->kode_hutang = $masuk_hutang->kode;
-            $item_hutang->tgl_hutang = $currentDate;
-            $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
-            $item_hutang->jumlah = $masuk_hutang->jumlah;
-            $item_hutang->save();
+                // Masuk ke hutang
+                $masuk_hutang = new Hutang;
+                $masuk_hutang->kode = $data['ref_code'];
+                $masuk_hutang->tanggal = $currentDate;
+                $masuk_hutang->supplier = $supplier->kode;
+                $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->kode_kas = $newPembelian->kode_kas;
+                $masuk_hutang->operator = $data['operator'];
+                $masuk_hutang->save();
 
-            $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
+                $item_hutang = new ItemHutang;
+                $item_hutang->kode = $data['ref_code'];
+                $item_hutang->kode_hutang = $masuk_hutang->kode;
+                $item_hutang->tgl_hutang = $currentDate;
+                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
+                $item_hutang->jumlah = $masuk_hutang->jumlah;
+                $item_hutang->save();
+
+                $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
                 ->orderBy('angsuran_ke', 'desc')
                 ->first();
 
                 $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
 
-            $angsuran = new PembayaranAngsuran;
-            $angsuran->kode = $masuk_hutang->kode;
-            $angsuran->tanggal = $masuk_hutang->tanggal;
-            $angsuran->angsuran_ke = $angsuranKeBaru;
-            $angsuran->kode_pelanggan = NULL;
-            $angsuran->kode_faktur = NULL;
-            $angsuran->bayar_angsuran = $data['diterima'];
-            $angsuran->jumlah = $item_hutang->jumlah_hutang;
-            $angsuran->save();
+                $angsuran = new PembayaranAngsuran;
+                $angsuran->kode = $masuk_hutang->kode;
+                $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->angsuran_ke = $angsuranKeBaru;
+                $angsuran->kode_pelanggan = NULL;
+                $angsuran->kode_faktur = NULL;
+                $angsuran->bayar_angsuran = $data['diterima'];
+                $angsuran->jumlah = $item_hutang->jumlah_hutang;
+                $angsuran->save();
+            } else {
+                $newPembelian->lunas = "True";
+                if(intval($data['bayar']) > $subtotal) {
+                    $newPembelian->visa = "LUNAS";
+                } else if(intval($data['bayar']) === $subtotal) {
+                    $newPembelian->visa = "UANG PAS";
+                } else {
+                    $newPembelian->visa = NULL;
+                }
+                $newPembelian->hutang = $data['hutang'];
+                $newPembelian->po = 'True';
+                $newPembelian->receive = "False";
+                $newPembelian->jt = $data['jt'];
+            }
+            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
+            $newPembelian->operator = $data['operator'];
+
+            $newPembelian->save();
             
             $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
-
             foreach($updateDrafts as $idx => $draft) {
                 $updateDrafts[$idx]->draft = 0;
                 $updateDrafts[$idx]->save();
@@ -238,7 +266,7 @@ class DataPurchaseOrderController extends Controller
             ->first();
 
             $items = ItemPembelian::query()
-            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang', 'barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
+            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang','barang.toko as stok_barang','barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
             ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
             ->where('itempembelian.kode', $pembelian->kode)
@@ -300,13 +328,13 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
             $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
             if($diterima > $updatePembelian->jumlah) {
-                $updatePembelian->lunas = 1;
+                $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
             } else if($diterima == $updatePembelian->jumlah) {
-                $updatePembelian->lunas = 1;
+                $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "UANG PAS";
             } else {
-                $updatePembelian->lunas = 0;
+                $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
                 $updatePembelian->hutang = $hutang;
 

@@ -61,7 +61,7 @@
        @endphp --}}
         <div class="clear-both" style="clear: both;"></div>
         <p>No: {{ $hutang->kode }}</p>
-        <p>Type: {{$hutang->po === 'True' ? "Purchase Order" : "Pembelian Langsung"}}</p>
+        <p>Type: {{$hutang->po === 'True' ? "Pembelian P.O" : "Pembelian Langsung"}}</p>
         <p class="text-center">===================================</p>
         <p>
             <img src="{{  Storage::url('tokos/' . $toko['logo']) }}" width="70">
@@ -100,7 +100,7 @@
             <tr>
                 <td>Total Item:</td>
                 <td class="text-right">
-                     {{round($hutang->qty)}}
+                     {{round($hutang->qty)}} {{$hutang->satuan}}
                  </td>
             </tr>
             <tr>
@@ -113,7 +113,7 @@
             </tr>
             <tr>
                 <td>Hutang:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
             </tr>
             @if($hutang->visa === "HUTANG")
             @foreach($angsurans as $angsuran)

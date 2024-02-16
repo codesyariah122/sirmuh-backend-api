@@ -48,7 +48,7 @@
         </tr>
         <tr>
             <td>Type</td>
-            <td>: {{$hutang->po === 'True' ? "Purchase Order" : "Pembelian Langsung"}}</td>
+            <td>: {{$hutang->po === 'True' ? "Pembelian P.O" : "Pembelian Langsung"}}</td>
         <tr>
             <td>
                 Supplier
@@ -72,8 +72,8 @@
     <table class="data" width="100%">
         <thead>
             <tr>
-                <th>Kode Barang</th>
                 <th>Nama Barang</th>
+                <th>Supplier</th>
                 <th>Harga Beli</th>
                 <th>Qty</th>
                 <th>Jumlah</th>
@@ -83,8 +83,8 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $hutang->nama_barang }}</td>
-                <td>{{ $hutang->kode_barang }}</td>
+                <td>{{ $hutang->nama_barang }} - {{ $hutang->kode_barang }}</td>
+                <td>{{ $hutang->nama_supplier }} ({{$hutang->supplier}})</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
                 <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
@@ -108,7 +108,7 @@
             @if($hutang->visa === 'HUTANG')
             <tr>
                 <td colspan="6" class="text-right"><b>Hutang</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->hutang) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah) }}</b></td>
             </tr>
             @if($hutang->angsuran_ke > 0)
             @foreach($angsurans as $angsuran)

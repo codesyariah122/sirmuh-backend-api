@@ -349,7 +349,6 @@ class DataHutangController extends Controller
             'itemhutang.jumlah as hutang_jumlah',
             'itemhutang.jumlah_hutang as jumlah_hutang',
             'pembelian.tanggal as tanggal_pembelian',
-            'pembelian.supplier',
             'pembelian.kode_kas',
             'pembelian.jumlah as jumlah_pembelian',
             'pembelian.bayar as bayar_pembelian',
@@ -364,6 +363,7 @@ class DataHutangController extends Controller
             'itempembelian.qty',
             'itempembelian.satuan',
             'itempembelian.harga_beli',
+            'itempembelian.supplier',
             'supplier.nama as nama_supplier',
             'supplier.kode as kode_supplier',
             'kas.kode as kode_kas',
@@ -374,7 +374,7 @@ class DataHutangController extends Controller
         ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode')
         ->leftJoin('pembelian', 'pembelian.kode', '=', 'hutang.kode')
         ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
-        ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+        ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
         ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
         ->leftJoin('pembayaran_angsuran', 'hutang.kode', '=', 'pembayaran_angsuran.kode')
         ->where('hutang.kode', $kode);
@@ -385,13 +385,12 @@ class DataHutangController extends Controller
         $setting = "";
 
         // echo "<pre>";
-        // // var_dump($hutang);
+        // var_dump($hutang);
         // var_dump($hutang->hutang);
         // var_dump($hutang->jml_hutang);
         // var_dump($hutang->angsuran_ke);
         // var_dump($hutang->bayar_angsuran); 
         // echo "</pre>";
-
         // die;
 
         switch ($type) {

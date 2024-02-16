@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataRoleUserManagementController,
 	DataPembelianLangsungController,
 	DataPenjualanTokoController,
+	DataPenjualanPoController,
 	DataPengeluaranController,
 	DataMutasiKasController,
 	DataItemPembelianController,
@@ -207,8 +208,8 @@ class RouteSelection {
 		// Item Penjualan
 		[
 			'endPoint' => '/data-item-penjualan',
-			'method' => 'get',
-			'controllers' => [DataItemPenjualanController::class, 'index']
+			'method' => 'resource',
+			'controllers' => DataItemPenjualanController::class
 		],
 		[
 			'endPoint' => '/penjualan-terbaik',
@@ -222,7 +223,11 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataPenjualanTokoController::class
 		],
-		
+		[
+			'endPoint' => '/data-penjualan-po',
+			'method' => 'resource',
+			'controllers' => DataPenjualanPoController::class
+		],
 		
 		[
 			'endPoint' => '/data-return-penjualan',
@@ -393,6 +398,11 @@ class RouteSelection {
 			'endPoint' => '/update-stok-barang',
 			'method' => 'post',
 			'controllers' => [DataWebFiturController::class, 'update_stok_barang']
+		],
+		[
+			'endPoint' => '/update-stok-barang-transaksi/{id}',
+			'method' => 'put',
+			'controllers' => [DataWebFiturController::class, 'stok_barang_update_inside_transaction']
 		],
 		[
 			'endPoint' => '/generate-terbilang',

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas, Hutang, ItemHutang, PembayaranAngsuran};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Hutang,ItemHutang,PembayaranAngsuran};
 use Auth;
 
 class DataItemPembelianController extends Controller
@@ -79,7 +79,6 @@ class DataItemPembelianController extends Controller
     {
         try {
             $itemId = $request->item_id;
-
             $dataPembelian = Pembelian::findOrFail($id);
 
             if($dataPembelian->po === "True") {
@@ -93,7 +92,17 @@ class DataItemPembelianController extends Controller
                     $updateItemPembelian->qty = intval($request->qty);
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
 
-                    $stokBarangUpdate->toko = $dataBarang->toko - $request->qty;
+                    if(intval($request->qty) < $dataBarang->last_qty) {
+                        $newStok = $stokBarangUpdate->toko - intval($request->qty);
+                    } else if(intval($request->qty) > $dataBarang->last_qty) {
+                        $newStok = $stokBarangUpdate->toko + intval($request->qty);
+                    } else {
+                        $newStok = $dataBarang->toko;
+                    }
+                    
+
+                    $stokBarangUpdate->toko = $newStok;
+                    $stokBarangUpdate->last_qty = $request->qty;
                 }
 
                 if($request->harga_beli) {
@@ -103,13 +112,13 @@ class DataItemPembelianController extends Controller
                     $stokBarangUpdate->hpp = $request->harga_beli;
                 }
 
+                $stokBarangUpdate->save();
+
                 $updateItemPembelian->save();
 
                 $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
 
                 $totalSubtotal = $dataItemPembelian->sum('subtotal');
-
-                $stokBarangUpdate->save();
 
                 $dataPembelian->jumlah = $totalSubtotal;
                 $dataPembelian->bayar = $dataPembelian->diterima;
@@ -123,18 +132,28 @@ class DataItemPembelianController extends Controller
                     'routes' => 'purchase-order-edit',
                     'notif' => "Update itempembelian, successfully update!"
                 ];
-            } else {
+            } else {                
                 $updateItemPembelian = ItemPembelian::findOrFail($itemId);
 
                 $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)->first();
 
                 $stokBarangUpdate = Barang::findOrFail($dataBarang->id);
 
-                if($request->qty) {
+               if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
 
-                    $stokBarangUpdate->toko = $dataBarang->toko + $request->qty;
+                    if(intval($request->qty) < intval($dataBarang->last_qty)) {
+                        $bindStok = intval($stokBarangUpdate->last_qty) - intval($request->qty);
+                        $newStok = $stokBarangUpdate->toko - $bindStok;;
+                    } else if(intval($request->qty) > intval($dataBarang->last_qty)) {
+                        $newStok = $stokBarangUpdate->toko + intval($request->qty);
+                    } else {
+                        $newStok = $dataBarang->toko;
+                    }
+                    
+                    $stokBarangUpdate->toko = $newStok;
+                    $stokBarangUpdate->last_qty = $request->qty;
                 }
 
                 if($request->harga_beli) {
@@ -155,6 +174,9 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->jumlah = $totalSubtotal;
                 $dataPembelian->bayar = $totalSubtotal;
                 $dataPembelian->diterima = $totalSubtotal;
+                $dataPembelian->hutang = intval($updateItemPembelian->subtotal) - intval($dataPembelian->diterima);
+                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
+
                 $dataPembelian->save();
                 $data_event = [
                     'type' => 'updated',
@@ -186,10 +208,6 @@ class DataItemPembelianController extends Controller
             $itemId = $request->item_id;
 
             $dataPembelian = Pembelian::findOrFail($id);
-
-            var_dump($dataPembelian->po);
-            var_dump($dataPembelian->hutang);
-            die;
 
             $updateItemPembelian = ItemPembelian::findOrFail($itemId);
 

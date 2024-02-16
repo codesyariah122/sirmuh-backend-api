@@ -16,7 +16,7 @@ use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piuta
 use Auth;
 use PDF;
 
-class DataPenjualanTokoController extends Controller
+class DataPenjualanPoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -33,21 +33,21 @@ class DataPenjualanTokoController extends Controller
     public function index(Request $request)
     {
         try {
-         $keywords = $request->query('keywords');
-         $today = now()->toDateString();
+           $keywords = $request->query('keywords');
+           $today = now()->toDateString();
 
-         $user = Auth::user()->name;
+           $user = Auth::user()->name;
 
-         $query = Penjualan::query()
-         ->select(
+           $query = Penjualan::query()
+           ->select(
             'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
-         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-         ->orderByDesc('penjualan.id')
-         ->limit(10);
+           ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+           ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+           ->orderByDesc('penjualan.id')
+           ->limit(10);
 
-         if ($keywords) {
+           if ($keywords) {
             $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
 
@@ -58,7 +58,7 @@ class DataPenjualanTokoController extends Controller
                 $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
             }
         })
-        ->where('penjualan.po', '=', 'False')
+        ->where('penjualan.po', '=', 'True')
         ->orderByDesc('penjualan.id')
         ->paginate(10);
 
@@ -143,7 +143,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->lunas = "False";
                 $newPenjualanToko->visa = 'HUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
-                $newPenjualanToko->po = 'False';
+                $newPenjualanToko->po = 'True';
                 $newPenjualanToko->receive = "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 7;
 
@@ -184,7 +184,7 @@ class DataPenjualanTokoController extends Controller
                 // $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 // $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
-                $newPenjualanToko->po = 'False';
+                $newPenjualanToko->po = 'True';
                 $newPenjualanToko->receive = "True";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
             }
@@ -264,60 +264,58 @@ class DataPenjualanTokoController extends Controller
         }
     }
 
-public function cetak_nota($type, $kode, $id_perusahaan)
-{
-    $ref_code = $kode;
-    $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
-    $helpers = $this->helpers;
-    $today = now()->toDateString();
-    $toko = Toko::whereId($id_perusahaan)
-    ->select("name","logo","address","kota","provinsi")
-    ->first();
+    public function cetak_nota($type, $kode, $id_perusahaan)
+    {
+        $ref_code = $kode;
+        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+        $helpers = $this->helpers;
+        $today = now()->toDateString();
+        $toko = Toko::whereId($id_perusahaan)
+        ->select("name","logo","address","kota","provinsi")
+        ->first();
 
             // echo "<pre>";
             // var_dump($toko['name']); die;
             // echo "</pre>";
 
-    $query = Penjualan::query()
-    ->select(
-        'penjualan.*',
-        'itempenjualan.*',
-        'pelanggan.nama as pelanggan_nama',
-        'pelanggan.alamat as pelanggan_alamat',
-        'barang.kode as kode_barang',
-        'barang.nama as barang_nama',
-        'barang.satuan as barang_satuan',
-        'barang.harga_toko as harga_toko',
-        DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
-    )
-    ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-    ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-    ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+        $query = Penjualan::query()
+        ->select(
+            'penjualan.*',
+            'itempenjualan.*',
+            'pelanggan.nama as pelanggan_nama',
+            'pelanggan.alamat as pelanggan_alamat',
+            'barang.kode as kode_barang',
+            'barang.nama as barang_nama',
+            'barang.satuan as barang_satuan',
+            'barang.harga_toko as harga_toko',
+            DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
+        )
+        ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+        ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+        ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
-    ->where('penjualan.kode', $kode);
+        ->where('penjualan.kode', $kode);
 
-    $barangs = $query->get();
-    $penjualan = $query->get()[0];
-
-
+        $barangs = $query->get();
+        $penjualan = $query->get()[0];
         // echo "<pre>";
-        // var_dump($penjualan->po);
+        // var_dump($barangs);
         // echo "</pre>";
         // die;
 
-    $setting = "";
+        $setting = "";
 
-    switch($type) {
-        case "nota-kecil":
-        return view('penjualan.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-        break;
-        case "nota-besar":
-        $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-        $pdf->setPaper(0,0,350,440, 'potrait');
-        return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
-        break;
+        switch($type) {
+            case "nota-kecil":
+            return view('penjualan.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            break;
+            case "nota-besar":
+            $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf->setPaper(0,0,350,440, 'potrait');
+            return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
+            break;
+        }
     }
-}
 
     /**
      * Display the specified resource.
@@ -335,7 +333,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
             ->where('penjualan.id', $id)
-            ->where('penjualan.po', 'False')
+            ->where('penjualan.po', '=', 'True')
             ->first();
 
 
@@ -385,13 +383,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             if(gettype($data['bayar']) === 'string') {
                 $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
             } else {
-                $bayar = intval($data['bayar']);
-            }
-
-            if(gettype($data['diterima']) === 'string') {
-                $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
-            } else {
-                $diterima = intval($data['diterima']);
+                $bayar = $data['bayar'];
             }
 
             $updatePembelian = Penjualan::findOrFail($id);
@@ -450,17 +442,10 @@ public function cetak_nota($type, $kode, $id_perusahaan)
                 $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
                 $updatePembelian->bayar = $data['bayar'] ? $bayar : $updatePembelian->bayar;
 
-                if($diterima  > $updatePembelian->jumlah) {
+                if($data['bayar'] > $updatePembelian->jumlah) {
                     $updatePembelian->kembali = $data['bayar'] - $updatePembelian->jumlah;
-                    $updatePembelian->lunas = "True";
-                    $updatePembelian->visa = "LUNAS";
-                } else if($diterima == $updatePembelian->jumlah) {
-                    $updatePembelian->kembali = $updatePembelian->jumlah - $data['bayar'];
-                    $updatePembelian->lunas = "True";
-                    $updatePembelian->visa = "UANG PAS";
                 } else {
                     $updatePembelian->kembali = $updatePembelian->jumlah - $data['bayar'];
-                    $updatePembelian->lunas = "True";
                 }
                 
             }

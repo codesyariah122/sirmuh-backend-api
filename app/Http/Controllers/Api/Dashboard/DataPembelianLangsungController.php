@@ -155,11 +155,16 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
 
-            if($data['hutang']) {
-                $newPembelian->lunas =false;
+            // echo "<pre>";
+            // var_dump($data['masuk_hutang']); 
+            // echo "</pre>";
+            // die;
+
+            if($data['pembayaran'] !== "cash") {
+                $newPembelian->lunas = "False";
                 $newPembelian->visa = 'HUTANG';
                 $newPembelian->hutang = $data['hutang'];
-                $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPembelian->po = 'False';
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
 
@@ -196,13 +201,13 @@ class DataPembelianLangsungController extends Controller
                 $angsuran->bayar_angsuran = $data['diterima'];
                 $angsuran->jumlah = $item_hutang->jumlah_hutang;
                 $angsuran->save();
-            } else {                
-                $newPembelian->lunas = $data['pembayaran'] === 'cash' ? true : false;
-                $newPembelian->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
+            } else {            
+                $newPembelian->lunas = $data['pembayaran'] == 'cash' ? "True" : "False";
+                $newPembelian->visa = "LUNAS";
                 $newPembelian->hutang = $data['hutang'];
-                $newPembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
+                $newPembelian->po = $data['pembayaran'] == 'cash' ? 'False' : 'True';
                 $newPembelian->receive = "True";
-                $newPembelian->jt = 0.00;
+                $newPembelian->jt = $data['jt'];
             }
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
@@ -322,7 +327,7 @@ class DataPembelianLangsungController extends Controller
             ->first();
 
             $items = ItemPembelian::query()
-            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang', 'barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
+            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang', 'barang.toko as stok_barang','barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.kode as kode_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
             ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
             ->where('itempembelian.kode', $pembelian->kode)
@@ -363,9 +368,20 @@ class DataPembelianLangsungController extends Controller
         try {
             $data = $request->all();
 
-            $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
-            $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+            if(gettype($data['bayar']) === 'string') {
+                $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
+            } else {
+                $bayar = intval($data['bayar']);
+            }
 
+            if(gettype($data['diterima']) === 'string') {
+                $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+            } else {
+                $diterima = intval($data['diterima']);
+            }
+
+            $currentDate = now()->format('ymd');
+            
             $updatePembelian = Pembelian::findOrFail($id);
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
@@ -376,27 +392,36 @@ class DataPembelianLangsungController extends Controller
                     'message' => "Saldo tidak mencukupi!!"
                 ]);
             }
+            
 
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
             $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
-            $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
-            if($diterima > $updatePembelian->jumlah) {
-                $updatePembelian->lunas = 1;
-                $updatePembelian->visa = "LUNAS";
-            } else if($diterima == $updatePembelian->jumlah) {
-                $updatePembelian->lunas = 1;
-                $updatePembelian->visa = "UANG PAS";
-            } else {
-                $updatePembelian->lunas = 0;
+            $updatePembelian->diterima = $data['diterima'] ? intval($data['diterima']) : $updatePembelian->diterima;
+
+            if($data['masuk_hutang']) {
+                $updatePembelian->jt = $data['jt'];
+                $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
+                $updatePembelian->hutang = $data['hutang'];
+
+            } else {
+                if($diterima > $updatePembelian->jumlah) {
+                    $updatePembelian->lunas = "True";
+                    $updatePembelian->visa = "LUNAS";
+                } else if($diterima == $updatePembelian->jumlah) {
+                    $updatePembelian->lunas = "True";
+                    $updatePembelian->visa = "UANG PAS";
+                } else {
+                    $updatePembelian->lunas = "True";
+                }
             }
 
             $updatePembelian->save();
 
             $updateKas = Kas::findOrFail($kas->id);
-            $updateKas->saldo = intval($dataKas->saldo) - intval($updatePembelian->diterima);
+            $updateKas->saldo = intval($kas->saldo) - intval($updatePembelian->diterima);
             $updateKas->save();
 
             if($updatePembelian) {
