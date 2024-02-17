@@ -1248,11 +1248,7 @@ class DataWebFiturController extends Controller
                     $qtyBarang = $barang['qty'];
                     $lastQty = $stok->last_qty;
                     $stokBarang = intval($stok->toko);
-                    if($qtyBarang > $lastQty) {
-                        $updateBarang->toko = $stokBarang - $qtyBarang;
-                    } else {
-                        $updateBarang->toko = $stokBarang;
-                    }
+                    $updateBarang->toko = $stokBarang - $qtyBarang;
                     $updateBarang->last_qty = $barang['qty'];
                     $updateBarang->save();
                 }
