@@ -105,29 +105,24 @@
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</b></td>
             </tr>
-            @if($hutang->visa === 'HUTANG')
             <tr>
                 <td colspan="6" class="text-right"><b>Hutang</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah) }}</b></td>
             </tr>
-            @if($hutang->angsuran_ke > 0)
             @foreach($angsurans as $angsuran)
             <tr>
                 <td colspan="6" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}}</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
             @endforeach
-            @endif
             <tr>
                 <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
             </tr>
-            @else
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima - $hutang->jumlah) }}</b></td>
             </tr>
-            @endif
         </tfoot>
     </table>
 
