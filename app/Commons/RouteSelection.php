@@ -395,8 +395,8 @@ class RouteSelection {
 			'controllers' => [DataWebFiturController::class, 'generateReference']
 		],
 		[
-			'endPoint' => '/update-stok-barang',
-			'method' => 'post',
+			'endPoint' => '/update-stok-barang/{id}',
+			'method' => 'put',
 			'controllers' => [DataWebFiturController::class, 'update_stok_barang']
 		],
 		[

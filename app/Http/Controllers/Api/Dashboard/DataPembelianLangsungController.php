@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran};
+use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran};
 use Auth;
 use PDF;
 
@@ -209,6 +209,7 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
             }
+
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
@@ -468,6 +469,38 @@ class DataPembelianLangsungController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+           $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+                $delete_pembelian = Pembelian::whereNull('deleted_at')
+                ->findOrFail($id);
+                $delete_pembelian->delete();
+
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'pembelian-langsung',
+                    'type' => 'removed',
+                    'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pembelian dengan kode, {$delete_pembelian->kode} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

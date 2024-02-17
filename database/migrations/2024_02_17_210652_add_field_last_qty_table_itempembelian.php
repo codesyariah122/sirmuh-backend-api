@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('barang', function (Blueprint $table) {
-            $table->unsignedBigInteger('last_qty')->after('toko')->nullable();
+        Schema::table('itempembelian', function (Blueprint $table) {
+            $table->unsignedBigInteger('last_qty')->after('qty')->nullable();
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('barang', function (Blueprint $table) {
+        Schema::table('itempembelian', function (Blueprint $table) {
             $table->dropColumn('last_qty');
         });
     }

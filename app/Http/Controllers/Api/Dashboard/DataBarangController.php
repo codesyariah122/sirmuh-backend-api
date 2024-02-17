@@ -435,20 +435,18 @@ class DataBarangController extends Controller
                 // }])
                 // ->with('kategoris')
                 // ->firstOrFail();
-                $dataBarang = Barang::where('barang.id', $id)
-                ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian','supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+                $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian','supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                 ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
                 ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                 ->where('itempembelian.draft','=', 1)
-                ->whereNull('barang.deleted_at')
                 ->limit(1)
+                ->where('barang.id', $id)
                 ->first();
 
                 if($dataBarang === NULL) {
-                    $dataBarang = Barang::where('barang.id', $id)
-                    ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+                    $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                     ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
-                    ->whereNull('barang.deleted_at')
+                    ->where('barang.id', $id)
                     ->first();
                 }
 
@@ -741,6 +739,7 @@ class DataBarangController extends Controller
     public function barang_by_suppliers(Request $request, $id) 
     {   try {
            $query = DB::table('barang')
+           ->whereNull('barang.deleted_at')
            ->join('supplier', 'barang.supplier', '=', 'supplier.kode')
            ->where('supplier.id', $id)
            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat');
