@@ -118,8 +118,8 @@
             @if($hutang->visa === "HUTANG")
             @foreach($angsurans as $angsuran)
             <tr>
-                <td>Angsuran ke {{$angsuran->angsuran_ke}}:</td>
-                <td class="text-right">{{ $helpers->format_uang($angsuran->bayar_angsuran) }} {{$angsuran->angsuran_ke == 1 ? '(Bayar DP)' : ''}}</td>
+                <td>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(Bayar DP)' : ''}} :</td>
+                <td class="text-right">{{ $helpers->format_uang($angsuran->bayar_angsuran) }} </td>
             </tr>
             @endforeach
             <tr>
