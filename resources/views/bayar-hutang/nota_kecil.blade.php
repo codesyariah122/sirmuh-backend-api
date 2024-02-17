@@ -115,7 +115,6 @@
                 <td>Hutang:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
             </tr>
-            @if($hutang->visa === "HUTANG")
             @foreach($angsurans as $angsuran)
             <tr>
                 <td>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(Bayar DP)' : ''}} :</td>
@@ -126,12 +125,11 @@
                 <td>Sisa Hutang:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jml_hutang) }}</td>
             </tr>
-            @else
             <tr>
                 <td>Kembali:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->bayar - $hutang->hutang) }}</td>
             </tr>
-            @endif
+
             @if(count($angsurans) > 0)
             <tr>
                 <td>Status:</td>
