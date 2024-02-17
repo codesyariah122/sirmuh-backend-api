@@ -94,7 +94,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" class="text-right"><b>Total Harga</b></td>
+                <td colspan="6" class="text-right"><b>Total Beli</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</b></td>
             </tr>
             <tr>
@@ -103,7 +103,7 @@
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</b></td>
             </tr>
             @if($hutang->visa === 'HUTANG')
             <tr>
