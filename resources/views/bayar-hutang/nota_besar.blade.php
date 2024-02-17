@@ -88,8 +88,8 @@
                 <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
                 <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->hutang) }}</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->hutang) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
             </tr>
         </tbody>
         <tfoot>
