@@ -117,7 +117,7 @@
             </tr>
             @foreach($angsurans as $angsuran)
             <tr>
-                <td>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(Bayar DP)' : ''}} :</td>
+                <td>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(DP Awal)' : ''}} :</td>
                 <td class="text-right">{{ $helpers->format_uang($angsuran->bayar_angsuran) }} </td>
             </tr>
             @endforeach
