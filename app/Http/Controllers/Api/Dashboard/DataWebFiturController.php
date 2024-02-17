@@ -1221,6 +1221,62 @@ class DataWebFiturController extends Controller
         }
     }
 
+    public function update_stok_barang_all(Request $request)
+    {
+        try {
+            $barangs = $request->barangs;
+            $type = $request->type;
+
+            switch($type) {
+             case "pembelian":
+             foreach ($barangs as $barang) {
+                $updateBarang = Barang::findOrFail($barang['id']);
+                if($barang['qty'] > $updateBarang->last_qty){
+                    $newStok = $updateBarang->toko + $barang['qty'];
+                } else {
+                    $newStok = $updateBarang->toko;
+                }
+                $updateBarang->toko = $newStok;
+                $updateBarang->save();
+            }
+            break;
+                case "penjualan":
+                foreach($barangs as $barang) {
+                    $stok = Barang::findOrFail($barang['id']);
+                    $updateBarang = Barang::findOrFail($barang['id']);
+                    $qtyBarang = $barang['qty'];
+                    $lastQty = $stok->last_qty;
+                    $stokBarang = intval($stok->toko);
+                    if($qtyBarang > $lastQty) {
+                        $updateBarang->toko = $stokBarang - $qtyBarang;
+                    } else {
+                        $updateBarang->toko = $stokBarang;
+                    }
+                    $updateBarang->save();
+                }
+                break;
+            }
+
+            $data_event = [
+                'type' => 'updated',
+                'routes' => 'data-barang',
+                'notif' => "Stok barang, successfully update!"
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stok barang update!',
+                'data' => $barangs
+            ]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
     public function update_stok_barang(Request $request, $id)
     {
         try {

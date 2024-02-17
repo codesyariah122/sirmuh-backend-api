@@ -400,6 +400,11 @@ class RouteSelection {
 			'controllers' => [DataWebFiturController::class, 'update_stok_barang']
 		],
 		[
+			'endPoint' => '/update-stok-barang-all',
+			'method' => 'post',
+			'controllers' => [DataWebFiturController::class, 'update_stok_barang_all']
+		],
+		[
 			'endPoint' => '/update-stok-barang-transaksi/{id}',
 			'method' => 'put',
 			'controllers' => [DataWebFiturController::class, 'stok_barang_update_inside_transaction']
