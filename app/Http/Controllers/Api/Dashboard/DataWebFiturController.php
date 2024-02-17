@@ -1237,6 +1237,7 @@ class DataWebFiturController extends Controller
                     $newStok = $updateBarang->toko;
                 }
                 $updateBarang->toko = $newStok;
+                $updateBarang->last_qty = $barang['qty'];
                 $updateBarang->save();
             }
             break;
@@ -1252,6 +1253,7 @@ class DataWebFiturController extends Controller
                     } else {
                         $updateBarang->toko = $stokBarang;
                     }
+                    $updateBarang->last_qty = $barang['qty'];
                     $updateBarang->save();
                 }
                 break;

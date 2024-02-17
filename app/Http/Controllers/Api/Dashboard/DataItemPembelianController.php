@@ -96,13 +96,13 @@ class DataItemPembelianController extends Controller
 
                 $updateItemPembelian->save();
 
-                $dataItemPembelian = Pembelian::whereKode($updateItemPembelian->kode)->get();
+                $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
 
                 $totalSubtotal = $dataItemPembelian->sum('subtotal');
 
                 $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $dataPembelian->diterima;
-                $dataPembelian->diterima = $dataPembelian->diterima;
+                $dataPembelian->bayar = $totalSubtotal;
+                $dataPembelian->diterima = $totalSubtotal;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                 $dataPembelian->save();
 
@@ -134,8 +134,8 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->bayar = $totalSubtotal;
                 $dataPembelian->diterima = $totalSubtotal;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
-
                 $dataPembelian->save();
+
                 $data_event = [
                     'type' => 'updated',
                     'routes' => 'pembelian-langsung-edit',
