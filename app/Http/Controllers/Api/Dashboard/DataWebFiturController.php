@@ -1297,7 +1297,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->supplier = $supplier->kode;
                         $draftItemPembelian->satuan = $dataBarang->satuan;
                         $draftItemPembelian->qty = $barang['qty'];
-                        $existingItem->last_qty = intval($barang['qty']);
+                        $draftItemPembelian->last_qty = intval($barang['qty']);
                         $draftItemPembelian->isi = $dataBarang->isi;
                         $draftItemPembelian->nourut = $barang['nourut'];
                         $draftItemPembelian->harga_beli = $barang['harga_beli'] ?? $dataBarang->hpp;
