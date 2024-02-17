@@ -105,7 +105,7 @@
             </tr>
             <tr>
                 <td>Diterima:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->hutang) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</td>
             </tr>
             <tr>
                 <td>Diskon:</td>
