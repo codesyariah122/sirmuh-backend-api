@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataPemasukanController,
 	DataItemHutangController,
 	DataHutangController,
+	DataPiutangController,
 	DataMenuManagementController,
 	DataSubMenuManagementController,
 	DataChildSubMenuManagementController,
@@ -264,6 +265,19 @@ class RouteSelection {
 			'method' => 'get',
 			'controllers' => [DataHutangController::class, 'check_bayar_hutang']
 		],
+
+		[
+			'endPoint' => '/data-piutang',
+			'method' => 'resource',
+			'controllers' => DataPiutangController::class
+		],
+
+		[
+			'endPoint' => '/check-bayar-piutang/{id}',
+			'method' => 'get',
+			'controllers' => [DataPiutangController::class, 'check_bayar_hutang']
+		],
+
 		[
 			'endPoint' => '/pemakaian-barang',
 			'method' => 'resource',
