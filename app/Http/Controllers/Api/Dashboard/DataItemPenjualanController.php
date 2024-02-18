@@ -115,81 +115,14 @@ class DataItemPenjualanController extends Controller
             if($dataPembelian->po === "True") {
                 $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
 
-                $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)->first();
-
-                $stokBarangUpdate = Barang::findOrFail($dataBarang->id);
-
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
-
-                    if(intval($request->qty) < $dataBarang->last_qty) {
-                        $newStok = $stokBarangUpdate->toko - intval($request->qty);
-                    } else if(intval($request->qty) > $dataBarang->last_qty) {
-                        $newStok = $stokBarangUpdate->toko - intval($request->qty);
-                    } else {
-                        $newStok = $dataBarang->toko;
-                    }
-                    
-
-                    $stokBarangUpdate->toko = $newStok;
-                    $stokBarangUpdate->last_qty = $request->qty;
                 }
 
                 if($request->harga) {
                     $updateItemPembelian->harga = intval($request->harga);
                     $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga);
-
-                    $stokBarangUpdate->hpp = $request->harga;
-                }
-
-                $updateItemPembelian->save();
-
-                $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
-
-                $totalSubtotal = $dataItemPembelian->sum('subtotal');
-
-                $stokBarangUpdate->save();
-
-                $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $dataPembelian->bayar;
-                $dataPembelian->hutang = intval($updateItemPembelian->subtotal) - intval($dataPembelian->bayar);
-                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
-                $dataPembelian->save();
-
-                $data_event = [
-                    'type' => 'updated',
-                    'routes' => 'purchase-order-edit',
-                    'notif' => "Update itempembelian, successfully update!"
-                ];
-            } else {
-                $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
-                $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)->first();
-
-                $stokBarangUpdate = Barang::findOrFail($dataBarang->id);
-
-                if($request->qty) {
-                    $updateItemPembelian->qty = intval($request->qty);
-                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
-
-                    if(intval($request->qty) < intval($dataBarang->last_qty)) {
-                        $bindStok = intval($stokBarangUpdate->last_qty) - intval($request->qty);
-                        $newStok = $stokBarangUpdate->toko - $bindStok;;
-                    } else if(intval($request->qty) > intval($dataBarang->last_qty)) {
-                        $newStok = $stokBarangUpdate->toko - intval($request->qty);
-                    } else {
-                        $newStok = $dataBarang->toko;
-                    }
-                    
-                    $stokBarangUpdate->toko = $newStok;
-                    $stokBarangUpdate->last_qty = $request->qty;
-                }
-
-                if($request->harga) {
-                    $updateItemPembelian->harga = intval($request->harga);
-                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga);
-
-                    $stokBarangUpdate->harga_toko = $request->harga;
                 }
 
                 $updateItemPembelian->save();
@@ -198,17 +131,47 @@ class DataItemPenjualanController extends Controller
 
                 $totalSubtotal = $dataItemPembelian->sum('subtotal');
 
-                $stokBarangUpdate->save();
+                $dataPembelian->jumlah = $totalSubtotal;
+                $dataPembelian->bayar = $totalSubtotal;
+                $dataPembelian->diterima = $totalSubtotal;
+                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
+                $dataPembelian->save();
+
+                $data_event = [
+                    'type' => 'updated',
+                    'routes' => 'penjualan-toko',
+                    'notif' => "Update itempenjualan, successfully update!"
+                ];
+            } else {
+                $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
+
+                if($request->qty) {
+                    $updateItemPembelian->qty = intval($request->qty);
+                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
+                }
+
+                if($request->harga_beli) {
+                    $updateItemPembelian->harga_beli = intval($request->harga_beli);
+                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga_beli);
+                }
+
+                $updateItemPembelian->save();
+
+                $dataItemPembelian = ItemPenjualan::whereKode($updateItemPembelian->kode)->get();
+
+                $totalSubtotal = $dataItemPembelian->sum('subtotal');
 
                 $dataPembelian->jumlah = $totalSubtotal;
                 $dataPembelian->bayar = $totalSubtotal;
+                $dataPembelian->diterima = $totalSubtotal;
+                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                 $dataPembelian->save();
+
                 $data_event = [
                     'type' => 'updated',
                     'routes' => 'penjualan-toko-edit',
                     'notif' => "Update itempenjualan toko, successfully update!"
                 ];
-
             }
 
             event(new EventNotification($data_event));
