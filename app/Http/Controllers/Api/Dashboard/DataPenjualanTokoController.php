@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles};
 use Auth;
 use PDF;
 
@@ -519,6 +519,38 @@ public function cetak_nota($type, $kode, $id_perusahaan)
      */
     public function destroy($id)
     {
-        //
+        try {
+           $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+                $delete_penjualan = Penjualan::whereNull('deleted_at')
+                ->findOrFail($id);
+                $delete_penjualan->delete();
+
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'penjualan-toko',
+                    'type' => 'removed',
+                    'notif' => "Penjualan dengan kode, {$delete_penjualan->kode}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Penjualan dengan kode, {$delete_penjualan->kode} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

@@ -147,6 +147,12 @@ class DataWebFiturController extends Controller
                 ->paginate(10);
                 break;
 
+                case 'PENJUALAN_TOKO':
+                $deleted = Penjualan::onlyTrashed()
+                ->select('id', 'kode', 'tanggal', 'kode_kas', 'jumlah','bayar','lunas','operator')
+                ->paginate(10);
+                break;
+
                 default:
                 $deleted = [];
                 break;
@@ -353,6 +359,22 @@ class DataWebFiturController extends Controller
                     'type' => 'restored',
                     'routes' => 'pembelian-langsung',
                     'notif' => "Pembelian, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'PENJUALAN_TOKO':
+                $restored_biaya = Penjualan::onlyTrashed()
+                ->findOrFail($id);
+                $restored_biaya->restore();
+                $restored = Penjualan::findOrFail($id);
+                $name = $restored->kode;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'penjualan-toko',
+                    'notif' => "Penjualan, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
@@ -618,6 +640,11 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $countTrash = Pembelian::onlyTrashed()
+                ->get();
+                break;
+
+                case 'PENJUALAN_TOKO':
+                $countTrash = Penjualan::onlyTrashed()
                 ->get();
                 break;
 
