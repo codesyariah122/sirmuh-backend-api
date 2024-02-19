@@ -327,6 +327,11 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataSupplierController::class
 		],
+		[
+			'endPoint' => '/list-of-suppliers',
+			'method' => 'get',
+			'controllers' => [DataSupplierController::class, 'list_suppliers']
+		],
 
 		// Data Perusahaan
 		[

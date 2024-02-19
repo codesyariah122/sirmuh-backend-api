@@ -165,18 +165,18 @@ class DataBarangController extends Controller
            $sortName = $request->query('sort_name');
            $sortType = $request->query('sort_type');
 
-           $query = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
+           $query = Barang::select('id', 'kode', 'nama', 'kategori','satuan', DB::raw('COUNT(*) as total_barang'))
             ->whereNull('deleted_at')
-            ->groupBy('id','kode', 'nama', 'satuan')
-            ->when($keywords, function ($query) use ($keywords) {
-                return $query->where(function ($query) use ($keywords) {
-                    $query->where('nama', 'like', '%' . $keywords . '%')
-                    ->orWhere('kode', 'like', '%' . $keywords . '%');
-                });
-            })
-            ->when($kategori, function ($query) use ($kategori) {
-                return $query->where('kategori', $kategori );
-            });
+            ->groupBy('kategori');
+            // ->when($keywords, function ($query) use ($keywords) {
+            //     return $query->where(function ($query) use ($keywords) {
+            //         $query->where('nama', 'like', '%' . $keywords . '%')
+            //         ->orWhere('kode', 'like', '%' . $keywords . '%');
+            //     });
+            // })
+            // ->when($kategori, function ($query) use ($kategori) {
+            //     return $query->where('kategori', $kategori );
+            // });
             
 
            if($sortName && $sortType) {
