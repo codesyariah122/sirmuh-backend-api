@@ -562,7 +562,7 @@ class DataWebFiturController extends Controller
                 foreach($items as $item) {
                     $barangs = Barang::whereKode($item->kode_barang)->get();
                     foreach($barangs as $barang) {
-                        $reverse = $barang->toko - $barang->last_qty;
+                        $reverse = $barang->toko - $item->qty;
                         $barang->toko  = $reverse;
                         $barang->last_qty = NULL;
                         $barang->save();
@@ -582,6 +582,35 @@ class DataWebFiturController extends Controller
                     'user' => Auth::user()
                 ];
                 break;
+
+                case 'PENJUALAN_TOKO':
+                $deleted = Penjualan::onlyTrashed()
+                ->findOrFail($id);
+                $items = ItemPenjualan::whereKode($deleted->kode)->get();
+                foreach($items as $item) {
+                    $barangs = Barang::whereKode($item->kode_barang)->get();
+                    foreach($barangs as $barang) {
+                        $reverse = $barang->toko - $item->qty;
+                        $barang->toko  = $reverse;
+                        $barang->last_qty = NULL;
+                        $barang->save();
+                    }
+                }
+
+                ItemPenjualan::whereKode($deleted->kode)->forceDelete();
+                $deleted->forceDelete();
+
+                $message = "Data penjualan, {$deleted->kode} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'penjualan-toko',
+                    'notif' => "Penjualan, {$deleted->kode} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
 
                 default:
                 $deleted = [];
