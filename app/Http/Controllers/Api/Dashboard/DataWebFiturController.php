@@ -590,7 +590,7 @@ class DataWebFiturController extends Controller
                 foreach($items as $item) {
                     $barangs = Barang::whereKode($item->kode_barang)->get();
                     foreach($barangs as $barang) {
-                        $reverse = $barang->toko - $item->qty;
+                        $reverse = $barang->toko + $item->qty;
                         $barang->toko  = $reverse;
                         $barang->last_qty = NULL;
                         $barang->save();
