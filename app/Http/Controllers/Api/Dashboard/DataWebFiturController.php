@@ -1338,10 +1338,7 @@ class DataWebFiturController extends Controller
             $qty = $request->qty;
             $barang = Barang::findOrFail($id);
             $newStok = $barang->toko + $qty;
-            // var_dump($newStok);
-            // echo "<br> anjing";
-            // var_dump($qty); 
-            // die;
+
             $barang->toko = $newStok;
             $barang->save();
 
