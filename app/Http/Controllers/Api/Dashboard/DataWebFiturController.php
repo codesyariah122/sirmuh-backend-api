@@ -1258,11 +1258,12 @@ class DataWebFiturController extends Controller
              case "pembelian":
              foreach ($barangs as $barang) {
                 $updateBarang = Barang::findOrFail($barang['id']);
-                if($barang['qty'] > $updateBarang->last_qty){
-                    $newStok = $updateBarang->toko + $barang['qty'];
-                } else {
-                    $newStok = $updateBarang->toko;
-                }
+                // if($barang['qty'] > $updateBarang->last_qty){
+                //     $newStok = $updateBarang->toko + $barang['qty'];
+                // } else {
+                //     $newStok = $updateBarang->toko;
+                // }
+                $newStok = $updateBarang->toko + $barang['qty'];
                 $updateBarang->toko = $newStok;
                 $updateBarang->last_qty = $barang['qty'];
                 $updateBarang->save();
