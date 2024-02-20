@@ -8,7 +8,6 @@
 
     <style>
         table td {
-            /* font-family: Arial, Helvetica, sans-serif; */
             font-size: 14px;
         }
         table.data td,
@@ -30,17 +29,9 @@
 <body>
     <table width="100%">
         <tr>
-            <td rowspan="4" width="60%">
-                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100">
-                <br>
-                {{ $toko['name'] }}
-                <br>
-                <address>
-                    {{ $toko['address'] }}
-                </address>
-            </td>
-        </tr>
-        <tr>
+        <td>
+            <b>Kepada</b>
+        <td>
             <td>
                 No
             </td>
@@ -53,6 +44,17 @@
             <td>Operator</td>
             <td>: {{ strtoupper($pembelian->operator) }}</td>
         </tr>
+        <tr>
+            <td rowspan="4" width="60%">
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100">
+                <br>
+                {{ $toko['name'] }}
+                <br>
+                <address>
+                    {{ $toko['address'] }}
+                </address>
+            </td>
+        </tr>
     </table>
     <br/>
     <table class="data" width="100%">
@@ -61,7 +63,6 @@
                 <th>No</th>
                 <th>Kode Barang</th>
                 <th>Nama Barang</th>
-                <th>Supplier</th>
                 <th>Harga Satuan</th>
                 <th>Jumlah</th>
                 <th>Pembayaran</th>
@@ -74,7 +75,6 @@
                 <td class="text-center">{{ $key+1 }}</td>
                 <td>{{ $item->kode_barang }}</td>
                 <td>{{ $item->nama_barang }}</td>
-                <td>{{$item->nama_supplier}}({{$item->supplier}})</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
                 <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->visa }}</td>
