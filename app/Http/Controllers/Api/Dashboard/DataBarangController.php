@@ -165,9 +165,9 @@ class DataBarangController extends Controller
            $sortName = $request->query('sort_name');
            $sortType = $request->query('sort_type');
 
-           $query = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
+           $query = Barang::select('kategori_barang as nama', DB::raw('SUM(toko) as total_stok'))
             ->whereNull('deleted_at')
-            ->groupBy('id','kode', 'nama', 'satuan')
+            ->groupBy('kategori_barang')
             ->when($keywords, function ($query) use ($keywords) {
                 return $query->where(function ($query) use ($keywords) {
                     $query->where('nama', 'like', '%' . $keywords . '%')
@@ -647,9 +647,6 @@ class DataBarangController extends Controller
                     $supplier = Supplier::whereNama($request->supplier)->first();
                     if($supplier !== NULL) {
 	                    $supplierId = $supplier->id;
-                    } else {
-                    	$supplier = Supplier::whereKode($request->supplier)->first();
-                    	var_dump($supplier); die;
                     }
                 }
 
