@@ -7,6 +7,7 @@
 namespace App\Helpers;
 
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Picqer\Barcode\BarcodeGeneratorHTML;
@@ -29,9 +30,9 @@ class WebFeatureHelpers
     public function format_tanggal($tanggal)
     {
         $carbonDate = Carbon::parse($tanggal);
-
+        Carbon::setLocale('id');
         // Format ke dalam bahasa Indonesia
-        $formatIndonesia = $carbonDate->formatLocalized('%A, %d %B %Y');;
+        $formatIndonesia = $carbonDate->isoFormat('dddd, D MMMM YYYY');
 
         echo $formatIndonesia;
     }
