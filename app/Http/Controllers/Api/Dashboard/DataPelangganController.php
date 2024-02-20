@@ -106,10 +106,7 @@ class DataPelangganController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'nama' => 'required',
-                'alamat' => 'required',
-                'telp' => 'required',
-                'email' => 'required|email|unique:users'
+                'nama' => 'required'
             ]);
 
             if ($validator->fails()) {
