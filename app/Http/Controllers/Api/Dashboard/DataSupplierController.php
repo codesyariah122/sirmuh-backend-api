@@ -129,17 +129,17 @@ class DataSupplierController extends Controller
                 ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
                 ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
                 ->where(function($query) use ($keywords) {
-                    $query->where('nama', 'like', '%' . $keywords . '%')
-                    ->orWhere('kode', 'like', '%' . $keywords . '%');
+                    $query->where('supplier.nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('supplier.kode', 'like', '%' . $keywords . '%');
                 })
-                ->orderBy('id', 'ASC')
+                ->orderBy('supplier.id', 'ASC')
                 ->paginate(10);
             } else if($kode) {
                 $suppliers = Supplier::whereNull('supplier.deleted_at')
                 ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
                 ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
-                ->where('kode', 'like', '%' . $kode . '%')
-                ->orderBy('id', 'ASC')
+                ->where('supplier.kode', 'like', '%' . $kode . '%')
+                ->orderBy('supplier.id', 'ASC')
                 ->paginate(10);
             } else {
                 if($sortName && $sortType) {
