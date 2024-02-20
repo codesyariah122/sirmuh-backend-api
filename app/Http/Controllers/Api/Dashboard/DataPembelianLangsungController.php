@@ -52,7 +52,7 @@ class DataPembelianLangsungController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier'
             )
             ->limit(10);
 
