@@ -128,7 +128,10 @@ class DataSupplierController extends Controller
                 $suppliers = Supplier::whereNull('supplier.deleted_at')
                 ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
                 ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
-                ->where('supplier.nama', 'like', '%' . $keywords . '%')
+                ->where(function($query) use ($keywords) {
+                    $query->where('supplier.nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('supplier.kode', 'like', '%' . $keywords . '%');
+                })
                 ->orderBy('supplier.id', 'ASC')
                 ->paginate(10);
             } else if($kode) {
