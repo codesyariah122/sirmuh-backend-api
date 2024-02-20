@@ -47,11 +47,11 @@
         </tr>
         <tr>
             <td>
-                {{$item->nama_supplier}}({{$item->supplier}})
+                {{$pembelian->nama_supplier}}({{$pembelian->supplier}})
             </td>
         </tr>
         <tr>
-            <td>{{$item->alamat_supplier}}({{$item->alamat_supplier}})</td>
+            <td></td>
         </tr>
         <tr>
             <td>Kasir:  {{ strtoupper($pembelian->operator) }}</td>
