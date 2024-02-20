@@ -126,29 +126,25 @@ class DataSupplierController extends Controller
 
             if($keywords) {
                 $suppliers = Supplier::whereNull('supplier.deleted_at')
-                ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
+                ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang')
                 ->where('supplier.nama', 'like', '%' . $keywords . '%')
                 ->orderBy('supplier.id', 'ASC')
                 ->paginate(10);
             } else if($kode) {
                 $suppliers = Supplier::whereNull('supplier.deleted_at')
-                ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
+                ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang')
                 ->where('supplier.kode', 'like', '%' . $kode . '%')
                 ->orderBy('supplier.id', 'ASC')
                 ->paginate(10);
             } else {
                 if($sortName && $sortType) {
                     $suppliers =  Supplier::whereNull('supplier.deleted_at')
-                    ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                    ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
+                    ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang')
                     ->orderBy($sortName, $sortType)
                     ->paginate(10);
                 } else {
                     $suppliers =  Supplier::whereNull('supplier.deleted_at')
-                    ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                    ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang','hutang.supplier as kode_supplier','hutang.jumlah','hutang.bayar')
+                    ->select('supplier.id', 'supplier.nama', 'supplier.kode', 'supplier.alamat', 'supplier.kota', 'supplier.telp', 'supplier.email', 'supplier.saldo_piutang')
                     ->orderBy('id', 'ASC')
                     ->paginate(10);
                 }
