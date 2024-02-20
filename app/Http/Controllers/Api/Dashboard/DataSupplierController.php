@@ -128,13 +128,14 @@ class DataSupplierController extends Controller
             $query = Supplier::whereNull('supplier.deleted_at')
             ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
             ->select(
+                'supplier.id',
                 'supplier.kode',
                 'supplier.nama',
                 'supplier.alamat',
                 'supplier.email',
                 DB::raw('SUM(hutang.jumlah) as jumlah_hutang'),
             )
-            ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat', 'supplier.email');
+            ->groupBy('supplier.id','supplier.kode', 'supplier.nama', 'supplier.alamat', 'supplier.email');
 
             if ($keywords) {
                 $query->where('supplier.nama', 'like', '%' . $keywords . '%');
@@ -277,17 +278,6 @@ class DataSupplierController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'nama' => 'required',
-                'alamat' => 'required',
-                'telp' => 'required',
-                'email' => 'required|email|unique:users'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $kode = explode(' ', $request->nama);
             $substringArray = [];
 
