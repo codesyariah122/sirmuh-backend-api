@@ -9,7 +9,7 @@
     <style>
         table td {
             /* font-family: Arial, Helvetica, sans-serif; */
-            font-size: 14px;
+            font-size: 11px;
         }
         table.data td,
         table.data th {
