@@ -277,6 +277,7 @@ class DataPembelianLangsungController extends Controller
         ->select(
             'pembelian.*',
             'itempembelian.*',
+            'supplier.kode as kode_supplier',
             'supplier.nama as nama_supplier',
             'supplier.alamat as alamat_supplier',
             'barang.nama as nama_barang',
