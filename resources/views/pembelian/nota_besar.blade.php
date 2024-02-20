@@ -29,9 +29,6 @@
 <body>
     <table width="100%">
         <tr>
-        <td>
-            <b>Kepada</b>
-        <td>
             <td>
                 No
             </td>
