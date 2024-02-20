@@ -6,6 +6,7 @@
 
 namespace App\Helpers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Picqer\Barcode\BarcodeGeneratorHTML;
@@ -23,6 +24,16 @@ class WebFeatureHelpers
     public function __construct($data=null)
     {
         $this->data = $data;
+    }
+
+    public function format_tanggal($tanggal)
+    {
+        $carbonDate = Carbon::parse($tanggal);
+
+        // Format ke dalam bahasa Indonesia
+        $formatIndonesia = $carbonDate->formatLocalized('%d %B %Y');
+
+        echo $formatIndonesia;
     }
 
     public static function initials($name)
