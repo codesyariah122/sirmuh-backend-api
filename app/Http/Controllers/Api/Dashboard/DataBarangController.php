@@ -165,28 +165,67 @@ class DataBarangController extends Controller
            $sortName = $request->query('sort_name');
            $sortType = $request->query('sort_type');
 
-           $query = Barang::select('id', 'kode', 'nama', 'kategori','satuan', DB::raw('COUNT(*) as total_barang'))
+           $query = Barang::select('id', 'kode', 'nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
             ->whereNull('deleted_at')
-            ->groupBy('kategori');
-            // ->when($keywords, function ($query) use ($keywords) {
-            //     return $query->where(function ($query) use ($keywords) {
-            //         $query->where('nama', 'like', '%' . $keywords . '%')
-            //         ->orWhere('kode', 'like', '%' . $keywords . '%');
-            //     });
-            // })
-            // ->when($kategori, function ($query) use ($kategori) {
-            //     return $query->where('kategori', $kategori );
-            // });
+            ->groupBy('id','kode', 'nama', 'satuan')
+            ->when($keywords, function ($query) use ($keywords) {
+                return $query->where(function ($query) use ($keywords) {
+                    $query->where('nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('kode', 'like', '%' . $keywords . '%');
+                });
+            })
+            ->when($kategori, function ($query) use ($kategori) {
+                return $query->where('kategori', $kategori );
+            });
             
 
            if($sortName && $sortType) {
                $barangs = $query
                ->orderBy($sortName, $sortType)
-               ->get();
+               ->paginate(10);
            } else {
             $barangs =$query
             ->orderBy('nama', 'ASC')
-            ->get();
+            ->paginate(10);
+           }
+            return new ResponseDataCollect($barangs);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function barang_all(Request $request)
+    {
+        try {
+           $keywords = $request->query('keywords');
+           $kategori = $request->query('kategori');
+           $endDate = $request->query('tgl_terakhir');
+           $barcode = $request->query('barcode');
+           $startDate = $request->query('start_date');
+           $sortName = $request->query('sort_name');
+           $sortType = $request->query('sort_type');
+
+           $query = Barang::select('id', 'kode', 'nama','kategori_barang', 'satuan', 'toko as total_stok')
+            ->whereNull('deleted_at')
+            ->when($keywords, function ($query) use ($keywords) {
+                return $query->where(function ($query) use ($keywords) {
+                    $query->where('nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('kode', 'like', '%' . $keywords . '%');
+                });
+            })
+            ->when($kategori, function ($query) use ($kategori) {
+                return $query->where('kategori', $kategori );
+            });
+            
+
+           if($sortName && $sortType) {
+               $barangs = $query
+               ->orderBy($sortName, $sortType)
+               ->paginate(10);
+           } else {
+            $barangs =$query
+            ->orderBy('nama', 'ASC')
+            ->paginate(10);
            }
             return new ResponseDataCollect($barangs);
         } catch (\Throwable $th) {
@@ -290,7 +329,7 @@ class DataBarangController extends Controller
 
 
             $newBarang->nama = $request->nama;
-
+            $newBarang->kategori_barang = $request->kategori_barang;
                 // if ($request->hasFile('photo')) {
                 //     $photoPath = $request->file('photo')->store('barang');
                 //     $data['photo'] = $photoPath;
@@ -437,15 +476,14 @@ class DataBarangController extends Controller
                 // ->firstOrFail();
                 $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'itempembelian.id as id_itempembelian', 'itempembelian.diskon as diskon_itempembelian','supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                 ->leftJoin('itempembelian', 'barang.kode', '=', 'itempembelian.kode_barang')
-                ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
+                ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.nama')
                 ->where('itempembelian.draft','=', 1)
-                ->limit(1)
                 ->where('barang.id', $id)
                 ->first();
 
                 if($dataBarang === NULL) {
                     $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
-                    ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
+                    ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.nama')
                     ->where('barang.id', $id)
                     ->first();
                 }
@@ -597,15 +635,22 @@ class DataBarangController extends Controller
 
         public function update(Request $request, $id)
         {
-            $barang_data = Barang::findOrFail($id);
+            $barang_data = Barang::with('suppliers')
+            ->findOrFail($id);
             $supplierId = NULL;
+
             try {
                 if(count($barang_data->suppliers) > 0) {
                     $supplier = Supplier::findOrFail($barang_data->suppliers[0]->id);
                     $supplierId = $supplier->id;
                 } else {
-                    $supplier = Supplier::whereKode($request->supplier)->get();
-                    $supplierId = $supplier[0]->id;
+                    $supplier = Supplier::whereNama($request->supplier)->first();
+                    if($supplier !== NULL) {
+	                    $supplierId = $supplier->id;
+                    } else {
+                    	$supplier = Supplier::whereKode($request->supplier)->first();
+                    	var_dump($supplier); die;
+                    }
                 }
 
                 if(count($barang_data->kategoris) > 0) {
@@ -614,11 +659,10 @@ class DataBarangController extends Controller
 
                 $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
 
-                $update_barang = Barang::with('kategoris')
-                ->findOrFail($barang_data->id);
+                $update_barang = Barang::findOrFail($barang_data->id);
 
                 $update_barang->nama = $request->nama ? $request->nama : $update_barang->nama;
-
+                $update_barang->kategori_barang = $request->kategori_barang ? $request->kategori_barang : $update_barang->kategori_barang;
                 $update_barang->kategori = $request->kategori ? $request->kategori : $update_barang->kategori;
                 $update_barang->satuanbeli = $request->satuanbeli ? $request->satuanbeli : $update_barang->satuanbeli;
                 $update_barang->isi = $request->isi ? $request->isi : $update_barang->isi;
@@ -646,7 +690,7 @@ class DataBarangController extends Controller
                 event(new EventNotification($data_event));
 
                 $saving_barang = Barang::with('kategoris')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'kategori_barang','satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
                 ->with('suppliers')
                 ->whereId($update_barang->id)
                 ->get();

@@ -28,6 +28,50 @@ class DataSupplierController extends Controller
         $this->user_helpers = new UserHelpers;
     }
 
+    public function supplier_for_lists(Request $request)
+    {
+        try {
+            $keywords = $request->query('keywords');
+            $kode = $request->query('kode');
+            $sortName = $request->query('sort_name');
+            $sortType = $request->query('sort_type');
+
+            if($keywords) {
+                $suppliers = Supplier::whereNull('deleted_at')
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->where(function($query) use ($keywords) {
+                    $query->where('nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('kode', 'like', '%' . $keywords . '%');
+                })
+                ->orderBy('id', 'ASC')
+                ->paginate(10);
+            } else if($kode) {
+                $suppliers = Supplier::whereNull('deleted_at')
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->where('kode', 'like', '%' . $kode . '%')
+                ->orderBy('id', 'ASC')
+                ->paginate(10);
+            } else {
+                if($sortName && $sortType) {
+                    $suppliers =  Supplier::whereNull('deleted_at')
+                    ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                    ->orderBy($sortName, $sortType)
+                    ->paginate(10);
+                } else {
+                    $suppliers =  Supplier::whereNull('deleted_at')
+                    ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                    ->orderBy('id', 'ASC')
+                    ->paginate(10);
+                }
+            }
+
+            return new ResponseDataCollect($suppliers);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+
+    }
+
     public function list_suppliers(Request $request)
     {
         try {

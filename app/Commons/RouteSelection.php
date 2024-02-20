@@ -77,6 +77,12 @@ class RouteSelection {
 		],
 
 		[
+			'endPoint' => '/barang-all',
+			'method' => 'get',
+			'controllers' => [DataBarangController::class, 'barang_all']
+		],
+
+		[
 			'endPoint' => '/update-photo-barang/{kode}',
 			'method' => 'post',
 			'controllers' => [DataBarangController::class, 'update_photo_barang']
@@ -91,7 +97,12 @@ class RouteSelection {
 		// End Data Barang Management
 		// Data Kategori Barang
 		[
-			'endPoint' => '/data-kategori',
+			'endPoint' => '/data-kategori-supplier',
+			'method' => 'get',
+			'controllers' => [DataKategoriBarangController::class, 'kategori_supplier_lists']
+		],
+		[
+			'endPoint' => '/data-kategori-barang',
 			'method' => 'resource',
 			'controllers' => DataKategoriBarangController::class
 		],
@@ -326,6 +337,11 @@ class RouteSelection {
 			'endPoint' => '/data-supplier',
 			'method' => 'resource',
 			'controllers' => DataSupplierController::class
+		],
+		[
+			'endPoint' => '/supplier-for-lists',
+			'method' => 'get',
+			'controllers' => [DataSupplierController::class, 'supplier_for_lists']
 		],
 		[
 			'endPoint' => '/list-of-suppliers',
