@@ -132,7 +132,7 @@ class DataSupplierController extends Controller
                         DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
                 ->where('supplier.nama', 'like', '%' . $keywords . '%')
                 ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                ->orderBy('supplier.id', 'ASC')
+                ->orderBy('supplier.id', 'DESC')
                 ->paginate(10);
             } else if($kode) {
                 $suppliers = Supplier::whereNull('supplier.deleted_at')
@@ -141,7 +141,7 @@ class DataSupplierController extends Controller
                         DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
                 ->where('supplier.kode', 'like', '%' . $keywords . '%')
                 ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                ->orderBy('supplier.id', 'ASC')
+                ->orderBy('supplier.id', 'DESC')
                 ->paginate(10);
             } else {
                 if($sortName && $sortType) {
@@ -160,7 +160,7 @@ class DataSupplierController extends Controller
                             DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
                     ->where('supplier.nama', 'like', '%' . $keywords . '%')
                     ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                    ->orderBy('supplier.id', 'ASC')
+                    ->orderBy('supplier.id', 'DESC')
                     ->paginate(10);
                 }
             }
