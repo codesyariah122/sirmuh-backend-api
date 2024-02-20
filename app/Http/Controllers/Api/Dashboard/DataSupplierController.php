@@ -149,7 +149,7 @@ class DataSupplierController extends Controller
                     $suppliers =  Supplier::whereNull('supplier.deleted_at')
                     ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
                     ->select('supplier.kode as kode_supplier', 'supplier.nama', 'supplier.alamat', 'hutang.kode as kode_hutang', 'hutang.jumlah', 'hutang.tanggal')
-                    ->orderBy('id', 'ASC')
+                    ->orderBy('supplier.id', 'ASC')
                     ->paginate(10);
                 }
             }
