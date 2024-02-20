@@ -42,7 +42,10 @@
                     {{ $toko['address'] }}
                 </address>
                 <br>
-                {{$toko['tanggal']}}
+                {{$pembelian['tanggal']}}
+                <br>
+                <b>NO INVOICE : </b>
+                <b>{{$pembelian->kode}}</b>
             </td>
         </tr>
         <tr>
