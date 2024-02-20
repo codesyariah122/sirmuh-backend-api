@@ -31,7 +31,7 @@ class WebFeatureHelpers
         $carbonDate = Carbon::parse($tanggal);
 
         // Format ke dalam bahasa Indonesia
-        $formatIndonesia = $carbonDate->formatLocalized('%d %B %Y');
+        $formatIndonesia = $carbonDate->formatLocalized('%A, %d %B %Y');;
 
         echo $formatIndonesia;
     }
