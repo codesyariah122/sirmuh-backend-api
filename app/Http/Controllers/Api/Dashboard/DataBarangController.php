@@ -481,9 +481,10 @@ class DataBarangController extends Controller
                 ->where('barang.id', $id)
                 ->first();
 
+
                 if($dataBarang === NULL) {
                     $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
-                    ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.nama')
+                    ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                     ->where('barang.id', $id)
                     ->first();
                 }
