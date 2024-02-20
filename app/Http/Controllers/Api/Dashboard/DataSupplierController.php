@@ -125,45 +125,30 @@ class DataSupplierController extends Controller
             $sortName = $request->query('sort_name');
             $sortType = $request->query('sort_type');
 
-            if($keywords) {
-                $suppliers = Supplier::whereNull('supplier.deleted_at')
-                ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                ->select('supplier.kode', 'supplier.nama', 'supplier.alamat', 
-                        DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
-                ->where('supplier.nama', 'like', '%' . $keywords . '%')
-                ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                ->orderBy('supplier.id', 'DESC')
-                ->paginate(10);
-            } else if($kode) {
-                $suppliers = Supplier::whereNull('supplier.deleted_at')
-                ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                ->select('supplier.kode', 'supplier.nama', 'supplier.alamat', 
-                        DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
-                ->where('supplier.kode', 'like', '%' . $keywords . '%')
-                ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                ->orderBy('supplier.id', 'DESC')
-                ->paginate(10);
-            } else {
-                if($sortName && $sortType) {
-                    $suppliers =  Supplier::whereNull('supplier.deleted_at')
-                    ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                    ->select('supplier.kode', 'supplier.nama', 'supplier.alamat', 
-                            DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
-                    ->where('supplier.nama', 'like', '%' . $keywords . '%')
-                    ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                    ->orderBy($sortName, $sortType)
-                    ->paginate(10);
-                } else {
-                    $suppliers =  Supplier::whereNull('supplier.deleted_at')
-                    ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
-                    ->select('supplier.kode', 'supplier.nama', 'supplier.alamat', 
-                            DB::raw('SUM(hutang.jumlah) as jumlah_hutang'))
-                    ->where('supplier.nama', 'like', '%' . $keywords . '%')
-                    ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat')
-                    ->orderBy('supplier.id', 'DESC')
-                    ->paginate(10);
-                }
+            $query = Supplier::whereNull('supplier.deleted_at')
+            ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
+            ->select(
+                'supplier.kode',
+                'supplier.nama',
+                'supplier.alamat',
+                'supplier.email',
+                DB::raw('SUM(hutang.jumlah) as jumlah_hutang'),
+            )
+            ->groupBy('supplier.kode', 'supplier.nama', 'supplier.alamat', 'supplier.email');
+
+            if ($keywords) {
+                $query->where('supplier.nama', 'like', '%' . $keywords . '%');
+            } elseif ($kode) {
+                $query->where('supplier.kode', $kode);
             }
+
+            if ($sortName && $sortType) {
+                $query->orderBy($sortName, $sortType);
+            } else {
+                $query->orderBy('supplier.id', 'DESC');
+            }
+
+            $suppliers = $query->paginate(10);
 
             return new ResponseDataCollect($suppliers);
         } catch (\Throwable $th) {
@@ -310,7 +295,7 @@ class DataSupplierController extends Controller
                 $substringArray[] = substr($i, 0, 1);
             }
 
-        
+
             $update_supplier = Supplier::whereNull('deleted_at')
             ->findOrFail($id);
             $update_supplier->kode = $request->kode ? strtoupper(implode('', $substringArray)) : $update_supplier->kode;
