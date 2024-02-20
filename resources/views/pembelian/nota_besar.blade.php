@@ -28,7 +28,6 @@
     </style>
 </head>
 <body>
-    <br>
     <h4>INVOICE</h4>
     <table width="100%" style="border-collapse: collapse;">
         <tr>
