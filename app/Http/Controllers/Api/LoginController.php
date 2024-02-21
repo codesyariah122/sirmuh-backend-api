@@ -66,8 +66,8 @@ class LoginController extends Controller
                     else :
                         if ($this->forbidenIsUserLogin($user[0]->is_login)) {
                             $last_login = Carbon::parse($user[0]->last_login)->locale('id')->diffForHumans();
-                            $login_data = Login::whereUserId($user[0]->id)
-                            ->firstOrFail();
+                            // $login_data = Login::whereUserId($user[0]->id)
+                            // ->firstOrFail();
 
                             $dashboard = env('DASHBOARD_APP');
 
