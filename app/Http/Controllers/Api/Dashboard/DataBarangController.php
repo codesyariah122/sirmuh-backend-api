@@ -295,6 +295,7 @@ class DataBarangController extends Controller
                 'photo' => 'image|mimes:jpg,png,jpeg|max:2048',
             ]);
 
+            var_dump($request->all()); die;
 
              if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
