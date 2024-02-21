@@ -295,7 +295,6 @@ class DataBarangController extends Controller
                 'photo' => 'image|mimes:jpg,png,jpeg|max:2048',
             ]);
 
-            var_dump($request->all()); die;
 
              if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
@@ -382,7 +381,7 @@ class DataBarangController extends Controller
                 $newBarang->ada_expired_date = "False";
                 $newBarang->expired = NULL;
             }
-            $newBarang->isi = intval($request->isi);
+            $newBarang->isi = $request->isi;
             $newBarang->toko = $request->stok;
             $newBarang->hpp = $request->hargabeli;
             $newBarang->harga_toko = $request->hargajual;
@@ -404,7 +403,7 @@ class DataBarangController extends Controller
 
             $newBarang->kode_barcode = $newBarang->kode;
 
-            if ($request->tglbeli !== NULL) {
+            if ($request->tglbeli !== "null") {
                 $tgl_terakhir = $request->tglbeli;
             } else {
                 $tgl_terakhir = NULL;
