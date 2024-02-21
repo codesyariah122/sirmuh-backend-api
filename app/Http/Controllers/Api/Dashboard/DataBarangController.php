@@ -288,29 +288,6 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         try{
-            $validator = Validator::make($request->all(), [
-                'nama' => 'required',
-                'kategori' => 'required',
-                'stok' => 'required',
-                'photo' => 'image|mimes:jpg,png,jpeg|max:2048',
-            ]);
-
-
-             if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
-
-            $check_barang = Barang::whereNama($request->nama)->get();
-
-
-            if(count($check_barang) > 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Barang dengan nama {$request->nama}, sudah ada / tersedia 🤦!"
-                ]);
-            }
-
             $newBarang = new Barang;
             $kode = explode(' ', $request->nama);
             $substringArray = [];
