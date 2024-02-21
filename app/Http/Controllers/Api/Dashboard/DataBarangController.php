@@ -381,7 +381,7 @@ class DataBarangController extends Controller
                 $newBarang->ada_expired_date = "False";
                 $newBarang->expired = NULL;
             }
-            $newBarang->isi = $request->isi;
+            $newBarang->isi = intval($request->isi);
             $newBarang->toko = $request->stok;
             $newBarang->hpp = $request->hargabeli;
             $newBarang->harga_toko = $request->hargajual;
