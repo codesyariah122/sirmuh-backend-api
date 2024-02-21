@@ -102,7 +102,7 @@ class DataKaryawanController extends Controller
                 return response()->json($validator->errors(), 400);
             }
             $generateName = str_replace(' ', '_', $request->nama);
-            $emailByName = $generateName . '@sirojulmuhtadin.com';
+            $emailByName = $generateName . '@email.com';
             $roleUser = Roles::findOrFail($request->jabatan);
             $roleName = substr($roleUser->name, 0, 3);
 
