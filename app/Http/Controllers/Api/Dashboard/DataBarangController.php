@@ -467,6 +467,7 @@ class DataBarangController extends Controller
         public function show($id)
         {
             try {
+                $namaBarang = null;
                 // $dataBarang = Barang::where('id', $id)
                 // ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'harga_partai', 'harga_cabang', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
                 // ->with(['suppliers' => function($query) {
@@ -480,13 +481,13 @@ class DataBarangController extends Controller
                 ->where('itempembelian.draft','=', 1)
                 ->where('barang.id', $id)
                 ->first();
-
-
+ 
                 if($dataBarang === NULL) {
                     $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                     ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
                     ->where('barang.id', $id)
                     ->first();
+                    $namaBarang = $dataBarang->nama;
                 }
 
                 return response()->json([
