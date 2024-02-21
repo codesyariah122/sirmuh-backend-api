@@ -402,7 +402,7 @@ class DataBarangController extends Controller
             }
 
             $newBarang->kode_barcode = $newBarang->kode;
-            
+
             if ($request->tglbeli) {
                 try {
                     $tgl_terakhir = Carbon::createFromFormat('Y-m-d', $request->tglbeli)->format('Y-m-d');
@@ -410,7 +410,7 @@ class DataBarangController extends Controller
                     return response()->json(['message' => 'Format tanggal tidak valid.'], 400);
                 }
             } else {
-                $tgl_terakhir = Carbon::now()->format('Y-m-d');
+                $tgl_terakhir = NULL;
             }
 
             $newBarang->tgl_terakhir = $tgl_terakhir;
