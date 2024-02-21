@@ -291,12 +291,6 @@ class DataBarangController extends Controller
             $validator = Validator::make($request->all(), [
                 'nama' => 'required',
                 'kategori' => 'required',
-                'supplier' => 'required',
-                'satuanbeli' => 'required',
-                'hargabeli' => 'required',
-                'satuanjual' => 'required',
-                'hargajual' => 'required',
-                'isi' => 'required',
                 'stok' => 'required',
                 'photo' => 'image|mimes:jpg,png,jpeg|max:2048',
             ]);
@@ -481,7 +475,7 @@ class DataBarangController extends Controller
                 ->where('itempembelian.draft','=', 1)
                 ->where('barang.id', $id)
                 ->first();
- 
+
                 if($dataBarang === NULL) {
                     $dataBarang = Barang::select('barang.id', 'barang.kode', 'barang.nama', 'barang.photo', 'barang.kategori', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko', 'barang.gudang', 'barang.hpp', 'barang.harga_toko', 'barang.harga_partai', 'barang.harga_cabang', 'barang.diskon', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.ada_expired_date', 'barang.expired', 'supplier.id as id_supplier','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
                     ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
