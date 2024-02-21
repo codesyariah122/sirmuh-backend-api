@@ -381,11 +381,12 @@ class DataBarangController extends Controller
                 $newBarang->ada_expired_date = "False";
                 $newBarang->expired = NULL;
             }
-            $newBarang->isi = $request->isi;
-            $newBarang->toko = $request->stok;
-            $newBarang->hpp = $request->hargabeli;
-            $newBarang->harga_toko = $request->hargajual;
-            $newBarang->diskon = $request->diskon;
+            
+            $newBarang->isi = $request->isi !== null ? $request->isi : null;
+            $newBarang->toko = $request->stok !== null ? $request->stok : null;
+            $newBarang->hpp = $request->hargabeli !== null ? $request->hargabeli : null;
+            $newBarang->harga_toko = $request->hargajual !== 'null' ? $request->hargajual : null;
+            $newBarang->diskon = $request->diskon !== 'null' ? $request->diskon : null;
 
             $checkSupplier = Supplier::where('nama', $request->supplier)->count();
             if($checkSupplier > 0) {
@@ -403,6 +404,13 @@ class DataBarangController extends Controller
 
             $newBarang->kode_barcode = $newBarang->kode;
 
+            if ($request->tglbeli !== "null") {
+                    $tgl_terakhir = Carbon::createFromFormat('Y-m-d', $request->tglbeli)->format('Y-m-d');
+            } else {
+                $tgl_terakhir = NULL;
+            }
+
+            $newBarang->tgl_terakhir = $tgl_terakhir;
             $newBarang->ket = $request->keterangan ? ucfirst(htmlspecialchars($request->keterangan)) : NULL;
 
             $newBarang->save();
