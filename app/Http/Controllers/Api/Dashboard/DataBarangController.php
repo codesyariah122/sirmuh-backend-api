@@ -404,7 +404,7 @@ class DataBarangController extends Controller
             $newBarang->kode_barcode = $newBarang->kode;
 
             if ($request->tglbeli !== NULL) {
-                $tgl_terakhir = Carbon::createFromFormat('Y-m-d', $request->tglbeli)->format('Y-m-d');
+                $tgl_terakhir = $request->tglbeli;
             } else {
                 $tgl_terakhir = NULL;
             }
