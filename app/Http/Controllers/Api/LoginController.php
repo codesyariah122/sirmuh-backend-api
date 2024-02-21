@@ -27,14 +27,14 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         try {
-            // $validator = Validator::make($request->all(), [
-            //     'email' => 'required|email',
-            //     'password' => 'required'
-            // ]);
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+                'password' => 'required'
+            ]);
 
-            // if ($validator->fails()) {
-            //     return response()->json($validator->errors(), 400);
-            // }
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
 
             $check_userRole = User::whereNull('deleted_at')
             // ->whereDoesntHave('roles', function($query) {
