@@ -81,6 +81,7 @@ class DataItemPembelianController extends Controller
             $itemId = $request->item_id;
             $dataPembelian = Pembelian::findOrFail($id);
 
+
             if($dataPembelian->po === "True") {
                 $updateItemPembelian = ItemPembelian::findOrFail($itemId);
 
@@ -131,8 +132,8 @@ class DataItemPembelianController extends Controller
                 $totalSubtotal = $dataItemPembelian->sum('subtotal');
 
                 $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $totalSubtotal;
-                $dataPembelian->diterima = $totalSubtotal;
+                $dataPembelian->bayar = $dataPembelian->bayar;
+                $dataPembelian->diterima = $dataPembelian->diterima;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                 $dataPembelian->save();
 

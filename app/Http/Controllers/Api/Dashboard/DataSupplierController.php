@@ -126,14 +126,13 @@ class DataSupplierController extends Controller
             $sortType = $request->query('sort_type');
 
             $query = Supplier::whereNull('supplier.deleted_at')
-            ->leftJoin('hutang', 'supplier.kode', '=', 'hutang.supplier')
             ->select(
                 'supplier.id',
                 'supplier.kode',
                 'supplier.nama',
                 'supplier.alamat',
                 'supplier.email',
-                DB::raw('SUM(hutang.jumlah) as jumlah_hutang'),
+                DB::raw('(SELECT SUM(hutang.jumlah) FROM hutang WHERE hutang.supplier = supplier.kode) as jumlah_hutang')
             )
             ->groupBy('supplier.id','supplier.kode', 'supplier.nama', 'supplier.alamat', 'supplier.email');
 

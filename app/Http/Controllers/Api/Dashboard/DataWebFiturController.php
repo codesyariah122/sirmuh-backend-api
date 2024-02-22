@@ -143,7 +143,7 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $deleted = Pembelian::onlyTrashed()
-                ->select('id', 'kode', 'tanggal', 'kode_kas', 'jumlah','bayar','diterima','lunas','operator')
+                ->select('id', 'kode', 'tanggal', 'kode_kas', 'jumlah','bayar','diterima','lunas','operator', 'supplier')
                 ->paginate(10);
                 break;
 
@@ -1028,10 +1028,10 @@ class DataWebFiturController extends Controller
                 'current_password'      => 'required',
                 'new_password'  => [
                     'required', 'confirmed', Password::min(8)
-                    ->mixedCase()
-                    ->letters()
-                    ->numbers()
-                    ->symbols()
+                    // ->mixedCase()
+                    // ->letters()
+                    // ->numbers()
+                    // ->symbols()
                 ]
             ]);
 

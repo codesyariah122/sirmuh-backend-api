@@ -101,8 +101,9 @@ class DataKaryawanController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
-            $generateName = str_replace(' ', '_', $request->nama);
-            $emailByName = $generateName . '@email.com';
+            // $generateName = str_replace('', '', strtolower($request->nama));
+            $generateName = str_replace([' ', 'bapak', 'ibu', 'pak', 'bu','om'], '', strtolower(trim($request->nama)));
+            $emailByName = $generateName . '@sirmuh.com';
             $roleUser = Roles::findOrFail($request->jabatan);
             $roleName = substr($roleUser->name, 0, 3);
 

@@ -180,7 +180,7 @@ class WebFeatureHelpers
 
     public function terbilang($angka)
     {
-        $angka = abs($angka);
+        $angka = abs(floatval($angka));
         $baca  = array('', 'satu', 'dua ', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
         $terbilang = '';
 

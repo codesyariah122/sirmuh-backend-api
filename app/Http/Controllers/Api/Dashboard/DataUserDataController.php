@@ -103,6 +103,7 @@ class DataUserDataController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
+
             $roleUser = Roles::findOrFail($request->role);
             $roleName = substr($roleUser->name, 0, 3);
 
