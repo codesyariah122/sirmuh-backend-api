@@ -135,10 +135,14 @@ class DataPenjualanTokoController extends Controller
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
             $newPenjualanToko->pelanggan = $pelanggan->kode;
             $newPenjualanToko->kode_kas = $kas->kode;
-            $newPenjualanToko->jumlah = $data['jumlah'];
+            if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
+                $newPenjualanToko->jumlah = $data['jumlah'];
+            } else {
+                $newPenjualanToko->jumlah = 0;
+            }
             $newPenjualanToko->bayar = $data['bayar'];
 
-            if($data['piutang']) {
+            if($data['piutang'] !== 'undefined') {
                 $newPenjualanToko->angsuran = $data['bayar'];
                 $newPenjualanToko->lunas = "False";
                 $newPenjualanToko->visa = 'HUTANG';
@@ -172,6 +176,7 @@ class DataPenjualanTokoController extends Controller
                 }
 
                 if(intval($data['bayar']) > intval($data['jumlah'])) {
+                    echo "kadie teu setan"; die;
                     $newPenjualanToko->lunas = "True";
                     $newPenjualanToko->visa = "LUNAS";
                 } else if(intval($data['bayar']) == intval($data['jumlah'])) {
@@ -183,7 +188,7 @@ class DataPenjualanTokoController extends Controller
 
                 // $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 // $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-                $newPenjualanToko->piutang = $data['piutang'];
+                // $newPenjualanToko->piutang = $data['piutang'];
                 $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = "True";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
