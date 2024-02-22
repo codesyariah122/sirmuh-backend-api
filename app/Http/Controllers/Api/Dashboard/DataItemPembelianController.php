@@ -105,6 +105,7 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->bayar = $totalSubtotal;
                 $dataPembelian->diterima = $totalSubtotal;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
+                $dataItemPembelian->last_qty = $request->qty;
                 $dataPembelian->save();
 
                 $data_event = [
