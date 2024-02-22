@@ -1190,8 +1190,9 @@ class DataWebFiturController extends Controller
 
         switch($type) {
             case "pembelian-langsung": 
-            case "purchase-order":
             $generatedCode = $perusahaan->kd_pembelian .'-'. $currentDate . $randomNumber;
+            case "purchase-order":
+            $generatedCode = "PO" .'-'. $currentDate . $randomNumber;
             break;
             case "penjualan-toko":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-'. $currentDate . $randomNumber;
