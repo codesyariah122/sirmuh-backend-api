@@ -55,28 +55,36 @@ class DataPembelianLangsungController extends Controller
             ->select(
                 'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'supplier.nama as nama_supplier'
             )
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-            ->limit(10);
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
+            // ->limit(10);
 
             if ($keywords) {
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
 
-            if(!$viewAll) {
-                $query->whereDate('pembelian.tanggal', '=', $today);
+            if($viewAll) {
+                $pembelians = $query
+                ->where(function ($query) use ($user) {
+                    if ($user->role !== 1) {
+                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                    } 
+                })
+                ->where('pembelian.po', '=', 'False')
+                ->orderByDesc('pembelian.id')
+                ->paginate(10);
+            } else {
+                $pembelians = $query
+                ->where(function ($query) use ($user) {
+                    if ($user->role !== 1) {
+                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                    } 
+                })
+                ->where('pembelian.po', '=', 'False')
+                ->whereDate('pembelian.tanggal', '=', $today)
+                ->orderByDesc('pembelian.id')
+                ->paginate(10);
             }
-
-
-            $pembelians = $query
-            ->where(function ($query) use ($user) {
-                if ($user->role !== 1) {
-                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                } 
-            })
-            ->where('pembelian.po', '=', 'False')
-            ->orderByDesc('pembelian.id')
-            ->paginate(10);
 
             return new ResponseDataCollect($pembelians);
 
