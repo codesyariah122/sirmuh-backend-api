@@ -176,7 +176,6 @@ class DataPenjualanTokoController extends Controller
                 }
 
                 if(intval($data['bayar']) > intval($data['jumlah'])) {
-                    echo "kadie teu setan"; die;
                     $newPenjualanToko->lunas = "True";
                     $newPenjualanToko->visa = "LUNAS";
                 } else if(intval($data['bayar']) == intval($data['jumlah'])) {
