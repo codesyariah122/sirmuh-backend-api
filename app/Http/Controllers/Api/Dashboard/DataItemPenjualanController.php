@@ -109,15 +109,16 @@ class DataItemPenjualanController extends Controller
     {
         try {
             $itemId = $request->item_id;
-
             $dataPembelian = Penjualan::findOrFail($id);
+
 
             if($dataPembelian->po === "True") {
                 $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
 
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
-                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
+                    $updateItemPembelian->last_qty = $updateItemPembelian->qty;
+                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga);
                 }
 
                 if($request->harga) {
@@ -135,6 +136,7 @@ class DataItemPenjualanController extends Controller
                 $dataPembelian->bayar = $totalSubtotal;
                 $dataPembelian->diterima = $totalSubtotal;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
+               
                 $dataPembelian->save();
 
                 $data_event = [
@@ -142,17 +144,28 @@ class DataItemPenjualanController extends Controller
                     'routes' => 'penjualan-toko',
                     'notif' => "Update itempenjualan, successfully update!"
                 ];
-            } else {
+            } else {                
                 $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
+                $qty = $updateItemPembelian->qty;
+                $lastQty = $updateItemPembelian->last_qty;
+                $newQty = $request->qty;
+
+                // echo "Qty = " . $qty;
+                // echo "<br>";
+                // echo "last Qty = " . $lastQty;
+                // echo "<br>";
+                // echo "new qty = " . $newQty;
+                // die;
 
                 if($request->qty) {
-                    $updateItemPembelian->qty = intval($request->qty);
-                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
+                    $updateItemPembelian->qty = $newQty;
+                    $updateItemPembelian->last_qty = $qty;
+                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga);
                 }
 
-                if($request->harga_beli) {
-                    $updateItemPembelian->harga_beli = intval($request->harga_beli);
-                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga_beli);
+                if($request->harga) {
+                    $updateItemPembelian->harga = intval($request->harga);
+                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga);
                 }
 
                 $updateItemPembelian->save();
@@ -162,16 +175,17 @@ class DataItemPenjualanController extends Controller
                 $totalSubtotal = $dataItemPembelian->sum('subtotal');
 
                 $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $totalSubtotal;
-                $dataPembelian->diterima = $totalSubtotal;
+                $dataPembelian->bayar = $dataPembelian->bayar;
+                $dataPembelian->diterima = $dataPembelian->diterima;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                 $dataPembelian->save();
 
                 $data_event = [
                     'type' => 'updated',
-                    'routes' => 'penjualan-toko-edit',
-                    'notif' => "Update itempenjualan toko, successfully update!"
+                    'routes' => 'pembelian-langsung-edit',
+                    'notif' => "Update itempembelian, successfully update!"
                 ];
+
             }
 
             event(new EventNotification($data_event));

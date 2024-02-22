@@ -30,49 +30,36 @@
     </style>
 </head>
 <body>
-    <table width="100%">
+    <h4>INVOICE</h4>
+    <table width="100%" style="border-collapse: collapse;">
         <tr>
-            <td rowspan="6" width="60%">
-                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100">
-                <br>
-                {{ $toko['name'] }}
+            <td style="vertical-align: top;">
+                <b>Kepada</b>
+            </td>
+            <td rowspan="4" width="40%" style="vertical-align: top;">
+                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="150">
                 <br>
                 <address>
                     {{ $toko['address'] }}
                 </address>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                No
-            </td>
-            <td>: {{ $penjualan->kode }}</td>
-        </tr>
-        <tr>
-            <td>Type</td>
-            <td>: {{$penjualan->po == "True" ? "Penjualan P.O" : "Penjualan Toko"}}</td>
-        <tr>
-            <td>
-                Pelanggan
-            </td>
-            <td>: {{ $penjualan->pelanggan_nama }}
-                @if($penjualan->pelanggan_alamat)
-               <br>
-               <address>
-                {{ $penjualan->pelanggan_alamat ?? '-' }}
-                </address>
-                @endif
                 <br>
+                {{$helpers->format_tanggal($penjualan['tanggal'])}}
+                <br>
+                <b>NO INVOICE : </b>
+                <b>{{$penjualan->kode}}</b>
             </td>
         </tr>
-        @if($penjualan->lunas !== "True")
         <tr>
             <td>
-                Jenis Pembayaran
+                {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
             </td>
-            <td>: {{ $penjualan->visa }}</td>
         </tr>
-        @endif
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
+        </tr>
     </table>
 
     <table class="data" width="100%" style="margin-top:15px;">

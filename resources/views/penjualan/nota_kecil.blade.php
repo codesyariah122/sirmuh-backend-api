@@ -69,7 +69,7 @@
         <br/>
         <p>No : {{ $penjualan->kode }}</p>
         <p>Tgl Transaksi : {{ $penjualan->tanggal }}</p>
-        <p>Pelanggan : {{ $penjualan->pelanggan_nama }}</p>
+        <p>Pelanggan : {{ $penjualan->pelanggan_nama }}({{$penjualan->pelanggan}})</p>
         <p>
             <address>
                 {{ $penjualan->alamat_supplier }}
