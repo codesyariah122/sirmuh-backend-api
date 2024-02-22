@@ -87,6 +87,7 @@ class DataItemPembelianController extends Controller
 
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
+                    $updateItemPembelian->last_qty = $updateItemPembelian->qty;
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
                 }
 
@@ -105,7 +106,7 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->bayar = $totalSubtotal;
                 $dataPembelian->diterima = $totalSubtotal;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
-                $dataItemPembelian->last_qty = $request->qty;
+               
                 $dataPembelian->save();
 
                 $data_event = [
@@ -115,9 +116,20 @@ class DataItemPembelianController extends Controller
                 ];
             } else {                
                 $updateItemPembelian = ItemPembelian::findOrFail($itemId);
+                $qty = $updateItemPembelian->qty;
+                $lastQty = $updateItemPembelian->last_qty;
+                $newQty = $request->qty;
+
+                // echo "Qty = " . $qty;
+                // echo "<br>";
+                // echo "last Qty = " . $lastQty;
+                // echo "<br>";
+                // echo "new qty = " . $newQty;
+                // die;
 
                 if($request->qty) {
-                    $updateItemPembelian->qty = intval($request->qty);
+                    $updateItemPembelian->qty = $newQty;
+                    $updateItemPembelian->last_qty = $qty;
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
                 }
 

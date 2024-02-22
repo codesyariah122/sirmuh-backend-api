@@ -25,9 +25,9 @@ class UsersAdminTableSeeder extends Seeder
     public function run()
     {
         $administrator = new User;
-        $administrator->name = "admin sirmuh";
-        $administrator->email = "admin@sirojulmuhtadin.com";
-        $administrator->password = Hash::make("Admin@123654");
+        $administrator->name = "komarasari";
+        $administrator->email = "komarasari5@gmail.com";
+        $administrator->password = Hash::make("Admin@123");
         $administrator->is_login = 0;
         $initial = $this->initials($administrator->name);
         $path = public_path().'/thumbnail_images/users/';
