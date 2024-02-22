@@ -46,6 +46,7 @@ class DataPembelianLangsungController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $viewAll = $request->query('view_all');
             $today = now()->toDateString();
 
             $user = Auth::user();
@@ -61,7 +62,10 @@ class DataPembelianLangsungController extends Controller
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
-            $query->whereDate('pembelian.tanggal', '=', $today);
+
+            if(!$viewAll) {
+                $query->whereDate('pembelian.tanggal', '=', $today);
+            }
 
 
             $pembelians = $query
