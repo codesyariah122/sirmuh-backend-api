@@ -72,7 +72,7 @@ class DataPembelianLangsungController extends Controller
                 })
                 ->where('pembelian.po', '=', 'False')
                 ->orderByDesc('pembelian.id')
-                ->paginate(10);
+                ->get();
             } else {
                 $pembelians = $query
                 ->where(function ($query) use ($user) {
