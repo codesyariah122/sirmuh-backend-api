@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles};
 use Auth;
 use PDF;
 
@@ -35,8 +35,10 @@ class DataPurchaseOrderController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax',
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
             )
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->limit(10);
 
             if ($keywords) {
@@ -133,7 +135,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
             $newPembelian->kode = $data['ref_code'];
             $newPembelian->draft = 0;
-            // $newPembelian->supplier = $supplier->kode;
+            $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
@@ -352,6 +354,38 @@ class DataPurchaseOrderController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+           $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+                $delete_pembelian = Pembelian::whereNull('deleted_at')
+                ->findOrFail($id);
+                $delete_pembelian->delete();
+
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'purchase-order',
+                    'type' => 'removed',
+                    'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pembelian dengan kode, {$delete_pembelian->kode} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

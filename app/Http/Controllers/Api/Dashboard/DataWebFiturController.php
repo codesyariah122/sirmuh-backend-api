@@ -153,6 +153,13 @@ class DataWebFiturController extends Controller
                 ->paginate(10);
                 break;
 
+                case 'PURCHASE_ORDER':
+                $deleted = Pembelian::onlyTrashed()
+                ->select('id', 'kode', 'tanggal', 'kode_kas', 'jumlah','bayar')
+                ->where('po', 'True')
+                ->paginate(10);
+                break;
+
                 default:
                 $deleted = [];
                 break;
@@ -375,6 +382,23 @@ class DataWebFiturController extends Controller
                     'type' => 'restored',
                     'routes' => 'penjualan-toko',
                     'notif' => "Penjualan, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'PEMBELIAN_LANGSUNG':
+                $restored_biaya = Pembelian::onlyTrashed()
+                ->where('po', 'True')
+                ->findOrFail($id);
+                $restored_biaya->restore();
+                $restored = Pembelian::findOrFail($id);
+                $name = $restored->kode;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'purchase-order',
+                    'notif' => "Pembelian, {$name} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
@@ -611,6 +635,40 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'PURCHASE_ORDER':
+                $deleted = Pembelian::onlyTrashed()
+                ->where('po', 'True')
+                ->findOrFail($id);
+                $kas = Kas::whereKode($deleted->kode_kas)->first();
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = intval($kas->saldo) + intval($deleted->jumlah);
+                $updateKas->save();
+                
+                $items = ItemPembelian::whereKode($deleted->kode)->get();
+                foreach($items as $item) {
+                    $barangs = Barang::whereKode($item->kode_barang)->get();
+                    foreach($barangs as $barang) {
+                        $reverse = $barang->toko - $item->qty;
+                        $barang->toko  = $reverse;
+                        $barang->last_qty = NULL;
+                        $barang->save();
+                    }
+                }
+
+                ItemPembelian::whereKode($deleted->kode)->forceDelete();
+                $deleted->forceDelete();
+
+                $message = "Data pembelian, {$deleted->kode} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'pembelian-langsung',
+                    'notif' => "Pembelian, {$deleted->kode} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
 
                 default:
                 $deleted = [];
@@ -674,6 +732,12 @@ class DataWebFiturController extends Controller
 
                 case 'PENJUALAN_TOKO':
                 $countTrash = Penjualan::onlyTrashed()
+                ->get();
+                break;
+
+                case 'PURCHASE_ORDER':
+                $countTrash = Pembelian::onlyTrashed()
+                ->where('po', 'True')
                 ->get();
                 break;
 
