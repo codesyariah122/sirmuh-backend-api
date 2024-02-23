@@ -74,7 +74,7 @@
         <p>Alamat Supplier : {{ $pembelian->alamat_supplier }}</p> --}}
         <p>Operator : {{ strtoupper($pembelian->operator) }}</p>
         @if($pembelian->visa === 'HUTANG')
-        <p>Pembayaran : {{$pembelian->visa}}</p>
+        <p>Pembayaran : {{$pembelian->po == 'True' ? 'DP Awal' : $pembelian->visa}}</p>
         @endif
         <p class="text-center">===================================</p>
          <table width="100%" style="border: 0;">
