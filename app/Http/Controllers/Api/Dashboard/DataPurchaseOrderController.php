@@ -159,7 +159,7 @@ class DataPurchaseOrderController extends Controller
 
             $diterima = intval($newPembelian->diterima);
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) + $diterima;
+            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
             $updateKas->save();
 
             $userOnNotif = Auth::user();
@@ -362,7 +362,12 @@ class DataPurchaseOrderController extends Controller
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 $delete_pembelian = Pembelian::whereNull('deleted_at')
                 ->findOrFail($id);
-                $delete_pembelian->delete();
+                $delete_pembelian->forceDelete();
+
+                $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = intval($kas->saldo) + intval($delete_pembelian->jumlah);
+                $updateKas->save();
 
                 $data_event = [
                     'alert' => 'error',
