@@ -149,7 +149,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
-            $newPembelian->save();
+            // $newPembelian->save();
             
             $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
             foreach($updateDrafts as $idx => $draft) {
@@ -360,8 +360,7 @@ class DataPurchaseOrderController extends Controller
             $userRole = Roles::findOrFail($user->role);
 
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-                $delete_pembelian = Pembelian::whereNull('deleted_at')
-                ->findOrFail($id);
+                $delete_pembelian = Pembelian::findOrFail($id);
                 $delete_pembelian->forceDelete();
 
                 $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
