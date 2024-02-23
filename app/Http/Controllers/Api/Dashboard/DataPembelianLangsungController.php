@@ -55,7 +55,7 @@ class DataPembelianLangsungController extends Controller
             ->select(
                 'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'supplier.nama as nama_supplier'
             )
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->limit(10);
 
             if ($keywords) {
