@@ -159,7 +159,7 @@ class DataPurchaseOrderController extends Controller
 
             $diterima = intval($newPembelian->diterima);
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
+            $updateKas->saldo = intval($updateKas->saldo) + $diterima;
             $updateKas->save();
 
             $userOnNotif = Auth::user();

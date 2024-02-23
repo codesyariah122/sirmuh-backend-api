@@ -155,7 +155,7 @@ class DataWebFiturController extends Controller
 
                 case 'PURCHASE_ORDER':
                 $deleted = Pembelian::onlyTrashed()
-                ->select('id', 'kode', 'tanggal', 'kode_kas', 'jumlah','bayar')
+                ->select('id', 'kode', 'tanggal', 'kode_kas', 'supplier', 'jumlah','bayar')
                 ->where('po', 'True')
                 ->paginate(10);
                 break;
@@ -643,7 +643,7 @@ class DataWebFiturController extends Controller
                 $updateKas = Kas::findOrFail($kas->id);
                 $updateKas->saldo = intval($kas->saldo) + intval($deleted->jumlah);
                 $updateKas->save();
-                
+
                 $items = ItemPembelian::whereKode($deleted->kode)->get();
                 foreach($items as $item) {
                     $barangs = Barang::whereKode($item->kode_barang)->get();
