@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Dashboard;
 
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -387,7 +388,7 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
-                case 'PEMBELIAN_LANGSUNG':
+                case 'PURCHASE_ORDER':
                 $restored_biaya = Pembelian::onlyTrashed()
                 ->where('po', 'True')
                 ->findOrFail($id);
@@ -1917,4 +1918,31 @@ public function check_password_access()
         throw $th;
     }
 }
+
+public function checkInternetConnection()
+{
+    $urlToCheck = 'https://sirmuh.api.dksindo.com';
+    try {
+        $startTime = microtime(true);
+
+        $response = Http::get($urlToCheck);
+
+        $endTime = microtime(true);
+        $elapsedTime = $endTime - $startTime;
+
+        // Bulatkan waktu ke dua desimal
+        $elapsedTimeRounded = round($elapsedTime, 2);
+
+        $speedInKbps = ($response->getBody()->getSize() * 8) / ($elapsedTime * 1024);
+
+        return response()->json([
+            'success' => true,
+            'time_taken' => $elapsedTimeRounded,
+            'speed' => ceil($speedInKbps),
+        ]);
+    } catch (\Exception $e) {
+        return false; // Terjadi kesalahan, misalnya tidak dapat terhubung ke server
+    }
+}
+
 }

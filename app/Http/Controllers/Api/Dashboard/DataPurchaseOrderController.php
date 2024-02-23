@@ -45,19 +45,29 @@ class DataPurchaseOrderController extends Controller
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
-            if(!$viewAll) {
+            if($viewAll) {
+                $pembelians = $query
+                ->where(function ($query) use ($user) {
+                    if ($user->role !== 1) {
+                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                    } 
+                })
+                ->where('pembelian.po', '=', 'True')
+                ->orderByDesc('pembelian.id')
+                ->paginate(10);
+            } else {
                 $query->whereDate('pembelian.tanggal', '=', $today);
+                $pembelians = $query
+                ->where(function ($query) use ($user) {
+                    if ($user->role !== 1) {
+                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                    } 
+                })
+                ->where('pembelian.po', '=', 'True')
+                ->orderByDesc('pembelian.id')
+                ->paginate(10);
             }
 
-            $pembelians = $query
-            ->where(function ($query) use ($user) {
-                if ($user->role !== 1) {
-                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                } 
-            })
-            ->where('pembelian.po', '=', 'True')
-            ->orderByDesc('pembelian.id')
-            ->paginate(10);
 
             return new ResponseDataCollect($pembelians);
 
@@ -149,7 +159,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
-            // $newPembelian->save();
+            $newPembelian->save();
             
             $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
             foreach($updateDrafts as $idx => $draft) {
@@ -159,7 +169,7 @@ class DataPurchaseOrderController extends Controller
 
             $diterima = intval($newPembelian->diterima);
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
+            $updateKas->saldo = intval($updateKas->saldo) - $newPembelian->jumlah;
             $updateKas->save();
 
             $userOnNotif = Auth::user();
@@ -360,8 +370,8 @@ class DataPurchaseOrderController extends Controller
             $userRole = Roles::findOrFail($user->role);
 
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-                $delete_pembelian = Pembelian::findOrFail($id);
-                $delete_pembelian->forceDelete();
+                $delete_pembelian = Pembelian::withoutTrashed()->findOrFail($id);
+                $delete_pembelian->delete();
 
                 $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
                 $updateKas = Kas::findOrFail($kas->id);

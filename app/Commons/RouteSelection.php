@@ -48,6 +48,12 @@ class RouteSelection {
 
 	private static $listRoutes = [
 		[
+			'endPoint' => '/ping-test',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'checkInternetConnection']
+		],
+
+		[
 			'endPoint' => '/logout',
 			'method' => 'post',
 			'controllers' => [LoginController::class, 'logout']
