@@ -284,18 +284,12 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
             var_dump($diterima);
             var_dump($updatePembelian->jumlah);
-            var_dump($bayar);
-
-            die;
+            var_dump($bayar);            
+            
             if($diterima > $updatePembelian->jumlah) {
-                $updatePembelian->lunas = "True";
-                $updatePembelian->visa = "LUNAS";
-            } else if($diterima == $updatePembelian->jumlah) {
-                $updatePembelian->lunas = "True";
-                $updatePembelian->visa = "UANG PAS";
-            } else {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
+
                 $updatePembelian->hutang = $hutang;
 
                 $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
@@ -307,15 +301,20 @@ class DataPurchaseOrderController extends Controller
                 $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
                 $updateItemHutang->jumlah = $updatePembelian->hutang;
                 $updateItemHutang->save();
-                $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
-                ->where('angsuran_ke', 1)
-                ->first();
-                $updateAngsuran = PembayaranAngsuran::findOrFail($dataPembayaranAngsuran->id);
-                $updateAngsuran->bayar_angsuran = $updatePembelian->diterima;
-                $updateAngsuran->jumlah = $updatePembelian->hutang;
-                $updateAngsuran->save();
+                // $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
+                // ->where('angsuran_ke', 1)
+                // ->first();
+                // // $updateAngsuran = PembayaranAngsuran::findOrFail($dataPembayaranAngsuran->id);
+                // // $updateAngsuran->bayar_angsuran = $updatePembelian->diterima;
+                // // $updateAngsuran->jumlah = $updatePembelian->hutang;
+                // // $updateAngsuran->save();
+            } else if($diterima == $updatePembelian->jumlah) {
+                $updatePembelian->lunas = "True";
+                $updatePembelian->visa = "DP AWAL";
+            } else {
+                $updatePembelian->lunas = "True";
+                $updatePembelian->visa = "DP AWAL";
             }
-
             $updatePembelian->save();
 
             $updateKas = Kas::findOrFail($kas->id);
