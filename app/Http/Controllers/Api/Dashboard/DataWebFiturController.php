@@ -671,7 +671,7 @@ class DataWebFiturController extends Controller
                 $data_event = [
                     'alert' => 'error',
                     'type' => 'destroyed',
-                    'routes' => 'pembelian-langsung',
+                    'routes' => 'purchase-order',
                     'notif' => "Pembelian, {$deleted->kode} has permanently deleted!",
                     'data' => $deleted->deleted_at,
                     'user' => Auth::user()
