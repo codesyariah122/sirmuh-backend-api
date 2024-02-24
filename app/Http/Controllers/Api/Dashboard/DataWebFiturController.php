@@ -1514,7 +1514,6 @@ class DataWebFiturController extends Controller
                     'itempembelian_id' => $lastItemPembelianId
                 ], 200);
             } else {
-
                 foreach($barangs as $barang) {
                     $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
                         // Update Barang

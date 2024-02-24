@@ -59,6 +59,12 @@
         <tr>
             <td>Kasir:  {{ strtoupper($pembelian->operator) }}</td>
         </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Type: {{$pembelian->po == 'True' ? 'Pembelian P.O' : 'Pembelian Langsung'}}</td>
+        </tr>
     </table>
 
     <br/>
@@ -90,22 +96,33 @@
         <tfoot>
             @if($pembelian->po === 'False')
                 <tr>
+                    <td colspan="6" class="text-right"><b>Diskon</b></td>
+                    <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
+                </tr>
+                <tr>
                     <td colspan="6" class="text-right"><b>Total Bayar</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
                 </tr>
             @endif
+            
+            
+            @if($pembelian->visa === 'HUTANG')
+            <tr>
+                <td colspan="6" class="text-right"><b>Total Item Diterima</b></td>
+                @foreach ($barangs as $key => $item)
+                <td class="text-right"><b>{{ $helpers->format_uang($item->subtotal) }}</b></td>
+                @endforeach
+            </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
             </tr>
-            
-            @if($pembelian->visa === 'HUTANG')
             <tr>
                 <td colspan="6" class="text-right"><b>Bayar DP</b></td>
                 <td class="text-right"><b>{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>
             <tr>
-                <td colspan="6" class="text-right"><b>Hutang</b></td>
+                <td colspan="6" class="text-right"><b>Sisa DP</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
             </tr>
             @else

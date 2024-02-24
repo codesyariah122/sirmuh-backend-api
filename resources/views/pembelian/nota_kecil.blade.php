@@ -100,10 +100,19 @@
     </table>
         <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
-            <tr>
-                <td>Total Bayar:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
-            </tr>
+            @if($pembelian->po == 'False')
+                <tr>
+                    <td>Total Bayar:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
+                </tr>
+            @else
+                <tr>
+                    @foreach($barangs as $item)
+                        <td>Total Item Diterima:</td>
+                        <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
+                    @endforeach
+                </tr>
+            @endif
             {{-- @if(count($barangs) > 0)
                 <tr>
                     <td>Total Item:</td>
@@ -129,10 +138,17 @@
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>
             </tr>
             @if($pembelian->visa === 'HUTANG')
-            <tr>
-                <td>Bayar DP:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
-            </tr>
+            @if($pembelian->po == 'False')
+                <tr>
+                    <td>Bayar DP:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+            @else
+                <tr>
+                    <td>DP Awal:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+            @endif
             @else
             <tr>
                 <td>Diterima:</td>
@@ -140,10 +156,17 @@
             </tr>
             @endif
             @if($pembelian->visa === 'HUTANG')
-            <tr>
-                <td>Hutang:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
-            </tr>
+                @if($pembelian->po == 'False')
+                <tr>
+                    <td>Hutang:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                </tr>
+                @else
+                <tr>
+                    <td>Sisa DP:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                </tr>
+                @endif
             @else
             <tr>
                 <td>Kembali:</td>

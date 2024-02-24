@@ -102,8 +102,8 @@ class DataItemPembelianController extends Controller
 
                 $totalSubtotal = $dataItemPembelian->sum('subtotal');
 
-                $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $totalSubtotal;
+                $dataPembelian->jumlah = $dataPembelian->jumlah;
+                $dataPembelian->bayar = $dataPembelian->jumlah;
                 $dataPembelian->diterima = $totalSubtotal;
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                
