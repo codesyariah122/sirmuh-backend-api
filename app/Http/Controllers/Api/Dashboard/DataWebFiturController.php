@@ -1271,6 +1271,10 @@ class DataWebFiturController extends Controller
             case "penjualan-toko":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-'. $currentDate . $randomNumber;
             break;
+            case "mutasi-kas":
+            $generatedCode = $perusahaan->kd_mutasi_kas . '-' . $currentDate . $randomNumber;
+            break;
+
         }
 
         $data = [

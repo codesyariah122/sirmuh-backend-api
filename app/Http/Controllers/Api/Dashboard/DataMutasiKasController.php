@@ -26,6 +26,7 @@ class DataMutasiKasController extends Controller
     {
         try {
             $mutasikas = MutasiKas::whereNull('deleted_at')
+            ->orderByDesc('id')
             ->paginate(10);
 
             return new ResponseDataCollect($mutasikas);
@@ -62,6 +63,9 @@ class DataMutasiKasController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
+            $currentDate = now()->format('ymd');
+
+
             $kas_id = $request->kas_id;
             $destination = $request->destination;
             $jumlah = $request->jumlah;
@@ -73,6 +77,16 @@ class DataMutasiKasController extends Controller
             $destKas = Kas::findOrFail($destination);
             $destKas->saldo = intval($destKas->saldo) + intval($jumlah);
             $destKas->save();
+
+            $newMutasiKas = new MutasiKas;
+            $newMutasiKas->kode = $request->kode;
+            $newMutasiKas->tanggal = $currentDate;
+            $newMutasiKas->debet = $ownKas->kode;
+            $newMutasiKas->kredit = $destKas->kode;
+            $newMutasiKas->keterangan = $request->keterangan;
+            $newMutasiKas->rupiah = $request->jumlah;
+            $newMutasiKas->operator = $request->operator;
+            $newMutasiKas->save();
 
             $userOnNotif = Auth::user();
 
