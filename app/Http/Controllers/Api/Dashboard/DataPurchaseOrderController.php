@@ -282,6 +282,11 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
             $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
+            var_dump($diterima);
+            var_dump($updatePembelian->jumlah);
+            var_dump($bayar);
+
+            die;
             if($diterima > $updatePembelian->jumlah) {
                 $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
