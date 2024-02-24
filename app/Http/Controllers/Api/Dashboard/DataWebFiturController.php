@@ -145,6 +145,7 @@ class DataWebFiturController extends Controller
                 case 'PEMBELIAN_LANGSUNG':
                 $deleted = Pembelian::onlyTrashed()
                 ->select('id', 'kode', 'tanggal', 'kode_kas', 'jumlah','bayar','diterima','lunas','operator', 'supplier')
+                ->where('po', 'False')
                 ->paginate(10);
                 break;
 
@@ -358,6 +359,7 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $restored_biaya = Pembelian::onlyTrashed()
+                ->where('po', 'False')
                 ->findOrFail($id);
                 $restored_biaya->restore();
                 $restored = Pembelian::findOrFail($id);
@@ -582,6 +584,7 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $deleted = Pembelian::onlyTrashed()
+                ->where('po', 'False')
                 ->findOrFail($id);
                 $items = ItemPembelian::whereKode($deleted->kode)->get();
                 foreach($items as $item) {
@@ -728,6 +731,7 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $countTrash = Pembelian::onlyTrashed()
+                ->where('po', 'False')
                 ->get();
                 break;
 
