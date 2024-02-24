@@ -359,7 +359,6 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $restored_biaya = Pembelian::onlyTrashed()
-                ->where('po', 'False')
                 ->findOrFail($id);
                 $restored_biaya->restore();
                 $restored = Pembelian::findOrFail($id);
@@ -392,7 +391,6 @@ class DataWebFiturController extends Controller
 
                 case 'PURCHASE_ORDER':
                 $restored_biaya = Pembelian::onlyTrashed()
-                ->where('po', 'True')
                 ->findOrFail($id);
                 $restored_biaya->restore();
                 $restored = Pembelian::findOrFail($id);
@@ -584,7 +582,6 @@ class DataWebFiturController extends Controller
 
                 case 'PEMBELIAN_LANGSUNG':
                 $deleted = Pembelian::onlyTrashed()
-                ->where('po', 'False')
                 ->findOrFail($id);
                 $kas = Kas::whereKode($deleted->kode_kas)->first();
                 $updateKas = Kas::findOrFail($kas->id);
@@ -646,7 +643,6 @@ class DataWebFiturController extends Controller
 
                 case 'PURCHASE_ORDER':
                 $deleted = Pembelian::onlyTrashed()
-                ->where('po', 'True')
                 ->findOrFail($id);
                 $kas = Kas::whereKode($deleted->kode_kas)->first();
                 $updateKas = Kas::findOrFail($kas->id);
@@ -1265,6 +1261,7 @@ class DataWebFiturController extends Controller
         switch($type) {
             case "pembelian-langsung": 
             $generatedCode = $perusahaan->kd_pembelian .'-'. $currentDate . $randomNumber;
+            break;
             case "purchase-order":
             $generatedCode = "PO" .'-'. $currentDate . $randomNumber;
             break;
