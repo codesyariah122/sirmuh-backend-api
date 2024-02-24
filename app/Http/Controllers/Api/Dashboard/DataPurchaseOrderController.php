@@ -371,6 +371,7 @@ class DataPurchaseOrderController extends Controller
 
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 $delete_pembelian = Pembelian::whereNull('deleted_at')
+                ->where('po', 'True')
                 ->findOrFail($id);
                 $delete_pembelian->delete();
 
