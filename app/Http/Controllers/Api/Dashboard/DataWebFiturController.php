@@ -586,6 +586,10 @@ class DataWebFiturController extends Controller
                 $deleted = Pembelian::onlyTrashed()
                 ->where('po', 'False')
                 ->findOrFail($id);
+                $kas = Kas::whereKode($deleted->kode_kas)->first();
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = intval($kas->saldo) + intval($deleted->jumlah);
+                $updateKas->save();
                 $items = ItemPembelian::whereKode($deleted->kode)->get();
                 foreach($items as $item) {
                     $barangs = Barang::whereKode($item->kode_barang)->get();
