@@ -1472,6 +1472,7 @@ class DataWebFiturController extends Controller
                         $existingItem->save();
                         $lastItemPembelianId = $existingItem->id;
                     } else {
+
                         $draftItemPembelian = new ItemPembelian;
                         $draftItemPembelian->kode = $kode;
                         $draftItemPembelian->draft = $draft;
@@ -1487,7 +1488,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->harga_toko = $dataBarang->harga_toko;
                         $draftItemPembelian->harga_cabang = $dataBarang->harga_cabang;
                         $draftItemPembelian->harga_partai = $dataBarang->harga_partai;
-                        $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
+                        $draftItemPembelian->subtotal = $barang['qty'] > 0 ? $dataBarang->hpp * $barang['qty'] : $dataBarang->hpp;
                         $draftItemPembelian->isi = $dataBarang->isi;
 
                         if($barang['diskon']) {
@@ -1537,6 +1538,7 @@ class DataWebFiturController extends Controller
                         $updateExistingItem->save();
                         $lastItemPembelianId = $updateExistingItem->id;
                     } else {
+                        
                         $draftItemPembelian = new ItemPembelian;
                         $draftItemPembelian->kode = $kode;
                         $draftItemPembelian->draft = 1;
@@ -1551,7 +1553,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->harga_toko = $dataBarang->harga_toko;
                         $draftItemPembelian->harga_cabang = $dataBarang->harga_cabang;
                         $draftItemPembelian->harga_partai = $dataBarang->harga_partai;
-                        $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
+                        $draftItemPembelian->subtotal = $barang['qty'] > 0 ? $dataBarang->hpp * $barang['qty'] : $dataBarang->hpp;
                         $draftItemPembelian->isi = $dataBarang->isi;
 
                         if($barang['diskon']) {

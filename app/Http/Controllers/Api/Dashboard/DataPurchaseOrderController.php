@@ -125,9 +125,6 @@ class DataPurchaseOrderController extends Controller
 
             $barangIds = array_column($dataBarangs, 'id');
             $barangs = Barang::whereIn('id', $barangIds)->get();
-            // $updateStokBarang = Barang::findOrFail($data['barang']);
-            // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
-            // $updateStokBarang->save();
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
