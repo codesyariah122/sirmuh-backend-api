@@ -370,13 +370,14 @@ class DataPurchaseOrderController extends Controller
             $userRole = Roles::findOrFail($user->role);
 
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-                $delete_pembelian = Pembelian::withoutTrashed()->findOrFail($id);
+                $delete_pembelian = Pembelian::whereNull('deleted_at')
+                ->findOrFail($id);
                 $delete_pembelian->delete();
 
-                $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
-                $updateKas = Kas::findOrFail($kas->id);
-                $updateKas->saldo = intval($kas->saldo) + intval($delete_pembelian->jumlah);
-                $updateKas->save();
+                // $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
+                // $updateKas = Kas::findOrFail($kas->id);
+                // $updateKas->saldo = intval($kas->saldo) + intval($delete_pembelian->jumlah);
+                // $updateKas->save();
 
                 $data_event = [
                     'alert' => 'error',
