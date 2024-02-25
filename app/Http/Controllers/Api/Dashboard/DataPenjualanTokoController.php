@@ -192,6 +192,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->receive = "True";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
             }
+            $newPenjualanToko->jenis = "PENJUALAN TOKO";
             $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPenjualanToko->operator = $data['operator'];
 
