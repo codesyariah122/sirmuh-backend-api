@@ -90,11 +90,11 @@ class DataItemPembelianController extends Controller
                     $updateItemPembelian->last_qty = $request->last_qty;
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
 
-                    $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)
-                    ->first();
-                    $updateStok = Barang::findOrFail($dataBarang->id);
-                    $updateStok->toko = $dataBarang->toko + intval($request->qty);;
-                    $updateStok->save();
+                    // $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)
+                    // ->first();
+                    // $updateStok = Barang::findOrFail($dataBarang->id);
+                    // $updateStok->toko = $dataBarang->toko + intval($request->qty);;
+                    // $updateStok->save();
                 }
 
                 if($request->harga_beli) {

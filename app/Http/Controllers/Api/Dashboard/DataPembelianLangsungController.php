@@ -62,7 +62,6 @@ class DataPembelianLangsungController extends Controller
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
-
             if($viewAll) {
                 $pembelians = $query
                 ->where(function ($query) use ($user) {
