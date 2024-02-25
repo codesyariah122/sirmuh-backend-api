@@ -122,12 +122,12 @@ class DataPenjualanTokoController extends Controller
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
-            if($kas->saldo < $data['diterima']) {
-                return response()->json([
-                    'error' => true,
-                    'message' => "Saldo tidak mencukupi!!"
-                ]);
-            }
+            // if($kas->saldo < $data['diterima']) {
+            //     return response()->json([
+            //         'error' => true,
+            //         'message' => "Saldo tidak mencukupi!!"
+            //     ]);
+            // }
 
             $newPenjualanToko = new Penjualan;
             $newPenjualanToko->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
