@@ -148,7 +148,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
             $newPembelian->lunas = "False";
-            $newPembelian->visa = "HUTANG";
+            $newPembelian->visa = "DP AWAL";
             $newPembelian->hutang = $data['hutang'];
             $newPembelian->po = 'True';
             $newPembelian->receive = "False";
@@ -264,8 +264,6 @@ class DataPurchaseOrderController extends Controller
 
             $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
             $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
-            $hutang = $data['hutang'];
-
             $updatePembelian = Pembelian::findOrFail($id);
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
@@ -286,18 +284,6 @@ class DataPurchaseOrderController extends Controller
             if($diterima > $updatePembelian->jumlah) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
-
-                $updatePembelian->hutang = $hutang;
-
-                $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
-                $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
-                $updateHutang = Hutang::findOrFail($dataHutang->id);
-                $updateHutang->jumlah = $updatePembelian->hutang;
-                $updateHutang->save();
-                $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
-                $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
-                $updateItemHutang->jumlah = $updatePembelian->hutang;
-                $updateItemHutang->save();
                 // $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
                 // ->where('angsuran_ke', 1)
                 // ->first();
@@ -310,12 +296,30 @@ class DataPurchaseOrderController extends Controller
                 $updateKas->save();
             } else if($diterima == $updatePembelian->jumlah) {
                 $updatePembelian->lunas = "False";
-                $updatePembelian->visa = "DP AWAL";
             } else {
                 $updatePembelian->lunas = "False";
-                $updatePembelian->visa = "DP AWAL";
             }
+
+            // echo "<pre>";
+            // var_dump($updatePembelian);
+            // echo "<pre>";
+
+            // var_dump($data['hutang']); die;
+
+            $updatePembelian->hutang = $data['hutang'];
             $updatePembelian->save();
+
+            // $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
+            // $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
+            // $updateHutang = Hutang::findOrFail($dataHutang->id);
+            // $updateHutang->jumlah = $updatePembelian->hutang;
+            // $updateHutang->save();
+            // $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
+            // $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
+            // $updateItemHutang->jumlah = $updatePembelian->hutang;
+
+            // $updateItemHutang->save();
+
 
             $dataItem = ItemPembelian::whereKode($updatePembelian->kode)->first();
             $dataBarang = Barang::whereKode($dataItem->kode_barang)
@@ -352,7 +356,8 @@ class DataPurchaseOrderController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Data pembelian , berhasil diupdate 👏🏿"
+                    'message' => "Data pembelian , berhasil diupdate 👏🏿",
+                    'data' => $updatePembelian
                 ]);
             }
         } catch (\Throwable $th) {
