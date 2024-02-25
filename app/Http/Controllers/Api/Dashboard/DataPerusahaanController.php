@@ -43,7 +43,7 @@ class DataPerusahaanController extends Controller
     {
         try {
             $tokos = Toko::whereNull('deleted_at')
-            ->with('users')
+            ->with(['users:id,name,email,phone,role'])
             ->take(2)
             ->get();
 
