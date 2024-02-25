@@ -58,7 +58,6 @@ class LoginController extends Controller
                         'message' => 'Your email not registered !'
                     ]);
                 } else {
-
                     if (!Hash::check($request->password, $user->password)) :
                         return response()->json([
                             'success' => false,
@@ -104,65 +103,65 @@ class LoginController extends Controller
                                 'data' => $users,
                                 'menus' => $menus
                             ]);
-                        }
-
-                        $token = $user->createToken($user->name)->accessToken;
-
-                        $user_login = User::findOrFail($user->id);
-                        $user_login->is_login = 1;
-
-                        if ($request->remember_me) {
-                            $dates = Carbon::now()->addDays(31);
-                            $user_login->expires_at = $dates;
-                            $user_login->remember_token = $user->createToken('RememberMe')->accessToken;
                         } else {
-                            $user_login->expires_at = Carbon::now()->addRealDays(1);
+                            $token = $user->createToken($user->name)->accessToken;
+
+                            $user_login = User::findOrFail($user->id);
+                            $user_login->is_login = 1;
+
+                            if ($request->remember_me) {
+                                $dates = Carbon::now()->addDays(31);
+                                $user_login->expires_at = $dates;
+                                $user_login->remember_token = $user->createToken('RememberMe')->accessToken;
+                            } else {
+                                $user_login->expires_at = Carbon::now()->addRealDays(1);
+                            }
+
+                            $user_login->last_login = Carbon::now();
+
+                            $user_login->save();
+                            $user_id = $user_login->id;
+
+                            $logins = new Login;
+                            $logins->user_id = $user_id;
+                            $logins->user_token_login = $token;
+                            $logins->save();
+                            $login_id = $logins->id;
+
+                            $user->logins()->sync($login_id);
+
+                            $userIsLogin = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
+                            ->whereId($user_login->id)
+                            ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
+                            ->first();
+
+                            $menus = Menu::whereJsonContains('roles', $userIsLogin->role)
+                            ->with([
+                                'sub_menus' => function ($query) use ($userIsLogin) {
+                                    $query->whereJsonContains('roles', $userIsLogin->role)
+                                    ->with('child_sub_menus');
+                                }])
+                            ->get();
+
+                            $data_event = [
+                                'alert' => 'success',
+                                'type' => 'login',
+                                'email' => $user->email,
+                                'role' => $user->role,
+                                'notif' => "{$user->name}, baru saja login!",
+                                'data' => $userIsLogin
+                            ];
+
+                            event(new LoginEvent($data_event));
+
+                            return response()->json([
+                                'success' => true,
+                                'message' => 'Login Success!',
+                                'data'    => $userIsLogin,
+                                'menus' => $menus,
+                                'remember_token' => $user_login->remember_token
+                            ]);
                         }
-
-                        $user_login->last_login = Carbon::now();
-
-                        $user_login->save();
-                        $user_id = $user_login->id;
-
-                        $logins = new Login;
-                        $logins->user_id = $user_id;
-                        $logins->user_token_login = $token;
-                        $logins->save();
-                        $login_id = $logins->id;
-
-                        $user->logins()->sync($login_id);
-
-                        $userIsLogin = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
-                        ->whereId($user_login->id)
-                        ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
-                        ->first();
-
-                        $menus = Menu::whereJsonContains('roles', $userIsLogin->role)
-                        ->with([
-                            'sub_menus' => function ($query) use ($userIsLogin) {
-                                $query->whereJsonContains('roles', $userIsLogin->role)
-                                ->with('child_sub_menus');
-                            }])
-                        ->get();
-
-                        $data_event = [
-                            'alert' => 'success',
-                            'type' => 'login',
-                            'email' => $user->email,
-                            'role' => $user->role,
-                            'notif' => "{$user->name}, baru saja login!",
-                            'data' => $userIsLogin
-                        ];
-
-                        event(new LoginEvent($data_event));
-
-                        return response()->json([
-                            'success' => true,
-                            'message' => 'Login Success!',
-                            'data'    => $userIsLogin,
-                            'menus' => $menus,
-                            'remember_token' => $user_login->remember_token
-                        ]);
                     endif;
                 }
             } else {
