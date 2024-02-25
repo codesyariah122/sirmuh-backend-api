@@ -86,33 +86,33 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="text-right"><b>Total Beli</b></td>
+                <td colspan="6" class="text-right"><b>Total Beli</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</b></td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Diskon</b></td>
+                <td colspan="6" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($hutang->diskon) }}</b></td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Diterima</b></td>
+                <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</b></td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Hutang</b></td>
+                <td colspan="6" class="text-right"><b>Hutang</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah) }}</b></td>
             </tr>
             @foreach($angsurans as $angsuran)
             <tr>
-                <td colspan="5" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(DP Awal)' : ''}}</b></td>
+                <td colspan="6" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(DP Awal)' : ''}}</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
             @endforeach
             <tr>
-                <td colspan="5" class="text-right"><b>Sisa Hutang:</b></td>
+                <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Kembali</b></td>
+                <td colspan="6" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima - $hutang->jumlah) }}</b></td>
             </tr>
         </tfoot>

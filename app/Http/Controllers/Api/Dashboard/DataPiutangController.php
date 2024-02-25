@@ -366,7 +366,7 @@ class DataPiutangController extends Controller
             'itempenjualan.nama_barang',
             'itempenjualan.qty',
             'itempenjualan.satuan',
-            'itempenjualan.harga as harga_toko',
+            'itempenjualan.harga',
             'itempenjualan.pelanggan',
             'pelanggan.nama as nama_pelanggan',
             'pelanggan.kode as kode_pelanggan',

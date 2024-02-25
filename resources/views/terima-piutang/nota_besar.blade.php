@@ -79,7 +79,7 @@
                 <td>{{ $piutang->nama_barang }}</td>
                 <td>{{ $piutang->kode_barang }}</td>
                 <!-- <td>{{ $piutang->nama_pelanggan }} ({{$piutang->pelanggan}})</td> -->
-                <td class="text-right">{{ $helpers->format_uang($piutang->harga_beli) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->harga) }}</td>
                 <td class="text-right">{{ round($piutang->qty)." ".$piutang->satuan }}</td>
                 <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_penjualan) }}</td>
                 <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_penjualan - $piutang->jumlah) }}</td>
@@ -88,40 +88,40 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="text-right"><b>Total Beli</b></td>
+                <td colspan="6" class="text-right"><b>Total Beli</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($piutang->jumlah_penjualan) }}</b></td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Diskon</b></td>
+                <td colspan="6" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($piutang->diskon) }}</b></td>
             </tr>
             @if($piutang->status_lunas === 'False' || $piutang->status_lunas === '0')
                 <tr>
-                    <td colspan="5" class="text-right"><b>Hutang</b></td>
+                    <td colspan="6" class="text-right"><b>Hutang</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($piutang->jumlah_piutang) }}</b></td>
                 </tr>
             @else 
                 <tr>
-                    <td colspan="5" class="text-right"><b>Diterima</b></td>
+                    <td colspan="6" class="text-right"><b>Diterima</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($piutang->jumlah_pembelian - $piutang->jumlah) }}</b></td>
                 </tr>
             @endif
             
             @foreach($angsurans as $angsuran)
             <tr>
-                <td colspan="5" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(DP Awal)' : ''}}</b></td>
+                <td colspan="6" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(DP Awal)' : ''}}</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
             @endforeach
 
             @if($piutang->status_lunas === 'False' || $piutang->status_lunas === '0')
                 <tr>
-                    <td colspan="5" class="text-right"><b>Sisa Hutang:</b></td>
+                    <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($piutang->piutang_penjualan) }}</b></td>
                 </tr>
             @else
                 <tr>
-                    <td colspan="5" class="text-right"><b>Kembali</b></td>
+                    <td colspan="6" class="text-right"><b>Kembali</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($piutang->diterima - $piutang->jumlah) }}</b></td>
                 </tr>
             @endif
