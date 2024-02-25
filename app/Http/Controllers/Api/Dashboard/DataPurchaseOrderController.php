@@ -309,10 +309,10 @@ class DataPurchaseOrderController extends Controller
                 // // $updateAngsuran->jumlah = $updatePembelian->hutang;
                 // // $updateAngsuran->save();
             } else if($diterima == $updatePembelian->jumlah) {
-                $updatePembelian->lunas = "True";
+                $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
             } else {
-                $updatePembelian->lunas = "True";
+                $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
             }
             $updatePembelian->save();
