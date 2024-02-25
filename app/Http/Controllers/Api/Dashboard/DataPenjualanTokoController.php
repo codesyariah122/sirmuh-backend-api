@@ -168,6 +168,22 @@ class DataPenjualanTokoController extends Controller
                 $item_piutang->jumlah_piutang = $masuk_hutang->jumlah;
                 $item_piutang->jumlah = $masuk_hutang->jumlah;
                 $item_piutang->save();
+
+                $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
+                ->orderBy('angsuran_ke', 'desc')
+                ->first();
+
+                $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
+
+                $angsuran = new PembayaranAngsuran;
+                $angsuran->kode = $masuk_hutang->kode;
+                $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->angsuran_ke = $angsuranKeBaru;
+                $angsuran->kode_pelanggan = NULL;
+                $angsuran->kode_faktur = NULL;
+                $angsuran->bayar_angsuran = $data['diterima'];
+                $angsuran->jumlah = $item_hutang->jumlah;
+                $angsuran->save();
             } else {
                 if(intval($data['bayar']) >= intval($data['jumlah'])) {
                     $newPenjualanToko->kembali = intval($data['bayar']) - intval($data['jumlah']);

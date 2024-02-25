@@ -60,9 +60,9 @@ class DataPiutangController extends Controller
 
             $query->orderByDesc('piutang.id');
 
-            $hutangs = $query->paginate(10);
+            $piutangs = $query->paginate(10);
 
-            return new ResponseDataCollect($hutangs);
+            return new ResponseDataCollect($piutangs);
 
         } catch (\Throwable $th) {
             throw $th;
@@ -165,74 +165,73 @@ class DataPiutangController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
-            $query =  Hutang::query()
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar as bayar_pembelian', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
-            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
-            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-            ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
-            ->leftJoin('barang', 'barang.kode', '=', 'itempembelian.kode_barang')
-            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
-            ->leftJoin('pembayaran_angsuran', 'hutang.kode', '=', 'pembayaran_angsuran.kode');
+            $query =  Piutang::query()
+            ->select('piutang.*', 'penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan','penjualan.bayar as bayar_penjualan', 'penjualan.visa','penjualan.lunas', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
+            ->leftJoin('penjualan', 'piutang.kode', '=', 'penjualan.kode')
+            ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('itempenjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
+            ->leftJoin('barang', 'barang.kode', '=', 'itempenjualan.kode_barang')
+            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+            ->leftJoin('pembayaran_angsuran', 'piutang.kode', '=', 'pembayaran_angsuran.kode');
 
-            $hutang = $query->where('hutang.id', $id)->first();
+            $piutang = $query->where('piutang.id', $id)->first();
 
             $bayar = intval($request->bayar);
-            $jmlHutang = intval($hutang->jumlah);
+            $jmlHutang = intval($piutang->jumlah);
             $kasId = $request->kas_id;
 
-            $dataKas = Kas::findOrFail($hutang->kas_id);
+            $dataKas = Kas::findOrFail($piutang->kas_id);
 
-            $checkAngsuran = PembayaranAngsuran::where('kode', $hutang->kode)
+            $checkAngsuran = PembayaranAngsuran::where('kode', $piutang->kode)
                    ->get();
-
-
+                   
             if(count($checkAngsuran) > 0) {
-                $dataPembelian = Pembelian::whereKode($hutang->kode)->first();
-                $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
-                $updatePembelian->bayar = intval($dataPembelian->bayar_pembelian) + $bayar;
-                $updatePembelian->diterima = intval($dataPembelian->diterima) + $bayar;
+                $dataPenjualan = Penjualan::whereKode($piutang->kode)->first();
+                $updatePenjualan = Penjualan::findOrFail($dataPenjualan->id);
+                $updatePenjualan->bayar = intval($dataPenjualan->bayar_pembelian) + $bayar;
+                $updatePenjualan->diterima = intval($dataPenjualan->diterima) + $bayar;
 
-                if($bayar >= $dataPembelian->hutang) {
-                    $updatePembelian->lunas = 1;
-                    $updatePembelian->visa = "LUNAS";
-                    $updatePembelian->hutang = $bayar - intval($dataPembelian->hutang);
+                if($bayar >= $dataPenjualan->hutang) {
+                    $updatePenjualan->lunas = 1;
+                    $updatePenjualan->visa = "LUNAS";
+                    $updatePenjualan->hutang = $bayar - intval($dataPenjualan->hutang);
                 } else {
-                    $updatePembelian->lunas = 0;
-                    $updatePembelian->visa = "HUTANG";
-                    $updatePembelian->hutang = intval($dataPembelian->hutang) - $bayar;
+                    $updatePenjualan->lunas = 0;
+                    $updatePenjualan->visa = "HUTANG";
+                    $updatePenjualan->hutang = intval($dataPenjualan->hutang) - $bayar;
                 }
-                $updatePembelian->save();
+                $updatePenjualan->save();
 
-                $updateHutang = Hutang::findOrFail($hutang->id);
+                $updatePiutang = Piutang::findOrFail($piutang->id);
                 if($bayar >= $jmlHutang) {
-                    $updateHutang->jumlah = $bayar - $jmlHutang;
-                    $updateHutang->bayar = $bayar;
+                    $updatePiutang->jumlah = $bayar - $jmlHutang;
+                    $updatePiutang->bayar = $bayar;
                 } else {
-                    $updateHutang->jumlah = $jmlHutang - $bayar;
-                    $updateHutang->bayar = intval($hutang->bayar) + $bayar;
+                    $updatePiutang->jumlah = $jmlHutang - $bayar;
+                    $updatePiutang->bayar = intval($piutang->bayar) + $bayar;
                 }
-                $updateHutang->ket = $request->ket ?? "";
-                $updateHutang->save();
+                $updatePiutang->ket = $request->ket ?? "";
+                $updatePiutang->save();
 
-                $dataItemHutang = ItemHutang::whereKode($updateHutang->kode)->first();
-                $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
+                $dataItemHutang = ItemPiutang::whereKode($updatePiutang->kode)->first();
+                $updateItemHutang = ItemPiutang::findOrFail($dataItemHutang->id);
                 if($bayar >= $jmlHutang) {
                     $updateItemHutang->return = $bayar - $jmlHutang;
                 } else {
                     $updateItemHutang->return = 0;
                 }
-                $updateItemHutang->jumlah = $updateHutang->jumlah;
+                $updateItemHutang->jumlah = $updatePiutang->jumlah;
                 $updateItemHutang->save();
 
-                $angsuranTerakhir = PembayaranAngsuran::where('kode', $hutang->kode)
+                $angsuranTerakhir = PembayaranAngsuran::where('kode', $piutang->kode)
                 ->orderBy('angsuran_ke', 'desc')
                 ->first();
 
                 $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
 
                 $angsuran = new PembayaranAngsuran;
-                $angsuran->kode = $hutang->kode;
-                $angsuran->tanggal = $hutang->tanggal;
+                $angsuran->kode = $piutang->kode;
+                $angsuran->tanggal = $piutang->tanggal;
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
@@ -240,10 +239,10 @@ class DataPiutangController extends Controller
                 $angsuran->jumlah = intval($angsuranTerakhir->jumlah) - $bayar;
                 $angsuran->save();
 
-                $notifEvent =  "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸";
+                $notifEvent =  "Hutang dengan kode {$piutang->kode}, dibayar {$bayar} 💸";
 
                 $updateKas = Kas::findOrFail($dataKas->id);
-                $updateKas->saldo = intval($dataKas->saldo) - $bayar;
+                $updateKas->saldo = intval($dataKas->saldo) + $bayar;
                 $updateKas->save();
 
                 $userOnNotif = Auth::user();
@@ -253,17 +252,22 @@ class DataPiutangController extends Controller
                     'alert' => 'success',
                     'type' => 'update-data',
                     'notif' => $notifEvent,
-                    'data' => $hutang->kode,
+                    'data' => $piutang->kode,
                     'user' => $userOnNotif
                 ];
 
                 event(new EventNotification($data_event));
                 return response()->json([
                     'success' => true,
-                    'message' => "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸",
-                    'data' => $hutang
+                    'message' => "Hutang dengan kode {$piutang->kode}, dibayar {$bayar} 💸",
+                    'data' => $piutang
                 ], 200);
-            } 
+            } else {
+                return response()->json([
+                    'failed' => true,
+                    'message' => "Piutang not found"
+                ]);
+            }
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -291,8 +295,8 @@ class DataPiutangController extends Controller
             ->leftJoin('barang', 'barang.kode', '=', 'itempembelian.kode_barang')
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode');
 
-            $hutang = $query->where('hutang.id', $id)->first();
-            $jmlHutang = intval($hutang->jumlah);
+            $piutang = $query->where('hutang.id', $id)->first();
+            $jmlHutang = intval($piutang->jumlah);
             $bayar = intval($request->query('bayar'));
             if($bayar >= $jmlHutang) {
                 // masuk lunas
@@ -308,7 +312,7 @@ class DataPiutangController extends Controller
                     'kembali' => $kembali,
                     'formatRupiah' => $formatKembali,
                     'terbilang' => $kembaliTerbilang,
-                    'kasId' => $hutang->kas_id
+                    'kasId' => $piutang->kas_id
                 ];
             } else {
                 $sisaHutang = $jmlHutang - $bayar;
@@ -323,7 +327,7 @@ class DataPiutangController extends Controller
                     'sisaHutang' => $sisaHutang,
                     'formatRupiah' => $formatSisaHutang,
                     'terbilang' => $sisaHutangTerbilang,
-                    'kasId' => $hutang->kas_id
+                    'kasId' => $piutang->kas_id
 
                 ];
             }
@@ -380,17 +384,17 @@ class DataPiutangController extends Controller
         ->leftJoin('pembayaran_angsuran', 'hutang.kode', '=', 'pembayaran_angsuran.kode')
         ->where('hutang.kode', $kode);
 
-        $hutang = $query->first();
-        $angsurans = PembayaranAngsuran::whereKode($hutang->kode)->get();
+        $piutang = $query->first();
+        $angsurans = PembayaranAngsuran::whereKode($piutang->kode)->get();
 
         $setting = "";
 
         // echo "<pre>";
-        // var_dump($hutang);
-        // var_dump($hutang->hutang);
-        // var_dump($hutang->jml_hutang);
-        // var_dump($hutang->angsuran_ke);
-        // var_dump($hutang->bayar_angsuran); 
+        // var_dump($piutang);
+        // var_dump($piutang->hutang);
+        // var_dump($piutang->jml_hutang);
+        // var_dump($piutang->angsuran_ke);
+        // var_dump($piutang->bayar_angsuran); 
         // echo "</pre>";
         // die;
 
@@ -401,7 +405,7 @@ class DataPiutangController extends Controller
             case "nota-besar":
             $pdf = PDF::loadView('bayar-hutang.nota_besar', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
             $pdf->setPaper(0, 0, 609, 440, 'portrait');
-            return $pdf->stream('Bayar-Hutang-' . $hutang->kode . '.pdf');
+            return $pdf->stream('Bayar-Hutang-' . $piutang->kode . '.pdf');
             break;
         }
     }
