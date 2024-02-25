@@ -46,27 +46,28 @@ class LoginController extends Controller
             ->get();
 
             if(count($check_userRole) > 0) {
-                $user = User::whereNull('deleted_at')
+                $user = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login','password')
+                ->whereNull('deleted_at')
                 ->where('email', $request->email)
-                ->with('logins')
-                ->get();
+                ->with(['roles:id,name', 'logins:id,user_token_login'])
+                ->first();
 
-                if (count($user) === 0) {
+                if (!$user) {
                     return response()->json([
                         'not_found' => true,
                         'message' => 'Your email not registered !'
                     ]);
                 } else {
 
-                    if (!Hash::check($request->password, $user[0]->password)) :
+                    if (!Hash::check($request->password, $user->password)) :
                         return response()->json([
                             'success' => false,
                             'message' => 'Your password its wrong'
                         ]);
                     else :
-                        if ($this->forbidenIsUserLogin($user[0]->is_login)) {
-                            $last_login = Carbon::parse($user[0]->last_login)->locale('id')->diffForHumans();
-                            $login_data = Login::whereUserId($user[0]->id)
+                        if ($this->forbidenIsUserLogin($user->is_login)) {
+                            $last_login = Carbon::parse($user->last_login)->locale('id')->diffForHumans();
+                            $login_data = Login::whereUserId($user->id)
                             ->firstOrFail();
 
                             $dashboard = env('DASHBOARD_APP');
@@ -75,16 +76,15 @@ class LoginController extends Controller
                                 'type' => 'forbiden',
                                 'alert' => 'error',
                                 'notif' => "Seseorang, baru saja mencoba mengakses akun Anda!",
-                                'emailForbaiden' => $user[0]->email,
-                                'token' => $user[0]->logins[0]->user_token_login,
-                                'user' => $user[0]
+                                'emailForbaiden' => $user->email,
+                                'token' => $user->logins[0]->user_token_login,
+                                'user' => $user
                             ];
 
-                            $users = User::with('logins')
-                            ->with('roles')
-                            ->with('karyawans')
+                            $users = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
+                            ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
                             ->where('email', $request->email)
-                            ->whereIsLogin($user[0]->is_login)
+                            ->whereIsLogin($user->is_login)
                             ->firstOrFail();
 
                             $menus = Menu::whereJsonContains('roles', $users->role)
@@ -106,15 +106,15 @@ class LoginController extends Controller
                             ]);
                         }
 
-                        $token = $user[0]->createToken($user[0]->name)->accessToken;
+                        $token = $user->createToken($user->name)->accessToken;
 
-                        $user_login = User::findOrFail($user[0]->id);
+                        $user_login = User::findOrFail($user->id);
                         $user_login->is_login = 1;
 
                         if ($request->remember_me) {
                             $dates = Carbon::now()->addDays(31);
                             $user_login->expires_at = $dates;
-                            $user_login->remember_token = $user[0]->createToken('RememberMe')->accessToken;
+                            $user_login->remember_token = $user->createToken('RememberMe')->accessToken;
                         } else {
                             $user_login->expires_at = Carbon::now()->addRealDays(1);
                         }
@@ -130,18 +130,17 @@ class LoginController extends Controller
                         $logins->save();
                         $login_id = $logins->id;
 
-                        $user[0]->logins()->sync($login_id);
+                        $user->logins()->sync($login_id);
 
-                        $userIsLogin = User::whereId($user_login->id)
-                        ->with('roles')
-                        ->with('logins')
-                        ->with('karyawans')
-                        ->get();
+                        $userIsLogin = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
+                        ->whereId($user_login->id)
+                        ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
+                        ->first();
 
-                        $menus = Menu::whereJsonContains('roles', $userIsLogin[0]->role)
+                        $menus = Menu::whereJsonContains('roles', $userIsLogin->role)
                         ->with([
                             'sub_menus' => function ($query) use ($userIsLogin) {
-                                $query->whereJsonContains('roles', $userIsLogin[0]->role)
+                                $query->whereJsonContains('roles', $userIsLogin->role)
                                 ->with('child_sub_menus');
                             }])
                         ->get();
@@ -149,9 +148,9 @@ class LoginController extends Controller
                         $data_event = [
                             'alert' => 'success',
                             'type' => 'login',
-                            'email' => $user[0]->email,
-                            'role' => $user[0]->role,
-                            'notif' => "{$user[0]->name}, baru saja login!",
+                            'email' => $user->email,
+                            'role' => $user->role,
+                            'notif' => "{$user->name}, baru saja login!",
                             'data' => $userIsLogin
                         ];
 
@@ -197,7 +196,7 @@ class LoginController extends Controller
             $delete_login->delete();
 
             $userLogout = User::whereNull('deleted_at')
-            ->with('logins')
+            ->with(['logins:id,user_token_login'])
             ->where('id', $user->id)
             ->first();
             

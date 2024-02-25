@@ -87,7 +87,7 @@ class DataItemPembelianController extends Controller
 
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
-                    $updateItemPembelian->last_qty = $updateItemPembelian->last_qty;
+                    $updateItemPembelian->last_qty = $request->last_qty;
                     $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
 
                     $dataBarang = Barang::whereKode($updateItemPembelian->kode_barang)

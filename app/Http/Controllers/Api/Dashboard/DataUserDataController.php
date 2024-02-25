@@ -32,11 +32,11 @@ class DataUserDataController extends Controller
     {
         try {
             $user = $request->user();
-            $user_login = User::whereEmail($user->email)
-            ->with('roles')
-            ->with('logins')
-            ->with('karyawans')
+            $user_login = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
+            ->whereEmail($user->email)
+            ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
             ->firstOrFail();
+
             $menus = Menu::whereJsonContains('roles', $user_login->role)
             ->with([
                 'sub_menus' => function ($query) use ($user_login) {
