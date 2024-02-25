@@ -317,6 +317,13 @@ class DataPurchaseOrderController extends Controller
             }
             $updatePembelian->save();
 
+            $dataItem = ItemPembelian::whereKode($updatePembelian->kode)->first();
+            $dataBarang = Barang::whereKode($dataItem->kode_barang)
+            ->first();
+            $updateStok = Barang::findOrFail($dataBarang->id);
+            $updateStok->toko = $dataBarang->toko + intval($request->qty);;
+            $updateStok->save();
+
             if($updatePembelian) {
                 $userOnNotif = Auth::user();
 
