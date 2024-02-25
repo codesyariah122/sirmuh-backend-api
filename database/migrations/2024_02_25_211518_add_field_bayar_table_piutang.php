@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('mutasikas', function (Blueprint $table) {
-            $table->timestamps();
+        Schema::table('piutang', function (Blueprint $table) {
+            $table->double('bayar')->after('jumlah')->nullable();
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('mutasikas', function (Blueprint $table) {
-            //
+        Schema::table('piutang', function (Blueprint $table) {
+            $table->dropColumn('bayar');
         });
     }
 };

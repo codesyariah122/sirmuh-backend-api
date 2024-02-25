@@ -60,9 +60,6 @@
             <td>Kasir:  {{ strtoupper($pembelian->operator) }}</td>
         </tr>
         <tr>
-            <td></td>
-        </tr>
-        <tr>
             <td>Type: {{$pembelian->po == 'True' ? 'Pembelian P.O' : 'Pembelian Langsung'}}</td>
         </tr>
     </table>

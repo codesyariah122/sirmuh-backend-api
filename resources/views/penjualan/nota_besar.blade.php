@@ -55,9 +55,6 @@
             </td>
         </tr>
         <tr>
-            <td></td>
-        </tr>
-        <tr>
             <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
         </tr>
     </table>

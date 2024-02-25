@@ -5,7 +5,8 @@ use App\Http\Controllers\DetailProductController;
 use App\Http\Controllers\Api\Dashboard\{
 	DataPembelianLangsungController,
 	DataPenjualanTokoController,
-	DataHutangController
+	DataHutangController,
+	DataPiutangController
 };
 use App\Http\Controllers\Web\{DataLaporanView};
 
@@ -29,6 +30,7 @@ Route::get('/transaksi/jual/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPenj
 Route::get('/laporan/pembelian/laporan-pembelian-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_pembelian_periode']);
 Route::get('/laporan/hutang/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_hutang']);
 Route::get('/transaksi/bayar-hutang/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataHutangController::class, 'cetak_nota']);
+Route::get('/transaksi/terima-piutang/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPiutangController::class, 'cetak_nota']);
 
 
 Route::get('/detail/{barcode}', [DetailProductController::class, 'index']);

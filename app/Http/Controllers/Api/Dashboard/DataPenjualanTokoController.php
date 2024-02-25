@@ -182,7 +182,7 @@ class DataPenjualanTokoController extends Controller
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
                 $angsuran->bayar_angsuran = $data['diterima'];
-                $angsuran->jumlah = $item_hutang->jumlah;
+                $angsuran->jumlah = $item_piutang->jumlah;
                 $angsuran->save();
             } else {
                 if(intval($data['bayar']) >= intval($data['jumlah'])) {
