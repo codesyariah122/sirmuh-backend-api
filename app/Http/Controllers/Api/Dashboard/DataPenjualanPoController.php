@@ -35,7 +35,7 @@ class DataPenjualanPoController extends Controller
         try {
            $keywords = $request->query('keywords');
            $today = now()->toDateString();
-
+           $viewAll = $request->query('view_all');
            $user = Auth::user()->name;
 
            $query = Penjualan::query()
@@ -51,16 +51,28 @@ class DataPenjualanPoController extends Controller
             $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
 
-        $query->whereDate('penjualan.tanggal', '=', $today);
-        $penjualans = $query
-        ->where(function ($query) use ($user) {
-            if ($user !== "Vicky Andriani") {
-                $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
-            }
-        })
-        ->where('penjualan.po', '=', 'True')
-        ->orderByDesc('penjualan.id')
-        ->paginate(10);
+        if($viewAll) {
+            $penjualans = $query
+            ->where(function ($query) use ($user) {
+                if ($user !== "Vicky Andriani") {
+                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
+                }
+            })
+            ->where('penjualan.po', '=', 'True')
+            ->orderByDesc('penjualan.id')
+            ->paginate(10);
+        } else {
+            $query->whereDate('penjualan.tanggal', '=', $today);
+            $penjualans = $query
+            ->where(function ($query) use ($user) {
+                if ($user !== "Vicky Andriani") {
+                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
+                }
+            })
+            ->where('penjualan.po', '=', 'True')
+            ->orderByDesc('penjualan.id')
+            ->paginate(10);
+        }
 
         return new ResponseDataCollect($penjualans);
 
