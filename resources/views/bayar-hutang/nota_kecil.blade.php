@@ -75,11 +75,6 @@
         <p>Kode Supplier : {{$hutang->supplier}}</p>
         <p>Alamat Supplier : {{ $hutang->alamat_supplier }}</p>
         <p>Operator : {{ strtoupper($hutang->operator) }}</p>
-        {{-- @php
-        var_dump($hutang->jumlah_hutang); 
-        var_dump($hutang->jumlah);
-        die;
-        @endphp --}}
         <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
             <tr>
@@ -121,14 +116,17 @@
                 <td class="text-right">{{ $helpers->format_uang($angsuran->bayar_angsuran) }} </td>
             </tr>
             @endforeach
+            @if($hutang->lunas === 'False' || $hutang->lunas === '0')
             <tr>
                 <td>Sisa Hutang:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jml_hutang) }}</td>
             </tr>
+            @else
             <tr>
                 <td>Kembali:</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->bayar - $hutang->hutang) }}</td>
             </tr>
+            @endif
 
             @if(count($angsurans) > 0)
             <tr>
