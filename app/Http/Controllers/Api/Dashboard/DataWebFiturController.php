@@ -661,6 +661,7 @@ class DataWebFiturController extends Controller
                 }
 
                 ItemPembelian::whereKode($deleted->kode)->forceDelete();
+                
                 $deleted->forceDelete();
 
                 $message = "Data pembelian, {$deleted->kode} has permanently deleted !";

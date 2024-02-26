@@ -284,6 +284,18 @@ class DataPurchaseOrderController extends Controller
             if($diterima > $updatePembelian->jumlah) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
+
+                $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
+                $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
+                $updateHutang = Hutang::findOrFail($dataHutang->id);
+                $updateHutang->jumlah = $updatePembelian->hutang;
+                $updateHutang->save();
+                $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
+                $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
+                $updateItemHutang->jumlah = $updatePembelian->hutang;
+
+                $updateItemHutang->save();
+                
                 // $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
                 // ->where('angsuran_ke', 1)
                 // ->first();
@@ -308,17 +320,6 @@ class DataPurchaseOrderController extends Controller
 
             $updatePembelian->hutang = $data['hutang'];
             $updatePembelian->save();
-
-            // $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
-            // $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
-            // $updateHutang = Hutang::findOrFail($dataHutang->id);
-            // $updateHutang->jumlah = $updatePembelian->hutang;
-            // $updateHutang->save();
-            // $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
-            // $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
-            // $updateItemHutang->jumlah = $updatePembelian->hutang;
-
-            // $updateItemHutang->save();
 
 
             $dataItem = ItemPembelian::whereKode($updatePembelian->kode)->first();
