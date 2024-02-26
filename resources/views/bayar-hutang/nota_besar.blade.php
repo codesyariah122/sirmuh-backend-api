@@ -41,10 +41,10 @@
                     {{ $toko['address'] }}
                 </address>
                 <br>
-                {{$helpers->format_tanggal($piutang->tanggal_penjualan)}}
+                {{$helpers->format_tanggal($hutang->tanggal_penjualan)}}
                 <br>
                 <b>NO INVOICE : </b>
-                <b>{{ $piutang->kode }}</b>
+                <b>{{ $hutang->kode }}</b>
             </td>
         </tr>
         <tr>
@@ -57,7 +57,7 @@
             <td></td>
         </tr>
         <tr>
-            <td>Type: {{$hutang->po === 'True' ? "Penjualan P.O" : $hutang->jenis_penjualan}}</td>
+            <td>Type: {{$hutang->po === 'True' ? "Pembelian P.O" : "Pembelian Langsung"}}</td>
         </tr>
     </table>
 
@@ -66,6 +66,7 @@
             <tr>
                 <th>Nama Barang</th>
                 <!-- <th>Supplier</th> -->
+                <th>Kode Barang</th>
                 <th>Harga Beli</th>
                 <th>Qty</th>
                 <th>Jumlah</th>
@@ -75,7 +76,8 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $hutang->nama_barang }} - {{ $hutang->kode_barang }}</td>
+                <td>{{ $hutang->nama_barang }}</td>
+                <td>{{ $hutang->kode_barang }}</td>
                 <!-- <td>{{ $hutang->nama_supplier }} ({{$hutang->supplier}})</td> -->
                 <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
                 <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
@@ -107,14 +109,17 @@
                 <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
             @endforeach
-            <tr>
-                <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
-            </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Kembali</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima - $hutang->jumlah) }}</b></td>
-            </tr>
+            @if($hutang->lunas === 'False' || $hutang->lunas === '0')
+                <tr>
+                    <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
+                </tr>
+            @else
+                <tr>
+                    <td colspan="6" class="text-right"><b>Kembali</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima - $hutang->jumlah) }}</b></td>
+                </tr>
+            @endif
         </tfoot>
     </table>
 
