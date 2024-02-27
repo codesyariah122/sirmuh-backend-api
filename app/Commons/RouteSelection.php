@@ -234,12 +234,7 @@ class RouteSelection {
 			'endPoint' => '/data-item-penjualan',
 			'method' => 'resource',
 			'controllers' => DataItemPenjualanController::class
-		],
-		[
-			'endPoint' => '/penjualan-terbaik',
-			'method' => 'get',
-			'controllers' => [DataItemPenjualanController::class, 'penjualanTerbaik']
-		],
+	
 
 		// Penjualan Toko
 		[
