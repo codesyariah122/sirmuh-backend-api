@@ -328,7 +328,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
     ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
     ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
-    ->where('jeni', 'PENJUALAN PARTAI')
+    ->where('jenis', 'PENJUALAN PARTAI')
     ->where('penjualan.kode', $kode);
 
     $barangs = $query->get();
