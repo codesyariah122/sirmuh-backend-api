@@ -328,6 +328,7 @@ class DataPenjualanPoController extends Controller
         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
         ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
+        ->where('jenis', 'PENJUALAN PO')
         ->where('penjualan.kode', $kode);
 
         $barangs = $query->get();
