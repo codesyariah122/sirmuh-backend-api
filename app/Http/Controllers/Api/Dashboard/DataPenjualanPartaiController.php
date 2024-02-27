@@ -437,7 +437,6 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
             $currentDate = now()->format('ymd');
-
             
             if($data['piutang']) {
                 $updatePembelian->angsuran = $data['bayar'] ? $data['bayar'] : $data['bayarDp'];
@@ -497,7 +496,6 @@ public function cetak_nota($type, $kode, $id_perusahaan)
                     $updatePembelian->kembali = $updatePembelian->jumlah - $data['bayar'];
                     $updatePembelian->lunas = "True";
                 }
-                
             }
 
             $updatePembelian->save();

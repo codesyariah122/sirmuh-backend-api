@@ -316,31 +316,13 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
             $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
-            $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
+            $updatePembelian->bayar = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
             $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
-
-            echo $kas->saldo;
-            echo "Diterima = {$diterima}";
-            echo "Jumlah Saldo = {$updatePembelian->jumlah}";
-            
-            echo "<br/>";
-
-            echo $diterima > $updatePembelian->jumlah ? 'True' : 'False';
-
-            $purchaseOrderItem = PurchaseOrder::select("purchase_orders.*","pembelian.kode as kode_pembelian", "pembelian.supplier as pembelian_supplier", "pembelian.kode_kas as kas_pembelian", "pembelian.jumlah as jumlah_pembelian", "pembelian.bayar as pembelian_bayar", "pembelian.diterima as pembelian_diterima", "pembelian.jt", "pembelian.visa", "pembelian.hutang", "itempembelian.kode_barang as item_kode", "itempembelian.nama_barang as item_barang","itempembelian.qty", "itempembelian.last_qty","itempembelian.harga_beli","itempembelian.subtotal","itempembelian.qty_terima","barang.kode as kode_barang", "barang.nama as nama_barang", "barang.hpp", "barang.toko")
-            ->leftJoin("pembelian", "purchase_orders.kode_po", "=", "pembelian.kode")
-            ->leftJoin("itempembelian", "purchase_orders.kode_po", "=", "itempembelian.kode")
-            ->leftJoin("barang", "purchase_orders.kode_barang", "=", "barang.kode")
-            ->where('kode_po', $updatePembelian->kode)
-            ->get();
-
-            var_dump($purchaseOrderItem);
-
-            die;
-            
+ 
             if($diterima > $updatePembelian->jumlah) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
+                $updatePembelian->hutang = $data['hutang'];
 
                 $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
                 $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
@@ -369,22 +351,35 @@ class DataPurchaseOrderController extends Controller
                 $updatePembelian->lunas = "False";
             }
 
-            // echo "<pre>";
-            // var_dump($updatePembelian);
-            // echo "<pre>";
+            $purchaseOrderItems = PurchaseOrder::select("purchase_orders.*")
+            ->where('purchase_orders.kode_po', $updatePembelian->kode)
+            ->get();
 
-            // var_dump($data['hutang']); die;
+            $dataPembelianItems = ItemPembelian::whereKode($updatePembelian->kode)
+            ->get();
 
-            $updatePembelian->hutang = $data['hutang'];
-            $updatePembelian->save();
-
-
-            $dataItem = ItemPembelian::whereKode($updatePembelian->kode)->first();
-            $dataBarang = Barang::whereKode($dataItem->kode_barang)
+            $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $updatePembelian->kode)
+            ->orderBy('po_ke', 'desc')
             ->first();
-            $updateStok = Barang::findOrFail($dataBarang->id);
-            $updateStok->toko = $dataBarang->toko + intval($request->qty);;
-            $updateStok->save();
+
+            $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
+
+            foreach($dataPembelianItems as $idx => $item) {
+                $dataBarang = Barang::whereKode($item->kode_barang)->first();
+                $udpateStok = Barang::findOrFail($dataBarang->id);
+                $updateStok->toko = $dataBarang->toko + $item->qty;
+                $updateStok->save();
+
+                $updatePurchaseOrderItem = new PurchaseOrder;
+                $updatePurchaseOrderItem->po_ke = $poKeBaru;
+                $updatePurchaseOrderItem->qty = $item->qty;
+                $updatePurchaseOrderItem->harga_satuan = $item->harga_beli;
+                $updatePurchaseOrderItem->sisa_dp = $data['sisa_dp'];
+                $updatePurchaseOrderItem->save();
+            }
+            die;
+
+            $updatePembelian->save();
 
             if($updatePembelian) {
                 $userOnNotif = Auth::user();
