@@ -301,7 +301,8 @@ class DataPurchaseOrderController extends Controller
 
             $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
             $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
-            $updatePembelian = Pembelian::findOrFail($id);
+            $updatePembelian = Pembelian::where('po', 'True')
+            ->findOrFail($id);
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
 
@@ -314,9 +315,28 @@ class DataPurchaseOrderController extends Controller
 
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
-            $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
+            $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
             $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
+
+            echo $kas->saldo;
+            echo "Diterima = {$diterima}";
+            echo "Jumlah Saldo = {$updatePembelian->jumlah}";
+            
+            echo "<br/>";
+
+            echo $diterima > $updatePembelian->jumlah ? 'True' : 'False';
+
+            $purchaseOrderItem = PurchaseOrder::select("purchase_orders.*","pembelian.kode as kode_pembelian", "pembelian.supplier as pembelian_supplier", "pembelian.kode_kas as kas_pembelian", "pembelian.jumlah as jumlah_pembelian", "pembelian.bayar as pembelian_bayar", "pembelian.diterima as pembelian_diterima", "pembelian.jt", "pembelian.visa", "pembelian.hutang", "itempembelian.kode_barang as item_kode", "itempembelian.nama_barang as item_barang","itempembelian.qty", "itempembelian.last_qty","itempembelian.harga_beli","itempembelian.subtotal","itempembelian.qty_terima","barang.kode as kode_barang", "barang.nama as nama_barang", "barang.hpp", "barang.toko")
+            ->leftJoin("pembelian", "purchase_orders.kode_po", "=", "pembelian.kode")
+            ->leftJoin("itempembelian", "purchase_orders.kode_po", "=", "itempembelian.kode")
+            ->leftJoin("barang", "purchase_orders.kode_barang", "=", "barang.kode")
+            ->where('kode_po', $updatePembelian->kode)
+            ->get();
+
+            var_dump($purchaseOrderItem);
+
+            die;
             
             if($diterima > $updatePembelian->jumlah) {
                 $updatePembelian->lunas = "False";
