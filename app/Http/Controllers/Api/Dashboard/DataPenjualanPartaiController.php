@@ -328,7 +328,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
     ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
     ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
-    ->where('jenis', 'PENJUALAN PARTAI')
+    ->where('penjualan.jenis', 'PENJUALAN PARTAI')
     ->where('penjualan.kode', $kode);
 
     $barangs = $query->get();
@@ -344,10 +344,10 @@ public function cetak_nota($type, $kode, $id_perusahaan)
 
     switch($type) {
         case "nota-kecil":
-        return view('penjualan.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+        return view('penjualan.partai.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
         break;
         case "nota-besar":
-        $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+        $pdf = PDF::loadView('penjualan.partai.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
         $pdf->setPaper(0,0,350,440, 'potrait');
         return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
         break;
