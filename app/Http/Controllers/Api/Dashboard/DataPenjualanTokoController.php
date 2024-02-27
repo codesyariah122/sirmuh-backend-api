@@ -258,7 +258,7 @@ class DataPenjualanTokoController extends Controller
                 $newLabaRugi->diskon =  $newPenjualanData->diskon;
                 $newLabaRugi->labarugi = $labarugi;
                 $newLabaRugi->operator = $data['operator'];
-                $newLabaRugi->keterangan = "PENJUALAN BARANG";
+                $newLabaRugi->keterangan = $data['keterangan'];
                 $newLabaRugi->pelanggan = $pelanggan->kode;
                 $newLabaRugi->nama_pelanggan = $pelanggan->nama;
 
@@ -329,7 +329,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
     ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
     ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
-    ->where('jeni', 'PENJUALAN TOKO')
+    ->where('jenis', 'PENJUALAN PARTAI')
     ->where('penjualan.kode', $kode);
 
     $barangs = $query->get();

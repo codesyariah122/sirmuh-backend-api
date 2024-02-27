@@ -131,15 +131,13 @@ class DataPenjualanPoController extends Controller
             // $updateStokBarang = Barang::findOrFail($data['barang']);
             // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
             // $updateStokBarang->save();
-
             $kas = Kas::findOrFail($data['kode_kas']);
-
-            if($kas->saldo < $data['diterima']) {
-                return response()->json([
-                    'error' => true,
-                    'message' => "Saldo tidak mencukupi!!"
-                ]);
-            }
+            // if($kas->saldo < $data['diterima']) {
+            //     return response()->json([
+            //         'error' => true,
+            //         'message' => "Saldo tidak mencukupi!!"
+            //     ]);
+            // }
 
             $newPenjualanToko = new Penjualan;
             $newPenjualanToko->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
@@ -147,15 +145,19 @@ class DataPenjualanPoController extends Controller
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
             $newPenjualanToko->pelanggan = $pelanggan->kode;
             $newPenjualanToko->kode_kas = $kas->kode;
-            $newPenjualanToko->jumlah = $data['jumlah'];
+            if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
+                $newPenjualanToko->jumlah = $data['jumlah'];
+            } else {
+                $newPenjualanToko->jumlah = 0;
+            }
             $newPenjualanToko->bayar = $data['bayar'];
 
-            if($data['piutang']) {
+            if($data['piutang'] !== 'undefined') {
                 $newPenjualanToko->angsuran = $data['bayar'];
                 $newPenjualanToko->lunas = "False";
                 $newPenjualanToko->visa = 'HUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
-                $newPenjualanToko->po = 'True';
+                $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 7;
 
@@ -176,6 +178,22 @@ class DataPenjualanPoController extends Controller
                 $item_piutang->jumlah_piutang = $masuk_hutang->jumlah;
                 $item_piutang->jumlah = $masuk_hutang->jumlah;
                 $item_piutang->save();
+
+                $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
+                ->orderBy('angsuran_ke', 'desc')
+                ->first();
+
+                $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
+
+                $angsuran = new PembayaranAngsuran;
+                $angsuran->kode = $masuk_hutang->kode;
+                $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->angsuran_ke = $angsuranKeBaru;
+                $angsuran->kode_pelanggan = NULL;
+                $angsuran->kode_faktur = NULL;
+                $angsuran->bayar_angsuran = $data['diterima'];
+                $angsuran->jumlah = $item_piutang->jumlah;
+                $angsuran->save();
             } else {
                 if(intval($data['bayar']) >= intval($data['jumlah'])) {
                     $newPenjualanToko->kembali = intval($data['bayar']) - intval($data['jumlah']);
@@ -195,11 +213,13 @@ class DataPenjualanPoController extends Controller
 
                 // $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 // $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
-                $newPenjualanToko->piutang = $data['piutang'];
-                $newPenjualanToko->po = 'True';
+                // $newPenjualanToko->piutang = $data['piutang'];
+                $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = "True";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
             }
+
+            $newPenjualanToko->jenis = "PENJUALAN PO";
             $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPenjualanToko->operator = $data['operator'];
 
@@ -213,7 +233,9 @@ class DataPenjualanPoController extends Controller
 
             $diterima = intval($newPenjualanToko->bayar);
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) + $diterima;
+            $updatesaldo = intval($kas->saldo) + intval($diterima);
+
+            $updateKas->saldo = intval($kas->saldo) + $diterima;
             $updateKas->save();
 
             $userOnNotif = Auth::user();
@@ -235,7 +257,7 @@ class DataPenjualanPoController extends Controller
                 $newLabaRugi->diskon =  $newPenjualanData->diskon;
                 $newLabaRugi->labarugi = $labarugi;
                 $newLabaRugi->operator = $data['operator'];
-                $newLabaRugi->keterangan = "PENJUALAN BARANG";
+                $newLabaRugi->keterangan = $data['keterangan'];
                 $newLabaRugi->pelanggan = $pelanggan->kode;
                 $newLabaRugi->nama_pelanggan = $pelanggan->nama;
 
