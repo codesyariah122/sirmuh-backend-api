@@ -131,9 +131,7 @@ class DataPenjualanTokoController extends Controller
             // $updateStokBarang = Barang::findOrFail($data['barang']);
             // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
             // $updateStokBarang->save();
-
             $kas = Kas::findOrFail($data['kode_kas']);
-
             // if($kas->saldo < $data['diterima']) {
             //     return response()->json([
             //         'error' => true,
@@ -220,6 +218,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->receive = "True";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
             }
+            
             $newPenjualanToko->jenis = "PENJUALAN TOKO";
             $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPenjualanToko->operator = $data['operator'];
@@ -234,7 +233,9 @@ class DataPenjualanTokoController extends Controller
 
             $diterima = intval($newPenjualanToko->bayar);
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) + $diterima;
+            $updatesaldo = intval($kas->saldo) + intval($diterima);
+
+            $updateKas->saldo = intval($kas->saldo) + $diterima;
             $updateKas->save();
 
             $userOnNotif = Auth::user();
