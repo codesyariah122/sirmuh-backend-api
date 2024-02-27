@@ -1737,7 +1737,7 @@ class DataWebFiturController extends Controller
                         $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
                             // Jika sudah ada, update informasi yang diperlukan
                         $updateExistingItem->qty = intval($barang['qty']);
-                        $updateExistingItem->harga_beli = intval($barang['harga_toko']);
+                        $updateExistingItem->harga = intval($barang['harga_toko']);
                         $updateExistingItem->subtotal = $barang['harga_toko'] * $barang['qty'];
                             // Update atribut lainnya sesuai kebutuhan
                         $updateExistingItem->save();
