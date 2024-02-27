@@ -35,6 +35,7 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataPembelianLangsungController,
 	DataPenjualanTokoController,
 	DataPenjualanPoController,
+	DataPenjualanPartaiController,
 	DataPengeluaranController,
 	DataMutasiKasController,
 	DataItemPembelianController,
@@ -250,6 +251,11 @@ class RouteSelection {
 			'endPoint' => '/data-penjualan-po',
 			'method' => 'resource',
 			'controllers' => DataPenjualanPoController::class
+		],
+		[
+			'endPoint' => '/data-penjualan-partai',
+			'method' => 'resource',
+			'controllers' => DataPenjualanPartaiController::class
 		],
 		[
 			'endPoint' => '/data-return-penjualan',

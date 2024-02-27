@@ -45,6 +45,7 @@ class DataPenjualanTokoController extends Controller
          ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
          ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
          ->orderByDesc('penjualan.id')
+         ->where('jenis', 'PENJUALAN PARTAI')
          ->limit(10);
 
         if ($keywords) {
@@ -218,7 +219,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->receive = "True";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
             }
-            
+
             $newPenjualanToko->jenis = "PENJUALAN TOKO";
             $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPenjualanToko->operator = $data['operator'];
@@ -328,6 +329,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
     ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
     ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
+    ->where('jeni', 'PENJUALAN TOKO')
     ->where('penjualan.kode', $kode);
 
     $barangs = $query->get();
