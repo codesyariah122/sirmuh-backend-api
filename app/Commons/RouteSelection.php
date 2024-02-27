@@ -213,6 +213,11 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataPurchaseOrderController::class
 		],
+		[
+			'endPoint' => '/lists-of-po',
+			'method' => 'get',
+			'controllers' => [DataPurchaseOrderController::class, 'list_item_po']
+		],
 		// End of pembelian
 
 		// Item Pembelian
@@ -246,7 +251,6 @@ class RouteSelection {
 			'method' => 'resource',
 			'controllers' => DataPenjualanPoController::class
 		],
-		
 		[
 			'endPoint' => '/data-return-penjualan',
 			'method' => 'get',

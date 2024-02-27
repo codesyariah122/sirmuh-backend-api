@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles};
+use App\Models\{PurchaseOrder,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles};
 use Auth;
 use PDF;
 
@@ -23,6 +23,24 @@ class DataPurchaseOrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function list_item_po(Request $request)
+    {
+        try {
+            $kode_po = $request->query('kode_po');
+
+            $purchaseOrdes = PurchaseOrder::select('purchase_orders.*', 'itempembelian.qty as qty_pembelian', 'itempembelian.harga_beli as harga_beli', 'itempembelian.subtotal', 'supplier.kode', 'supplier.nama')
+            ->leftJoin('itempembelian', 'purchase-order.kode', '=', 'itempembelian.kode')
+            ->leftJoin('supplier', 'purchase_orders.supplier', '=', 'supplier.kode')
+            ->where('kode_po', $kode_po)
+            ->get();
+
+            return new ResponseDataCollect($pembelians);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function index(Request $request)
     {
         try {
@@ -172,6 +190,25 @@ class DataPurchaseOrderController extends Controller
             $userOnNotif = Auth::user();
 
             if($newPembelian) {
+
+                $poTerakhir = PurchaseOrder::where('kode_po', $newPembelian->kode)
+                ->orderBy('po_ke', 'desc')
+                ->first();
+
+                $poKeBaru = ($poTerakhir) ? $poTerakhir->po_ke + 1 : 1;
+
+                $newPurchaseOrder = new PurchaseOrder;
+                $newPurchaseOrder->kode_po = $newPembelian->kode;
+                $newPurchaseOrder->dp_awal = $newPembelian->jumlah;
+                $newPurchaseOrder->po_ke = $poKeBaru;
+                $newPurchaseOrder->qty = $dataItemPembelian->qty;
+                $newPurchaseOrder->nama_barang = $dataItemPembelian->nama_barang;
+                $newPurchaseOrder->kode_barang = $dataItemPembelian->kode_barang;
+                $newPurchaseOrder->harga_satuan = $dataItemPembelian->harga_beli;
+                $newPurchaseOrder->subtotal = $dataItemPembelian->qty * $dataItemPembelian->harga_beli;
+                $newPurchaseOrder->sisa_dp = $newPembelian->jumlah - ($dataItemPembelian->qty * $dataItemPembelian->harga_beli);
+                $newPurchaseOrder->save();
+
                 $newPembelianSaved =  Pembelian::query()
                 ->select(
                     'pembelian.*',
@@ -267,7 +304,7 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian = Pembelian::findOrFail($id);
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
-        
+
             if(intval($kas->saldo) < $diterima) {
                 return response()->json([
                     'error' => true,
@@ -295,7 +332,7 @@ class DataPurchaseOrderController extends Controller
                 $updateItemHutang->jumlah = $updatePembelian->hutang;
 
                 $updateItemHutang->save();
-                
+
                 // $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
                 // ->where('angsuran_ke', 1)
                 // ->first();
@@ -375,43 +412,43 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-            $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-                $delete_pembelian = Pembelian::whereNull('deleted_at')
-                ->where('po', 'True')
-                ->findOrFail($id);
-                $delete_pembelian->delete();
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+            $delete_pembelian = Pembelian::whereNull('deleted_at')
+            ->where('po', 'True')
+            ->findOrFail($id);
+            $delete_pembelian->delete();
 
                 // $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
                 // $updateKas = Kas::findOrFail($kas->id);
                 // $updateKas->saldo = intval($kas->saldo) + intval($delete_pembelian->jumlah);
                 // $updateKas->save();
 
-                $data_event = [
-                    'alert' => 'error',
-                    'routes' => 'purchase-order',
-                    'type' => 'removed',
-                    'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, has move to trash, please check trash!",
-                    'user' => Auth::user()
-                ];
+            $data_event = [
+                'alert' => 'error',
+                'routes' => 'purchase-order',
+                'type' => 'removed',
+                'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, has move to trash, please check trash!",
+                'user' => Auth::user()
+            ];
 
-                event(new EventNotification($data_event));
+            event(new EventNotification($data_event));
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Pembelian dengan kode, {$delete_pembelian->kode} has move to trash, please check trash"
-                ]);
-            } else {
-                return response()->json([
-                    'error' => true,
-                    'message' => "Hak akses tidak di ijinkan 📛"
-                ]);
-            }
-        } catch (\Throwable $th) {
-            throw $th;
+            return response()->json([
+                'success' => true,
+                'message' => "Pembelian dengan kode, {$delete_pembelian->kode} has move to trash, please check trash"
+            ]);
+        } else {
+            return response()->json([
+                'error' => true,
+                'message' => "Hak akses tidak di ijinkan 📛"
+            ]);
         }
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 }
