@@ -45,6 +45,7 @@ class DataPenjualanPartaiController extends Controller
          ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
          ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
          ->orderByDesc('penjualan.id')
+         ->where('penjualan.jenis', 'PENJUALAN PARTAI')
          ->limit(10);
 
         if ($keywords) {

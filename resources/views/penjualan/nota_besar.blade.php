@@ -57,6 +57,11 @@
         <tr>
             <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
         </tr>
+        <tr>
+            <td>
+                Jenis : {{$penjualan->jenis}}
+            </td>
+        </tr>
     </table>
 
     <table class="data" width="100%" style="margin-top:15px;">

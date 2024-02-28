@@ -45,7 +45,7 @@ class DataPenjualanTokoController extends Controller
          ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
          ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
          ->orderByDesc('penjualan.id')
-         ->where('jenis', 'PENJUALAN PARTAI')
+         ->where('jenis', 'PENJUALAN TOKO')
          ->limit(10);
 
         if ($keywords) {
@@ -239,6 +239,10 @@ class DataPenjualanTokoController extends Controller
             $updateKas->saldo = intval($kas->saldo) + $diterima;
             $updateKas->save();
 
+            $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
+            $updatePenjualanDraft->draft = 0;
+            $updatePenjualanDraft->save();
+
             $userOnNotif = Auth::user();
 
             if($newPenjualanToko) {
@@ -313,8 +317,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             // var_dump($toko['name']); die;
             // echo "</pre>";
 
-    $query = Penjualan::query()
-    ->select(
+    $query = Penjualan::select(
         'penjualan.*',
         'itempenjualan.*',
         'pelanggan.nama as pelanggan_nama',
@@ -328,19 +331,12 @@ public function cetak_nota($type, $kode, $id_perusahaan)
     ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
     ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
     ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
-                // ->whereDate('pembelian.tanggal', '=', $today)
-    ->where('penjualan.jenis', 'PENJUALAN PARTAI')
+    ->where('penjualan.jenis', 'PENJUALAN TOKO')
     ->where('penjualan.kode', $kode);
 
     $barangs = $query->get();
     $penjualan = $query->get()[0];
-
-
-        // echo "<pre>";
-        // var_dump($penjualan->po);
-        // echo "</pre>";
-        // die;
-
+    
     $setting = "";
 
     switch($type) {

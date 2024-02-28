@@ -1470,14 +1470,13 @@ class DataWebFiturController extends Controller
                     if ($existingItem) {
                             // Jika sudah ada, update informasi yang diperlukan
                         $existingItem->qty = intval($barang['qty']);
-                        $existingItem->last_qty = intval($barang['qty']);
+                        $existingItem->last_qty = intval($barang['last_qty']);
                         $existingItem->harga_beli = intval($barang['harga_beli']);
                         $existingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
                             // Update atribut lainnya sesuai kebutuhan
                         $existingItem->save();
                         $lastItemPembelianId = $existingItem->id;
                     } else {
-
                         $draftItemPembelian = new ItemPembelian;
                         $draftItemPembelian->kode = $kode;
                         $draftItemPembelian->draft = $draft;
@@ -1486,7 +1485,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->supplier = $supplier->kode;
                         $draftItemPembelian->satuan = $dataBarang->satuan;
                         $draftItemPembelian->qty = $barang['qty'];
-                        $draftItemPembelian->last_qty = intval($barang['qty']);
+                        $draftItemPembelian->last_qty = NULL;
                         $draftItemPembelian->isi = $dataBarang->isi;
                         $draftItemPembelian->nourut = $barang['nourut'];
                         $draftItemPembelian->harga_beli = $barang['harga_beli'] ?? $dataBarang->hpp;
@@ -1668,7 +1667,7 @@ class DataWebFiturController extends Controller
             if($draft) {
                 foreach($barangs as $barang) {
                     $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
-                        // Update Barang
+
                     $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
                     ->where('draft', 1)
                     ->first();
@@ -1722,16 +1721,10 @@ class DataWebFiturController extends Controller
             } else {
                 foreach($barangs as $barang) {
                     $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
-                        // Update Barang
 
                     $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
                     ->where('draft', 1)
                     ->first();
-
-                        // echo "<pre>";
-                        // var_dump($existingItem); 
-                        // echo "</pre>";
-                        // die;
 
                     if ($existingItem) {
                         $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
@@ -1781,6 +1774,29 @@ class DataWebFiturController extends Controller
                     'data' => $kode,
                     'itempembelian_id' => $lastItemPembelianId
                 ], 203);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function check_stok_barang(Request $request, $id) 
+    {
+        try {
+            $barang = Barang::findOrFail($id);
+
+            if($barang->toko > 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Stok tersedia',
+                    'data' => $barang->id
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Out of stok !!"
+                ]);
             }
 
         } catch (\Throwable $th) {

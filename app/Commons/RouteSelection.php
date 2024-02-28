@@ -241,6 +241,12 @@ class RouteSelection {
 			'controllers' => [DataItemPenjualanController::class, 'penjualanTerbaik']
 		],
 
+		[
+			'endPoint' => '/check-stok-barang/{id}',
+			'method' => 'get',
+			'controllers' => [DataWebFiturController::class, 'check_stok_barang']
+		],
+
 		// Penjualan Toko
 		[
 			'endPoint' => '/data-penjualan-toko',
