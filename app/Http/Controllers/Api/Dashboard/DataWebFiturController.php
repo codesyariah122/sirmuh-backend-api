@@ -1357,6 +1357,61 @@ class DataWebFiturController extends Controller
         }
     }
 
+    public function edited_update_stok_barang(Reqeust $request)
+    {
+        try {
+            $barangs = $request->barangs;
+            $type = $request->type;
+
+            switch($type) {
+             case "pembelian":
+             foreach ($barangs as $barang) {
+                $updateBarang = Barang::findOrFail($barang['id']);
+                if($barang['qty'] > $updateBarang->last_qty){
+                    $newStok = $updateBarang->toko + $barang['qty'];
+                } else if($barang['qty'] < $updateBarang->last_qty){
+                    $newStok = $updateBarang->toko - $barang['qty'];
+                } else {
+                    $newStok = $updateBarang->toko;
+                }
+                $newStok = $updateBarang->toko + $barang['qty'];
+                $updateBarang->toko = $newStok;
+                $updateBarang->last_qty = $barang['qty'];
+                $updateBarang->save();
+            }
+            break;
+                case "penjualan":
+                foreach($barangs as $barang) {
+                    $stok = Barang::findOrFail($barang['id']);
+                    $updateBarang = Barang::findOrFail($barang['id']);
+                    $qtyBarang = $barang['qty'];
+                    $lastQty = $stok->last_qty;
+                    $stokBarang = intval($stok->toko);
+                    $updateBarang->toko = $stokBarang - $qtyBarang;
+                    $updateBarang->last_qty = $barang['qty'];
+                    $updateBarang->save();
+                }
+                break;
+            }
+
+            $data_event = [
+                'type' => 'updated',
+                'routes' => 'data-barang',
+                'notif' => "Stok barang, successfully update!"
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stok barang update!',
+                'data' => $barangs
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function update_stok_barang_all(Request $request)
     {
         try {

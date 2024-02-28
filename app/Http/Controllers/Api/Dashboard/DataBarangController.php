@@ -111,10 +111,10 @@ class DataBarangController extends Controller
             $query = Barang::join('supplier', 'barang.supplier', '=', 'supplier.kode')
            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp','barang.harga_toko','barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'barang.kode_barcode', 'barang.ada_expired_date', 'barang.expired','barang.tgl_terakhir','supplier.kode as kode_supplier','supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat')
            ->when($keywords, function ($query) use ($keywords) {
-                return $query->where('barang.nama', 'like', '%' . $keywords . '%');
-            })
-           ->when($kode, function ($query) use ($kode) {
-                return $query->where('barang.kode', 'like', '%' . $kode . '%');
+                return $query->where(function ($query) use ($keywords) {
+                    $query->where('barang.nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('barang.kode', 'like', '%' . $keywords . '%');
+                });
             })
            ->when($supplier, function ($query) use ($supplier) {
                 return $query->where('barang.supplier', $supplier );
