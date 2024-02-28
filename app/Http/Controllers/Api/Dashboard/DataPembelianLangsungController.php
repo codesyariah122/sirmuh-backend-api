@@ -394,6 +394,12 @@ class DataPembelianLangsungController extends Controller
                 $diterima = intval($data['diterima']);
             }
 
+            if(gettype($data['total']) === 'string') {
+                $total = preg_replace("/[^0-9]/", "", $data['total']);
+            } else {
+                $total = intval($data['total']);
+            }
+
             $currentDate = now()->format('ymd');
             
             $updatePembelian = Pembelian::findOrFail($id);
@@ -407,10 +413,9 @@ class DataPembelianLangsungController extends Controller
                 ]);
             }
             
-
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
-            $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
+            $updatePembelian->jumlah = $data['total'] ? $total : $updatePembelian->jumlah;
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
             $updatePembelian->diterima = $data['diterima'] ? intval($data['diterima']) : $updatePembelian->diterima;
 
