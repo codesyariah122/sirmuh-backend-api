@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Hutang,ItemHutang,PembayaranAngsuran};
+use App\Models\{Pembelian,ItemPembelian,Supplier,Barang,Kas,Hutang,ItemHutang,PembayaranAngsuran, PurchaseOrder};
 use Auth;
 
 class DataItemPembelianController extends Controller
@@ -75,6 +75,53 @@ class DataItemPembelianController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+
+    public function update_po_item(Request $request, $id)
+    {
+        try {
+            $itemId = $request->item_id;
+            $dataPembelian = Pembelian::findOrFail($id);
+            $updateItemPembelian = ItemPembelian::findOrFail($itemId);
+
+            $updatePurchaseOrderItem = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)->first();
+
+            $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $updatePurchaseOrderItem->kode_po)
+            ->orderBy('po_ke', 'desc')
+            ->first();
+
+            $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
+            $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
+
+            $updatePurchaseOrder = PurchaseOrder::findOrFail($updatePurchaseOrderItem->id);
+            $updatePurchaseOrder->kode_po = $dataPembelian->kode;
+            $updatePurchaseOrder->dp_awal = $dataPembelian->bayar;
+            $updatePurchaseOrder->po_ke = $poKeBaru;
+            $updatePurchaseOrder->nama_barang = $updateItemPembelian->nama_barang;
+            $updatePurchaseOrder->kode_barang = $updateItemPembelian->kode_barang;
+            $updatePurchaseOrder->qty = $updateItemPembelian->qty;
+            $updatePurchaseOrder->supplier = "{$supplier->nama}({$updateItemPembelian->supplier})";
+            $updatePurchaseOrder->harga_satuan = $updateItemPembelian->harga_beli;
+            $updatePurchaseOrder->subtotal = $totalSubtotal;
+            $updatePurchaseOrder->sisa_dp = $dataPembelian->bayar - $totalSubtotal;
+            $updatePurchaseOrder->save();
+
+
+            $data_event = [
+                'type' => 'updated',
+                'routes' => 'purchase-order-edit',
+                'notif' => "Update itempembelian, successfully update!"
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => "Item peurchase order update!",
+                'purchase_orders' => $updatePurchaseOrder
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function update(Request $request, $id)
     {
         try {
@@ -108,6 +155,49 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                
                 $dataPembelian->save();
+
+
+                // $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $dataPembelian->kode)
+                // ->orderBy('po_ke', 'desc')
+                // ->first();
+
+                // $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
+                // $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
+
+                // $updatePurchaseOrderItem = new PurchaseOrder;
+                // $updatePurchaseOrderItem->kode_po = $dataPembelian->kode;
+                // $updatePurchaseOrderItem->dp_awal = $dataPembelian->bayar;
+                // $updatePurchaseOrderItem->po_ke = $poKeBaru;
+                // $updatePurchaseOrderItem->nama_barang = $updateItemPembelian->nama_barang;
+                // $updatePurchaseOrderItem->kode_barang = $updateItemPembelian->kode_barang;
+                // $updatePurchaseOrderItem->qty = $updateItemPembelian->qty;
+                // $updatePurchaseOrderItem->supplier = "{$supplier->nama}({$updateItemPembelian->supplier})";
+                // $updatePurchaseOrderItem->harga_satuan = $updateItemPembelian->harga_beli;
+                // $updatePurchaseOrderItem->subtotal = $totalSubtotal;
+                // $updatePurchaseOrderItem->sisa_dp = $dataPembelian->bayar - $totalSubtotal;
+                // $updatePurchaseOrderItem->save();
+
+                $updatePurchaseOrderItem = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)->first();
+
+                $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $updatePurchaseOrderItem->kode_po)
+                ->orderBy('po_ke', 'desc')
+                ->first();
+
+                $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
+                $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
+
+                $updatePurchaseOrder = new PurchaseOrder;
+                $updatePurchaseOrder->kode_po = $dataPembelian->kode;
+                $updatePurchaseOrder->dp_awal = $dataPembelian->bayar;
+                $updatePurchaseOrder->po_ke = $poKeBaru;
+                $updatePurchaseOrder->nama_barang = $updateItemPembelian->nama_barang;
+                $updatePurchaseOrder->kode_barang = $updateItemPembelian->kode_barang;
+                $updatePurchaseOrder->qty = $updateItemPembelian->qty;
+                $updatePurchaseOrder->supplier = "{$supplier->nama}({$updateItemPembelian->supplier})";
+                $updatePurchaseOrder->harga_satuan = $updateItemPembelian->harga_beli;
+                $updatePurchaseOrder->subtotal = $totalSubtotal;
+                $updatePurchaseOrder->sisa_dp = $dataPembelian->bayar - $totalSubtotal;
+                $updatePurchaseOrder->save();
 
                 $data_event = [
                     'type' => 'updated',
@@ -167,7 +257,8 @@ class DataItemPembelianController extends Controller
                 'success' => true,
                 'message' => "Item pembelian update!",
                 'data' => $newDataPembelian,
-                'items' => $newUpdateItem
+                'items' => $newUpdateItem,
+                'orders' => $updatePurchaseOrder ?? []
             ]);
         } catch (\Throwable $th) {
             throw $th;

@@ -229,6 +229,14 @@ class RouteSelection {
 		],
 		// End of itempembelian
 
+		// Item purchase orders
+		[
+			'endPoint' => '/update-item-po/{id}',
+			'method' => 'put',
+			'controllers' => [DataItemPembelianController::class, 'update_po_item']
+		],
+		// End of item purchase orders
+
 		// Item Penjualan
 		[
 			'endPoint' => '/data-item-penjualan',
