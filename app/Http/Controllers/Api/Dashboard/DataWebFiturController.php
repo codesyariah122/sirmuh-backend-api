@@ -1368,9 +1368,11 @@ class DataWebFiturController extends Controller
              foreach ($barangs as $barang) {
                 $updateBarang = Barang::findOrFail($barang['id']);
                 if($barang['qty'] > $updateBarang->last_qty){
+                    $bindStok = $barang['qty'] + $updateBarang->last_qty;
                     $newStok = $updateBarang->toko + $barang['qty'];
                 } else if($barang['qty'] < $updateBarang->last_qty){
-                    $newStok = $updateBarang->toko - $barang['qty'];
+                    $bindStok = $updateBarang->last_qty - $barang['qty'];
+                    $newStok = $updateBarang->toko - $bindStok;
                 } else {
                     $newStok = $updateBarang->toko;
                 }
