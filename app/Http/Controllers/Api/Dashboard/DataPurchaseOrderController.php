@@ -289,7 +289,7 @@ class DataPurchaseOrderController extends Controller
             ->get();
 
             $purchaseOrders = PurchaseOrder::where('kode_po', '=', $pembelian->kode)
-            ->orderBy('po_ke', 'ASC')
+            ->orderBy('qty', 'DESC')
             ->get();
 
             return response()->json([
