@@ -1372,7 +1372,7 @@ class DataWebFiturController extends Controller
                     $newStok = $updateBarang->toko + $barang['qty'];
                 } else if($barang['qty'] < $updateBarang->last_qty){
                     $bindStok = $updateBarang->last_qty - $barang['qty'];
-                    $newStok = $updateBarang->toko - $barang['qty'];
+                    $newStok = $updateBarang->toko - $bindStok;
                 } else {
                     $newStok = $updateBarang->toko;
                 }
