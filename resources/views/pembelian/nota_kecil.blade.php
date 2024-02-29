@@ -168,10 +168,21 @@
                 </tr>
                 @endif
             @else
-            <tr>
-                <td>Kembali:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
-            </tr>
+            @if($pembelian->po == 'True')
+                <tr>
+                    <td>Dp Awal:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+                <tr>
+                    <td>Sisa DP:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</td>
+                </tr>
+                @else
+                <tr>
+                    <td>Kembali:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
+                </tr>
+                @endif
             @endif
         </table>
 
