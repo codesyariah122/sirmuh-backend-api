@@ -133,10 +133,17 @@
                 <td colspan="6" class="text-right"><b>Bayar DP</b></td>
                 <td class="text-right"><b>{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Sisa DP</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
-            </tr>
+            @if($pembelian->po === "True")
+                <tr>
+                    <td colspan="6" class="text-right"><b>Sisa DP</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                </tr>
+            @else
+                <tr>
+                    <td colspan="6" class="text-right"><b>Hutang</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                </tr>
+            @endif
             @else
             @if($pembelian->po === 'True')
             <tr>
