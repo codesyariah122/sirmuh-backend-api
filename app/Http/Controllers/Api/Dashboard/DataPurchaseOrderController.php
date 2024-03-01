@@ -326,7 +326,7 @@ class DataPurchaseOrderController extends Controller
     {
         try {
             $data = $request->all();
-
+            $currentDate = now()->format('ymd');
             $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
             $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
             $updatePembelian = Pembelian::where('po', 'True')
@@ -344,39 +344,59 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
             $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
-            $updatePembelian->bayar = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
+            $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
             $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
  
-            if($diterima > $updatePembelian->jumlah) {
+            if($diterima > $bayar) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
                 $updatePembelian->hutang = $data['hutang'];
 
-                $dataHutang = Hutang::whereKode($updatePembelian->kode)->first();
-                $dataItemHutang = ItemHutang::whereKode($dataHutang->kode)->first();
-                $updateHutang = Hutang::findOrFail($dataHutang->id);
-                $updateHutang->jumlah = $updatePembelian->hutang;
-                $updateHutang->save();
-                $updateItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
-                $updateItemHutang->jumlah_hutang = $updatePembelian->hutang;
-                $updateItemHutang->jumlah = $updatePembelian->hutang;
+                // Masuk ke hutang
+                $masuk_hutang = new Hutang;
+                $masuk_hutang->kode = $updatePembelian->kode;
+                $masuk_hutang->tanggal = $currentDate;
+                $masuk_hutang->supplier = $updatePembelian->supplier;
+                $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->kode_kas = $updatePembelian->kode_kas;
+                $masuk_hutang->operator = $data['operator'];
+                $masuk_hutang->save();
 
-                $updateItemHutang->save();
+                $item_hutang = new ItemHutang;
+                $item_hutang->kode = $updatePembelian->kode;
+                $item_hutang->kode_hutang = $masuk_hutang->kode;
+                $item_hutang->tgl_hutang = $currentDate;
+                $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
+                $item_hutang->jumlah = $masuk_hutang->jumlah;
+                $item_hutang->save();
 
-                // $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $dataHutang->kode)
-                // ->where('angsuran_ke', 1)
-                // ->first();
-                // // $updateAngsuran = PembayaranAngsuran::findOrFail($dataPembayaranAngsuran->id);
-                // // $updateAngsuran->bayar_angsuran = $updatePembelian->diterima;
-                // // $updateAngsuran->jumlah = $updatePembelian->hutang;
-                // // $updateAngsuran->save();
+                $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
+                ->orderBy('angsuran_ke', 'desc')
+                ->first();
+
+                $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
+
+                $angsuran = new PembayaranAngsuran;
+                $angsuran->kode = $masuk_hutang->kode;
+                $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->angsuran_ke = $angsuranKeBaru;
+                $angsuran->kode_pelanggan = NULL;
+                $angsuran->kode_faktur = NULL;
+                $angsuran->bayar_angsuran = $data['bayar'] ? $diterima - $data['jumlah_saldo'] : 0;
+                $angsuran->jumlah = $item_hutang->jumlah_hutang;
+                $angsuran->save();
+
                 $updateKas = Kas::findOrFail($kas->id);
                 $updateKas->saldo = intval($kas->saldo) + intval($updatePembelian->diterima);
                 $updateKas->save();
             } else if($diterima == $updatePembelian->jumlah) {
-                $updatePembelian->lunas = "False";
+                $updatePembelian->lunas = "True";
+                $updatePembelian->visa = "LUNAS";
+                $updatePembelian->hutang = 0;
             } else {
-                $updatePembelian->lunas = "False";
+                $updatePembelian->lunas = "True";
+                $updatePembelian->visa = "LUNAS";
+                $updatePembelian->hutang = 0;
             }
 
             $updatePembelian->save();

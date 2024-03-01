@@ -131,6 +131,18 @@ class DataItemPembelianController extends Controller
 
             if($dataPembelian->po === "True") {
                 $updateItemPembelian = ItemPembelian::findOrFail($itemId);
+                $dataKas = Kas::whereKode($dataPembelian->kode_kas)->first();
+                $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
+
+                $totalSubtotal = $dataItemPembelian->sum('subtotal');
+
+                if($dataKas->saldo < $totalSubtotal) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Oops saldo tidak mencukupi 🤦"
+                    ]);
+                }
+
 
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
@@ -209,6 +221,18 @@ class DataItemPembelianController extends Controller
                 $qty = $updateItemPembelian->qty;
                 $lastQty = $updateItemPembelian->last_qty;
                 $newQty = $request->qty;
+
+                $dataKas = Kas::whereKode($dataPembelian->kode_kas)->first();
+                $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
+
+                $totalSubtotal = $dataItemPembelian->sum('subtotal');
+
+                if($dataKas->saldo < $totalSubtotal) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Oops saldo tidak mencukupi 🤦"
+                    ]);
+                }
 
                 // echo "Qty = " . $qty;
                 // echo "<br>";

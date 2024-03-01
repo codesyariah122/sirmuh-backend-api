@@ -1505,6 +1505,7 @@ class DataWebFiturController extends Controller
         try {
             $draft = $request->draft;
             $kode = $request->kode;
+            $kode_kas = $request->kode_kas;
             $kd_barang = $request->kd_barang;
             $supplierId = null;
             $barangs = $request->barangs;
@@ -1516,6 +1517,7 @@ class DataWebFiturController extends Controller
             $lastItemPembelianId = NULL;
 
             $supplier = Supplier::findOrFail($supplierId);
+            $checkingKas = Kas::findOrFail($kode_kas);
 
             if($draft) {
                 foreach($barangs as $barang) {
@@ -1524,13 +1526,20 @@ class DataWebFiturController extends Controller
                     $existingItem = ItemPembelian::where('kode_barang', $dataBarang->kode)
                     ->where('draft', 1)
                     ->first();
+                    
+                    $subTotal = $barang['harga_beli'] * $barang['qty'];
+                    if($checkingKas->saldo < $subTotal) {
+                        return response()->json([
+                            'error' => true,
+                            'message' => "Saldo kas {$checkingKas->kode} tidak mencukupi 🫣"
+                        ]);
+                    }
+
                     if ($existingItem) {
-                            // Jika sudah ada, update informasi yang diperlukan
                         $existingItem->qty = intval($barang['qty']);
                         $existingItem->last_qty = intval($barang['last_qty']);
                         $existingItem->harga_beli = intval($barang['harga_beli']);
-                        $existingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
-                            // Update atribut lainnya sesuai kebutuhan
+                        $existingItem->subtotal = $subTotal;
                         $existingItem->save();
                         $lastItemPembelianId = $existingItem->id;
                     } else {
@@ -1584,13 +1593,17 @@ class DataWebFiturController extends Controller
                     ->where('draft', 1)
                     ->first();
 
-                        // echo "<pre>";
-                        // var_dump($existingItem); 
-                        // echo "</pre>";
-                        // die;
+                    $subTotal = $barang['harga_beli'] * $barang['qty'];
+                    if($checkingKas->saldo < $subTotal) {
+                        return response()->json([
+                            'error' => true,
+                            'message' => "Saldo kas {$checkingKas->kode} tidak mencukupi 🫣"
+                        ]);
+                    }
 
                     if ($existingItem) {
                         $updateExistingItem = ItemPembelian::findOrFail($existingItem->id);
+
                             // Jika sudah ada, update informasi yang diperlukan
                         $updateExistingItem->qty = intval($barang['qty']);
                         $updateExistingItem->harga_beli = intval($barang['harga_beli']);
