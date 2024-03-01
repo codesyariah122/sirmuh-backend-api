@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran};
+use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder};
 use Auth;
 use PDF;
 
@@ -308,14 +308,15 @@ class DataPembelianLangsungController extends Controller
         // var_dump($pembelian);
         // echo "</pre>";
         // die;
+        $orders = PurchaseOrder::where('kode_po', $kode)->get()->sum('qty');
         $setting = "";
 
         switch($type) {
             case "nota-kecil":
-            return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
             break;
             case "nota-besar":
-            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
             $pdf->setPaper(0,0,609,440, 'potrait');
             return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
             break;

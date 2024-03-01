@@ -77,6 +77,7 @@
                 <th>Subtotal</th>
             </tr>
         </thead>
+        @if($pembelian->po == "False")
         <tbody>
             @foreach ($barangs as $key => $item)
             <tr>
@@ -90,6 +91,20 @@
             </tr>
             @endforeach
         </tbody>
+        @else
+        <tbody>
+            @foreach ($barangs as $key => $item)
+            <tr>
+                <td class="text-center">{{ $key+1 }}</td>
+                <td>{{ $item->kode_barang }}</td>
+                <td>{{ $item->nama_barang }}</td>
+                <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
+                <td class="text-right">{{ round($orders)." ".$item->satuan }}</td>
+                <td class="text-right">{{ $pembelian->lunas === 'True' ? $item->visa : 'DP Awal'}}</td>
+                <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
+            </tr>
+            @endforeach
+        @endif
         <tfoot>
             @if($pembelian->po === 'False')
                 <tr>
@@ -126,12 +141,18 @@
             @if($pembelian->po === 'True')
             <tr>
                 <td colspan="6" class="text-right"><b>DP Awal</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>
+            @if($pembelian->lunas == "True")
+                <tr>
+                    <td colspan="6" class="text-right"><b>Dibayar</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
+                </tr>
+            @endif
             <tr>
                 <td colspan="6" class="text-right"><b>Sisa DP</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</b></td>
