@@ -289,7 +289,7 @@ class DataPurchaseOrderController extends Controller
             ->get();
 
             $purchaseOrders = PurchaseOrder::where('kode_po', '=', $pembelian->kode)
-            ->orderBy('qty', 'DESC')
+            ->orderBy('po_ke', 'DESC')
             ->get();
 
             return response()->json([
@@ -331,6 +331,8 @@ class DataPurchaseOrderController extends Controller
             $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
             $updatePembelian = Pembelian::where('po', 'True')
             ->findOrFail($id);
+            $dataItemPo = PurchaseOrder::where('kode_po', $updatePembelian->kode)->get();
+            $totalSubtotal = $dataItemPo->sum('subtotal');
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
 
@@ -343,9 +345,6 @@ class DataPurchaseOrderController extends Controller
 
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
-            $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
-            $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
-            $updatePembelian->diterima = $data['diterima'] ? intval($diterima) : $updatePembelian->diterima;
  
             if($diterima > $bayar) {
                 $updatePembelian->lunas = "False";
@@ -358,6 +357,7 @@ class DataPurchaseOrderController extends Controller
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;
                 $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->bayar = $totalSubtotal;
                 $masuk_hutang->kode_kas = $updatePembelian->kode_kas;
                 $masuk_hutang->operator = $data['operator'];
                 $masuk_hutang->save();
@@ -367,7 +367,7 @@ class DataPurchaseOrderController extends Controller
                 $item_hutang->kode_hutang = $masuk_hutang->kode;
                 $item_hutang->tgl_hutang = $currentDate;
                 $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;
-                $item_hutang->jumlah = $masuk_hutang->jumlah;
+                $item_hutang->jumlah = $masuk_hutang->jumlah - $masuk_hutang->bayar;
                 $item_hutang->save();
 
                 $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_hutang->kode)
@@ -389,15 +389,19 @@ class DataPurchaseOrderController extends Controller
                 $updateKas = Kas::findOrFail($kas->id);
                 $updateKas->saldo = intval($kas->saldo) + intval($updatePembelian->diterima);
                 $updateKas->save();
-            } else if($diterima == $updatePembelian->jumlah) {
-                $updatePembelian->lunas = "True";
-                $updatePembelian->visa = "LUNAS";
+            } else if($data['sisa_dp']) {
+                $updatePembelian->lunas = "False";
+                $updatePembelian->visa = "DP AWAL";
                 $updatePembelian->hutang = 0;
             } else {
                 $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
                 $updatePembelian->hutang = 0;
             }
+
+            $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
+            $updatePembelian->bayar = $bayar;
+            $updatePembelian->diterima = $totalSubtotal;
 
             $updatePembelian->save();
 
