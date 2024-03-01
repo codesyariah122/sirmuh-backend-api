@@ -1526,7 +1526,7 @@ class DataWebFiturController extends Controller
                     $existingItem = ItemPembelian::where('kode_barang', $dataBarang->kode)
                     ->where('draft', 1)
                     ->first();
-                    
+
                     $subTotal = $barang['harga_beli'] * $barang['qty'];
                     if($checkingKas->saldo < $subTotal) {
                         return response()->json([
