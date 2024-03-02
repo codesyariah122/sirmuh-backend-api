@@ -48,7 +48,7 @@ class DataHutangController extends Controller
             ->leftJoin('itemhutang', 'hutang.kode', 'itemhutang.kode')
             ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', 'supplier.kode')
-            ->limit(10);
+            ->limit(10)
             ->where('pembelian.jt', '>', 0);
 
             if ($keywords) {
