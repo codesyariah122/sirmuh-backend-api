@@ -49,25 +49,19 @@ class DataHutangController extends Controller
             ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', 'supplier.kode')
             ->limit(10);
-            // ->where('pembelian.jt', '>', 0);
+            ->where('pembelian.jt', '>', 0);
 
             if ($keywords) {
                 $query->where('hutang.supplier', 'like', '%' . $keywords . '%');
             }
 
-            if ($sortName && $sortType) {
-                $query->orderBy($sortName, $sortType);
-            } else {
-                if ($startDate && $endDate) {
-                    $query->whereBetween('hutang.tanggal', [$startDate, $endDate]);
-                }
-            }
-
             $query->orderByDesc('hutang.id');
 
             if (!$viewAll) {
-                $query->whereDate('hutang.tanggal', '>=', $firstDayOfMonth)
-                ->whereDate('hutang.tanggal', '<=', $lastDayOfMonth);
+                $query->where(function ($query) use ($firstDayOfMonth, $lastDayOfMonth) {
+                    $query->whereBetween('hutang.tanggal', [$firstDayOfMonth, $lastDayOfMonth])
+                    ->orWhereNull('hutang.tanggal');
+                });
             }
 
             $hutangs = $query->paginate(10);
