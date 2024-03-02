@@ -151,6 +151,7 @@ class DataPenjualanTokoController extends Controller
             } else {
                 $newPenjualanToko->jumlah = 0;
             }
+            
             $newPenjualanToko->bayar = $data['bayar'];
 
             if($data['piutang'] !== 'undefined') {

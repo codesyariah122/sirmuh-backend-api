@@ -41,11 +41,13 @@ class DataKasController extends Controller
             ->where('nama', 'like', '%'.$keywords.'%')
             // ->orderByDesc('id', 'DESC')
             ->orderBy('saldo', 'DESC')
+            ->limit(10)
             ->paginate(10);
         } else if($kode) {
             $kas = Kas::whereNull('deleted_at')
             ->select('id', 'kode', 'nama', 'saldo')
             ->whereKode($kode)
+            ->limit(10)
             // ->orderByDesc('id', 'DESC')
             ->get();
         } else {
@@ -53,12 +55,14 @@ class DataKasController extends Controller
                 $kas =  Kas::whereNull('deleted_at')
                 ->select('id', 'kode', 'nama', 'saldo')
                 ->orderBy($sortName, $sortType)
+                ->limit(10)
                 ->paginate(10);
             }else{                
                 $kas =  Kas::whereNull('deleted_at')
                 ->select('id', 'kode', 'nama', 'saldo')
             // ->orderByDesc('id', 'DESC')
                 ->orderBy('saldo', 'DESC')
+                ->limit(10)
                 ->paginate(10);
             }
         }

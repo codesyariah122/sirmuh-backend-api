@@ -130,7 +130,6 @@ class DataItemPembelianController extends Controller
             $itemId = $request->item_id;
             $dataPembelian = Pembelian::findOrFail($id);
 
-
             if($dataPembelian->po === "True") {
                 $updateItemPembelian = ItemPembelian::findOrFail($itemId);
                 $dataKas = Kas::whereKode($dataPembelian->kode_kas)->first();

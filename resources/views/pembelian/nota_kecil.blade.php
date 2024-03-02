@@ -67,14 +67,14 @@
         <p>{{ $toko['name'] }}</p>
         <p>{{ $toko['address'] }}</p>
         <br/>
-        <p>No : {{ $pembelian->kode }}</p>
+        <p>No Transaksi: {{ $pembelian->kode }}</p>
         <p>Tgl Transaksi : {{ $pembelian->tanggal }}</p>
        {{--  <p>Supplier : {{ $pembelian->nama_supplier }}</p>
         <p>Kode Supplier : {{$pembelian->supplier}}</p>
         <p>Alamat Supplier : {{ $pembelian->alamat_supplier }}</p> --}}
         <p>Operator : {{ strtoupper($pembelian->operator) }}</p>
         @if($pembelian->visa === 'HUTANG')
-        <p>Pembayaran : {{$pembelian->po == 'True' ? 'DP Awal' : $pembelian->visa}}</p>
+        <p>Pembayaran : {{$pembelian->visa}}</p>
         @endif
         <p class="text-center">===================================</p>
          <table width="100%" style="border: 0;">
@@ -122,15 +122,23 @@
     </table>
         <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
+            <tr>
+                <td>Diskon:</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>
+            </tr>
             @if($pembelian->po == 'False')
                 <tr>
-                    <td>Total Bayar:</td>
+                    <td>Total Pembelian : </td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
+                </tr>
+                <tr>
+                    <td>Dibayar:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
                 </tr>
             @else
                 <tr>
                     @foreach($barangs as $item)
-                        <td>Total Item Diterima:</td>
+                        <td>Total Item Pembelian:</td>
                         <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
                     @endforeach
                 </tr>
@@ -155,19 +163,18 @@
                     </td>
                 </tr>
             @endif --}}
-            <tr>
-                <td>Diskon:</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>
-            </tr>
+        
             @if($pembelian->visa === 'HUTANG')
                 @if($pembelian->po == 'False')
                     <tr>
-                        <td>Bayar DP:</td>
+                        <td>Angsuran Awal:</td>
                         <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
                     </tr>
                 @else
                     <tr>
-                        <td>DP Awal:</td>
+                        <td>
+                            {{$pembelian->visa === "DP AWAL" ? "DP Awal" : "Total DP"}}
+                        </td>
                         <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
                     </tr>
                 @endif
@@ -179,10 +186,17 @@
                     <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
                 </tr>
                 @else
-                <tr>
-                    <td>Sisa DP:</td>
-                    <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
-                </tr>
+                    @if($pembelian->visa === 'HUTANG')
+                        <tr>
+                            <td>Masuk Hutang:</td>
+                            <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                        </tr>
+                    @else
+                        <tr>
+                            <td>Sisa DP:</td>
+                            <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                        </tr>
+                    @endif
                 @endif
             @else
             @if($pembelian->po == 'True')

@@ -89,23 +89,27 @@ class DataSupplierController extends Controller
                     ->orWhere('kode', 'like', '%' . $keywords . '%');
                 })
                 ->orderBy('id', 'ASC')
+                ->limit(10)
                 ->paginate(10);
             } else if($kode) {
                 $suppliers = Supplier::whereNull('deleted_at')
                 ->select('id', 'nama', 'kode')
                 ->where('kode', 'like', '%' . $kode . '%')
                 ->orderBy('id', 'ASC')
+                ->limit(10)
                 ->paginate(10);
             } else {
                 if($sortName && $sortType) {
                     $suppliers =  Supplier::whereNull('deleted_at')
                     ->select('id', 'nama', 'kode')
                     ->orderBy($sortName, $sortType)
+                    ->limit(10)
                     ->paginate(10);
                 } else {
                     $suppliers =  Supplier::whereNull('deleted_at')
                     ->select('id', 'nama', 'kode')
                     ->orderBy('id', 'ASC')
+                    ->limit(10)
                     ->paginate(10);
                 }
             }

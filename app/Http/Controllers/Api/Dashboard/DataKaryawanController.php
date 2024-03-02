@@ -39,33 +39,33 @@ class DataKaryawanController extends Controller
 
         if($keywords) {
             $karyawans = Karyawan::whereNull('deleted_at')
-            ->select('id', 'nama', 'kode', 'level')
+            ->whereNotIn('level', ['ADMIN', 'MASTER'])
             ->where('nama', 'like', '%'.$keywords.'%')
-            ->with('users')
-            ->where('level', '!=' , 'ADMIN')
+            ->select('id', 'nama', 'kode', 'level')
+            ->with(['users:email'])
             ->orderByDesc('id', 'DESC')
             ->paginate(10);
         } else if($kode) {
             $karyawans = Karyawan::whereNull('deleted_at')
             ->select('id', 'nama', 'kode', 'level')
             ->where('kode', $kode)
-            ->with('users')
-            ->where('level', '!=' , 'ADMIN')
+            ->with(['users:email'])
+            ->whereNotIn('level', ['ADMIN', 'MASTER'])
             ->orderByDesc('id', 'DESC')
             ->paginate(10);
         } else {
             if($sortName && $sortType) {
                 $karyawans =  Karyawan::whereNull('deleted_at')
                 ->select('id', 'nama', 'kode', 'level')
-                ->with('users')
-                ->where('level', '!=' , 'ADMIN')
+                ->with(['users:email'])
+                ->whereNotIn('level', ['ADMIN', 'MASTER'])
                 ->orderBy($sortName, $sortType)
                 ->paginate(10);
             } else {
                $karyawans =  Karyawan::whereNull('deleted_at')
                ->select('id', 'nama', 'kode', 'level')
-               ->with('users')
-               ->where('level', '!=' , 'ADMIN')
+               ->with(['users:email'])
+               ->whereNotIn('level', ['ADMIN', 'MASTER'])
                ->orderByDesc('id', 'DESC')
                ->paginate(10);
            }

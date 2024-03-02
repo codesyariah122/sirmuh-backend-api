@@ -100,17 +100,13 @@
                 <td>{{ $item->nama_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
                 <td class="text-right">{{ round($orders)." ".$item->satuan }}</td>
-                <td class="text-right">{{ $pembelian->lunas === 'True' ? $item->visa : 'DP Awal'}}</td>
+                <td class="text-right">{{ $item->visa }}</td>
                 <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
             </tr>
             @endforeach
         @endif
         <tfoot>
             @if($pembelian->po === 'False')
-                <tr>
-                    <td colspan="6" class="text-right"><b>Diskon</b></td>
-                    <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
-                </tr>
                 <tr>
                     <td colspan="6" class="text-right"><b>Total Bayar</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
@@ -119,32 +115,32 @@
             
             
             @if($pembelian->visa === 'HUTANG')
-            <tr>
-                <td colspan="6" class="text-right"><b>Total Item Diterima</b></td>
-                @foreach ($barangs as $key => $item)
-                <td class="text-right"><b>{{ $helpers->format_uang($item->subtotal) }}</b></td>
-                @endforeach
-            </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Diskon</b></td>
-                <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
-            </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Bayar DP</b></td>
-                <td class="text-right"><b>{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</b></td>
-            </tr>
-            @if($pembelian->po === "True")
                 <tr>
-                    <td colspan="6" class="text-right"><b>Sisa DP</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                    <td colspan="6" class="text-right"><b>
+                        {{$pembelian->visa === "DP AWAL" ? "DP Awal" : "Total DP"}}
+                    </b></td>
+                    <td class="text-right"><b>{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</b></td>
                 </tr>
+                @if($pembelian->po === "True")
+                    @if($pembelian->lunas == "True")
+                        <tr>
+                            <td colspan="6" class="text-right"><b>Sisa DP</b></td>
+                            <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                        </tr>
+                    @else
+                        <tr>
+                            <td colspan="6" class="text-right"><b>Masuk Hutang</b></td>
+                            <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                        </tr>
+                    @endif
+                @else
+                    <tr>
+                        <td colspan="6" class="text-right"><b>Hutang</b></td>
+                        <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
+                    </tr>
+                @endif
             @else
-                <tr>
-                    <td colspan="6" class="text-right"><b>Hutang</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
-                </tr>
-            @endif
-            @else
+            
             @if($pembelian->po === 'True')
             <tr>
                 <td colspan="6" class="text-right"><b>DP Awal</b></td>
@@ -154,7 +150,7 @@
                 <td colspan="6" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
             </tr>
-            @if($pembelian->lunas == "True")
+            @if($pembelian->lunas === "True")
                 <tr>
                     <td colspan="6" class="text-right"><b>Dibayar</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>

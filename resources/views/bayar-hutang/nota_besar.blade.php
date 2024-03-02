@@ -81,45 +81,51 @@
                 <!-- <td>{{ $hutang->nama_supplier }} ({{$hutang->supplier}})</td> -->
                 <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
                 <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($hutang->qty * $hutang->harga_beli) }}</td>
+                @if($hutang->po === "False")
+                    <td class="text-right">{{ $helpers->format_uang($hutang->bayar_pembelian) }}</td>
+                @else
+                @foreach($angsurans->first() ? [$angsurans->first()] : [] as $angsuran)
+                    <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian + $angsuran->bayar_angsuran) }}</td>
+                @endforeach
+                @endif
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
             </tr>
         </tbody>
         <tfoot>
-            <tr>
-                <td colspan="6" class="text-right"><b>Total Beli</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</b></td>
-            </tr>
+            @if($hutang->po === "False")
+                <tr>
+                    <td colspan="6" class="text-right"><b>Total Beli</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</b></td>
+                </tr>
+            @else
+                <tr>
+                    <td colspan="6" class="text-right"><b>Total Beli</b></td>
+                    <td class="text-right"><b>{{$hutang->lunas === "True" ?  $helpers->format_uang($hutang->diterima) :  $helpers->format_uang($hutang->jumlah_pembelian)}}</b></td>
+                </tr>
+            @endif
             <tr>
                 <td colspan="6" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($hutang->diskon) }}</b></td>
             </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Diterima</b></td>
+            <!-- <tr>
+                <td colspan="6" class="text-right"><b>Dp Awal</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Hutang</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($hutang->jumlah) }}</b></td>
-            </tr>
+            </tr> -->
             @foreach($angsurans as $angsuran)
             <tr>
                 <td colspan="6" class="text-right"><b>Angsuran ke {{$angsuran->angsuran_ke}} {{$angsuran->angsuran_ke == 1 ? '(DP Awal)' : ''}}</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
             @endforeach
-            @if($hutang->lunas === 'False' || $hutang->lunas === '0')
-                <tr>
-                    <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
-                </tr>
-            @else
-                <tr>
-                    <td colspan="6" class="text-right"><b>Kembali</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->diterima - $hutang->jumlah) }}</b></td>
-                </tr>
-            @endif
+            <tr>
+                <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
+            </tr>
         </tfoot>
     </table>
 

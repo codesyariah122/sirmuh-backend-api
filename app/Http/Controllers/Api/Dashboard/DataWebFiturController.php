@@ -800,7 +800,7 @@ class DataWebFiturController extends Controller
                     'total' => $totals,
                     'data' => [
                         'user_online' => $user_online,
-                        'admin' => $admin,
+                        // 'admin' => $admin,
                         'kasir' => $kasir,
                         'kasirGudang' => $kasirGudang,
                         'gudang' => $gudang,
@@ -1430,8 +1430,13 @@ class DataWebFiturController extends Controller
                 //     $newStok = $updateBarang->toko;
                 // }
                 $newStok = $updateBarang->toko + $barang['qty'];
+                if($barang['last_qty'] !== NULL && $barang['last_qty'] >= 0) {
+                    $lastQty = $barang['last_qty'];
+                } else {
+                    $lastQty = $updateBarang->toko;
+                }
                 $updateBarang->toko = $newStok;
-                $updateBarang->last_qty = $barang['qty'];
+                $updateBarang->last_qty = $lastQty;
                 $updateBarang->save();
             }
             break;

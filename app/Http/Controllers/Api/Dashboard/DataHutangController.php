@@ -36,16 +36,20 @@ class DataHutangController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $viewAll = $request->query('view_all');
             $sortName = $request->query('sort_name');
             $sortType = $request->query('sort_type');
             $startDate = $request->query("start_date");
             $endDate = $request->query("end_date");
+            $firstDayOfMonth = now()->startOfMonth()->toDateString();
+            $lastDayOfMonth = now()->endOfMonth()->toDateString();
 
             $query = Hutang::select('hutang.id','hutang.kode', 'hutang.tanggal','hutang.supplier','hutang.jumlah','hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian','pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'itemhutang.jumlah_hutang as jumlah_hutang')
             ->leftJoin('itemhutang', 'hutang.kode', 'itemhutang.kode')
             ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', 'supplier.kode')
-            ->where('pembelian.jt', '>', 0);
+            ->limit(10);
+            // ->where('pembelian.jt', '>', 0);
 
             if ($keywords) {
                 $query->where('hutang.supplier', 'like', '%' . $keywords . '%');
@@ -54,12 +58,17 @@ class DataHutangController extends Controller
             if ($sortName && $sortType) {
                 $query->orderBy($sortName, $sortType);
             } else {
-                if($startDate && $endDate) {
+                if ($startDate && $endDate) {
                     $query->whereBetween('hutang.tanggal', [$startDate, $endDate]);
                 }
             }
 
             $query->orderByDesc('hutang.id');
+
+            if (!$viewAll) {
+                $query->whereDate('hutang.tanggal', '>=', $firstDayOfMonth)
+                ->whereDate('hutang.tanggal', '<=', $lastDayOfMonth);
+            }
 
             $hutangs = $query->paginate(10);
 
@@ -110,7 +119,7 @@ class DataHutangController extends Controller
     {
         try {
             $query =  Hutang::query()
-            ->select('hutang.*', 'itemhutang.jumlah_hutang', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas','supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli','itempembelian.subtotal','barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->select('hutang.*', 'itemhutang.jumlah_hutang', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas','pembelian.po','supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli','itempembelian.subtotal','barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
             ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
             ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
@@ -194,11 +203,11 @@ class DataHutangController extends Controller
                 $updatePembelian->diterima = intval($dataPembelian->diterima) + $bayar;
 
                 if($bayar >= $dataPembelian->hutang) {
-                    $updatePembelian->lunas = 1;
+                    $updatePembelian->lunas = "True";
                     $updatePembelian->visa = "LUNAS";
                     $updatePembelian->hutang = $bayar - intval($dataPembelian->hutang);
                 } else {
-                    $updatePembelian->lunas = 0;
+                    $updatePembelian->lunas = "False";
                     $updatePembelian->visa = "HUTANG";
                     $updatePembelian->hutang = intval($dataPembelian->hutang) - $bayar;
                 }
@@ -383,9 +392,9 @@ class DataHutangController extends Controller
 
         $hutang = $query->first();
         $angsurans = PembayaranAngsuran::whereKode($hutang->kode)->get();
+        $angsuran_awal = PembayaranAngsuran::whereKode($hutang->kode)->first();
 
         $setting = "";
-
         // echo "<pre>";
         // var_dump($hutang);
         // var_dump($hutang->hutang);

@@ -186,6 +186,7 @@ class DataPembelianLangsungController extends Controller
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $supplier->kode;
                 $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->bayar = $data['bayar'];
                 $masuk_hutang->kode_kas = $newPembelian->kode_kas;
                 $masuk_hutang->operator = $data['operator'];
                 $masuk_hutang->save();
@@ -232,11 +233,18 @@ class DataPembelianLangsungController extends Controller
                 $updateDrafts[$idx]->draft = 0;
                 $updateDrafts[$idx]->save();
             }
-
-            $diterima = intval($newPembelian->diterima);
-            $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) - $diterima;
-            $updateKas->save();
+            
+            if($data['pembayaran'] !== "cash") {
+                $diterima = intval($newPembelian->diterima);
+                $updateKas = Kas::findOrFail($data['kode_kas']);
+                $updateKas->saldo = intval($updateKas->saldo) - $data['bayar'];
+                $updateKas->save();
+            } else {                
+                $diterima = intval($newPembelian->diterima);
+                $updateKas = Kas::findOrFail($data['kode_kas']);
+                $updateKas->saldo = intval($updateKas->saldo) - intval($data['jumlah']);
+                $updateKas->save();
+            }
 
             $userOnNotif = Auth::user();
 
