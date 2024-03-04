@@ -316,7 +316,11 @@ class DataPembelianLangsungController extends Controller
         // var_dump($pembelian);
         // echo "</pre>";
         // die;
-        $orders = PurchaseOrder::where('kode_po', $kode)->get()->sum('qty');
+        foreach($barangs as $barang) {            
+            $orders = PurchaseOrder::where('kode_po', $kode)
+            ->where('kode_barang', $barang->kode_barang)
+            ->get();
+        }
         $setting = "";
 
         switch($type) {

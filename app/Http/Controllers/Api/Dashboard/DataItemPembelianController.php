@@ -124,6 +124,60 @@ class DataItemPembelianController extends Controller
         }
     }
 
+    public function update_item_pembelian_po_qty(Request $request, $id)
+    {
+        try {
+            $order_id = $request->order_id;
+
+            $dataItemPembelian = ItemPembelian::findOrFail($id);
+            $dataItemPembelian->qty = $request->qty;
+            $dataItemPembelian->last_qty = $request->last_qty;
+            $dataItemPembelian->subtotal = $request->qty * $dataItemPembelian->harga_beli;
+            $dataItemPembelian->save();
+
+
+            $previousPo = PurchaseOrder::where('id', '<', $order_id)
+            ->orderBy('id', 'desc')
+            ->first();
+            $dataPoUpdate = PurchaseOrder::findOrFail($order_id);
+            $dataPoUpdate->qty = $request->qty;
+            $dataPoUpdate->subtotal = $request->qty * $dataItemPembelian->harga_beli;
+
+            $previousSubTotal = $dataItemPembelian->last_qty * $dataItemPembelian->harga_beli;
+            
+            if($previousSubTotal > $dataPoUpdate->subtotal) {
+                $sisaDp = $previousSubTotal - $dataPoUpdate->subtotal;
+            } else {
+                $sisaDp = $dataPoUpdate->subtotal - $previousSubTotal;
+            }
+
+            $dataPoUpdate->sisa_dp = $sisaDp;
+            $dataPoUpdate->save();
+
+            $itemPurchaseOrders = PurchaseOrder::where('kode_po', $dataPoUpdate->kode_po)->get();
+            $totalSubTotalOrder = $itemPurchaseOrders->sum('subtotal');
+            $dataPembelian = Pembelian::whereKode($dataItemPembelian->kode)->first();
+            $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
+            $updatePembelian->diterima = $totalSubTotalOrder;
+            $updatePembelian->save();
+
+            $newDataPembelian = Pembelian::select('pembelian.kode', 'pembelian.draft', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima', 'pembelian.jt', 'pembelian.lunas','pembelian.visa','pembelian.hutang','pembelian.po', 'itempembelian.kode as kode_item_pembelian', 'itempembelian.draft', 'itempembelian.kode_barang', 'itempembelian.nama_barang', 'itempembelian.satuan', 'itempembelian.qty', 'itempembelian.last_qty', 'itempembelian.harga_beli', 'itempembelian.subtotal')
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->where('pembelian.kode', $updatePembelian->kode)
+            ->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Item pembelian update!",
+                'data' => $newDataPembelian,
+                'orders' => $order_id,
+                'sisa_dp' => $dataPoUpdate->sisa_dp
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function update(Request $request, $id)
     {
         try {
@@ -160,19 +214,22 @@ class DataItemPembelianController extends Controller
 
                 $updateItemPembelian->save();
 
-                $updatePurchaseOrderItem = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)->first();
+                $updatePurchaseOrderItems = PurchaseOrder::where('kode_po', $updateItemPembelian->kode)->get();
 
-                $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $updatePurchaseOrderItem->kode_po)
-                ->orderBy('po_ke', 'desc')
-                ->first();
-
-                // Rumus Buat Sisa DP
-                $itemPurchaseOrders = PurchaseOrder::where('kode_po', $updateItemPembelian->kode)->get();
+                $itemPurchaseOrders = PurchaseOrder::where('kode_po', $updateItemPembelian->kode)
+                ->get();
                 $totalQty = $itemPurchaseOrders->sum('qty');
-                $subQtyTotal = ($totalQty + $request->qty) * $updateItemPembelian->harga_beli;
-                $subTotalPo = $dataPembelian->jumlah - $subQtyTotal;
 
-                $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
+                foreach($updatePurchaseOrderItems as $orderItem) {
+                    $purchaseOrderTerakhir = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)
+                    ->where('kode_po', $updateItemPembelian->kode)
+                    ->first();
+                    $subQtyTotal = ($totalQty + $request->qty) * $updateItemPembelian->harga_beli;
+                    $subTotalPo = $dataPembelian->jumlah - $subQtyTotal;
+                    $poKeBaru = $purchaseOrderTerakhir->po_ke + 1;
+                }
+
+                
                 $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
 
                 $updatePurchaseOrder = new PurchaseOrder;
