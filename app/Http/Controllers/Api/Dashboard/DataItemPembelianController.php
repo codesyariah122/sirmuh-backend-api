@@ -143,7 +143,7 @@ class DataItemPembelianController extends Controller
             $dataPoUpdate->qty = $request->qty;
             $dataPoUpdate->subtotal = $request->qty * $dataItemPembelian->harga_beli;
 
-            $previousSubTotal = $dataItemPembelian->last_qty * $dataItemPembelian->harga_beli;
+            $previousSubTotal = $dataItemPembelian->qty * $dataItemPembelian->harga_beli;
             
             if($previousSubTotal > $dataPoUpdate->subtotal) {
                 $sisaDp = $previousSubTotal - $dataPoUpdate->subtotal;
