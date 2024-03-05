@@ -387,10 +387,10 @@ class DataPurchaseOrderController extends Controller
                 $angsuran->jumlah = $item_hutang->jumlah_hutang;
                 $angsuran->save();
 
-                $updateKas = Kas::findOrFail($kas->id);
-                $bindCalc = $updatePembelian->diterima - $updatePembelian->jumlah;
-                $updateKas->saldo = $kas->saldo - $bindCalc;
-                $updateKas->save();
+                // $updateKas = Kas::findOrFail($kas->id);
+                // $bindCalc = $updatePembelian->diterima - $updatePembelian->jumlah;
+                // $updateKas->saldo = $kas->saldo - $bindCalc;
+                // $updateKas->save();
             } else if($data['sisa_dp']) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
