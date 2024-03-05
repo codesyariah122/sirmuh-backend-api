@@ -213,24 +213,21 @@ class DataItemPembelianController extends Controller
                 }
 
                 $updateItemPembelian->save();
+                
+                $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
 
                 $updatePurchaseOrderItems = PurchaseOrder::where('kode_po', $updateItemPembelian->kode)->get();
-
                 $itemPurchaseOrders = PurchaseOrder::where('kode_po', $updateItemPembelian->kode)
                 ->get();
                 $totalQty = $itemPurchaseOrders->sum('qty');
+                $purchaseOrderTerakhir = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)
+                ->where('kode_po', $dataPembelian->kode)
+                ->latest('po_ke')
+                ->first();
 
-                foreach($updatePurchaseOrderItems as $orderItem) {
-                    $purchaseOrderTerakhir = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)
-                    ->where('kode_po', $updateItemPembelian->kode)
-                    ->first();
-                    $subQtyTotal = ($totalQty + $request->qty) * $updateItemPembelian->harga_beli;
-                    $subTotalPo = $dataPembelian->jumlah - $subQtyTotal;
-                    $poKeBaru = $purchaseOrderTerakhir->po_ke + 1;
-                }
-
-                
-                $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
+                $subQtyTotal = ($totalQty + $request->qty) * $updateItemPembelian->harga_beli;
+                $subTotalPo = $dataPembelian->jumlah - $subQtyTotal;
+                $poKeBaru = $purchaseOrderTerakhir ? $purchaseOrderTerakhir->po_ke + 1 : 1;
 
                 $updatePurchaseOrder = new PurchaseOrder;
                 $updatePurchaseOrder->kode_po = $dataPembelian->kode;
