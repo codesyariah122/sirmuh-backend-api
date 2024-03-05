@@ -404,11 +404,9 @@ class DataPurchaseOrderController extends Controller
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
 
-                if($updatePembelian->lunas === "False") {
-                    $updateKas = Kas::findOrFail($kas->id);
-                    $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
-                    $updateKas->save();
-                }
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
+                $updateKas->save();
 
                 $updatePembelianSaved =  Pembelian::query()
                 ->select(
