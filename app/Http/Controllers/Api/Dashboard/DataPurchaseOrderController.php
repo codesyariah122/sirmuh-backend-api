@@ -182,10 +182,10 @@ class DataPurchaseOrderController extends Controller
                 $updateDrafts[$idx]->save();
             }
 
-            // $diterima = intval($newPembelian->diterima);
-            // $updateKas = Kas::findOrFail($data['kode_kas']);
-            // $updateKas->saldo = intval($updateKas->saldo) - $newPembelian->jumlah;
-            // $updateKas->save();
+            $diterima = intval($newPembelian->diterima);
+            $updateKas = Kas::findOrFail($data['kode_kas']);
+            $updateKas->saldo = intval($updateKas->saldo) - $newPembelian->jumlah;
+            $updateKas->save();
 
             $userOnNotif = Auth::user();
 
@@ -387,6 +387,10 @@ class DataPurchaseOrderController extends Controller
                 $angsuran->bayar_angsuran = $data['bayar'] ? $bayar - $data['jumlah_saldo'] : 0;
                 $angsuran->jumlah = $item_hutang->jumlah_hutang;
                 $angsuran->save();
+
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
+                $updateKas->save();
             } else if($data['sisa_dp']) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
@@ -404,9 +408,9 @@ class DataPurchaseOrderController extends Controller
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
 
-                $updateKas = Kas::findOrFail($kas->id);
-                $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
-                $updateKas->save();
+                // $updateKas = Kas::findOrFail($kas->id);
+                // $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
+                // $updateKas->save();
 
                 $updatePembelianSaved =  Pembelian::query()
                 ->select(
