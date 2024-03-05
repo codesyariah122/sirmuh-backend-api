@@ -1865,7 +1865,10 @@ class DataWebFiturController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Stok tersedia',
-                    'data' => $barang->id
+                    'data' => [
+                        'id_barang' => $barang->id,
+                        'stok' => $barang->toko
+                    ]
                 ]);
             } else {
                 return response()->json([
