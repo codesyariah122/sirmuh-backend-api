@@ -182,7 +182,6 @@ class DataPurchaseOrderController extends Controller
                 $updateDrafts[$idx]->save();
             }
 
-            $diterima = intval($newPembelian->diterima);
             $updateKas = Kas::findOrFail($data['kode_kas']);
             $updateKas->saldo = intval($updateKas->saldo) - $newPembelian->jumlah;
             $updateKas->save();
@@ -389,7 +388,8 @@ class DataPurchaseOrderController extends Controller
                 $angsuran->save();
 
                 $updateKas = Kas::findOrFail($kas->id);
-                $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
+                $bindCalc = $updatePembelian->diterima - $updatePembelian->jumlah;
+                $updateKas->saldo = $kas->saldo - $bindCalc;
                 $updateKas->save();
             } else if($data['sisa_dp']) {
                 $updatePembelian->lunas = "False";
