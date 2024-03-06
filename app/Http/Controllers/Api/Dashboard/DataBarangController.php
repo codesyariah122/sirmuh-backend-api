@@ -93,8 +93,8 @@ class DataBarangController extends Controller
             $kode = $request->query('kode');
             $supplier = $request->query('supplier');
             $endDate = $request->query('tgl_terakhir');
-            $barcode = $request->query('barcode');
             $startDate = $request->query('start_date');
+            $barcode = $request->query('barcode');
             $sortName = $request->query('sort_name');
             $sortType = $request->query('sort_type');
             

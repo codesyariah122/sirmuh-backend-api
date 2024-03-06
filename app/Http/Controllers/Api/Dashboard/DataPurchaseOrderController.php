@@ -46,7 +46,7 @@ class DataPurchaseOrderController extends Controller
         try {
             $keywords = $request->query('keywords');
             $viewAll = $request->query('view_all');
-
+            $dateTransaction = $request->query('date_transaction');
             $today = now()->toDateString();
 
             $user = Auth::user();
@@ -59,32 +59,27 @@ class DataPurchaseOrderController extends Controller
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->limit(10);
 
+            if ($dateTransaction) {
+                $query->whereDate('pembelian.tanggal', '=', $dateTransaction);
+            }
+
             if ($keywords) {
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
-            if($viewAll) {
-                $pembelians = $query
-                ->where(function ($query) use ($user) {
-                    if ($user->role !== 1) {
-                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                    } 
-                })
-                ->where('pembelian.po', '=', 'True')
-                ->orderByDesc('pembelian.id')
-                ->paginate(10);
-            } else {
+            if(!$viewAll) {
                 $query->whereDate('pembelian.tanggal', '=', $today);
-                $pembelians = $query
-                ->where(function ($query) use ($user) {
-                    if ($user->role !== 1) {
-                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                    } 
-                })
-                ->where('pembelian.po', '=', 'True')
-                ->orderByDesc('pembelian.id')
-                ->paginate(10);
             }
+
+            $pembelians = $query
+            ->where(function ($query) use ($user) {
+                if ($user->role !== 1) {
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                } 
+            })
+            ->where('pembelian.po', '=', 'True')
+            ->orderByDesc('pembelian.id')
+            ->paginate(10);
 
 
             return new ResponseDataCollect($pembelians);

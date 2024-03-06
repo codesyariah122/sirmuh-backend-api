@@ -48,6 +48,7 @@ class DataPembelianLangsungController extends Controller
             $keywords = $request->query('keywords');
             $viewAll = $request->query('view_all');
             $today = now()->toDateString();
+            $dateTransaction = $request->query('date_transaction');
 
             $user = Auth::user();
 
@@ -58,32 +59,27 @@ class DataPembelianLangsungController extends Controller
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->limit(10);
 
+            if ($dateTransaction) {
+                $query->whereDate('pembelian.tanggal', '=', $dateTransaction);
+            }
+
             if ($keywords) {
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
-            if($viewAll) {
-                $pembelians = $query
-                ->where(function ($query) use ($user) {
-                    if ($user->role !== 1) {
-                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                    } 
-                })
-                ->where('pembelian.po', '=', 'False')
-                ->orderByDesc('pembelian.id')
-                ->paginate(10);
-            } else {
-                $pembelians = $query
-                ->where(function ($query) use ($user) {
-                    if ($user->role !== 1) {
-                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                    } 
-                })
-                ->where('pembelian.po', '=', 'False')
-                ->whereDate('pembelian.tanggal', '=', $today)
-                ->orderByDesc('pembelian.id')
-                ->paginate(10);
+            if(!$viewAll) {
+                $query->whereDate('pembelian.tanggal', '=', $today);
             }
+
+            $pembelians = $query
+            ->where(function ($query) use ($user) {
+                if ($user->role !== 1) {
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                } 
+            })
+            ->where('pembelian.po', '=', 'False')
+            ->orderByDesc('pembelian.id')
+            ->paginate(10);
 
             return new ResponseDataCollect($pembelians);
 

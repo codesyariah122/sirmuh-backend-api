@@ -40,39 +40,33 @@ class DataPenjualanPoController extends Controller
 
            $query = Penjualan::query()
            ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
-        )
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
            ->orderByDesc('penjualan.id')
            ->limit(10);
 
-           if ($keywords) {
+        if ($dateTransaction) {
+            $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
+        }
+
+        if ($keywords) {
             $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
 
-        if($viewAll) {
-            $penjualans = $query
-            ->where(function ($query) use ($user) {
-                if ($user !== "Vicky Andriani") {
-                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
-                }
-            })
-            ->where('penjualan.po', '=', 'True')
-            ->orderByDesc('penjualan.id')
-            ->paginate(10);
-        } else {
+        if(!$viewAll) {
             $query->whereDate('penjualan.tanggal', '=', $today);
-            $penjualans = $query
-            ->where(function ($query) use ($user) {
-                if ($user !== "Vicky Andriani") {
-                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
-                }
-            })
-            ->where('penjualan.po', '=', 'True')
-            ->orderByDesc('penjualan.id')
-            ->paginate(10);
         }
+
+        $penjualans = $query
+        ->where(function ($query) use ($user) {
+            if ($user->role !== 1) {
+                $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user->name . '%')]);
+            } 
+        })
+        ->where('penjualan.po', '=', 'True')
+        ->orderByDesc('penjualan.id')
+        ->paginate(10);
 
         return new ResponseDataCollect($penjualans);
 

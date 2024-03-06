@@ -35,8 +35,9 @@ class DataPenjualanTokoController extends Controller
         try {
          $keywords = $request->query('keywords');
          $today = now()->toDateString();
+         $dateTransaction = $request->query('date_transaction');
          $viewAll = $request->query('view_all');
-         $user = Auth::user()->name;
+         $user = Auth::user();
 
          $query = Penjualan::query()
          ->select(
@@ -48,32 +49,27 @@ class DataPenjualanTokoController extends Controller
          ->where('jenis', 'PENJUALAN TOKO')
          ->limit(10);
 
+        if ($dateTransaction) {
+            $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
+        }
+
         if ($keywords) {
             $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
 
-        if($viewAll) {
-            $penjualans = $query
-            ->where(function ($query) use ($user) {
-                if ($user !== "Vicky Andriani") {
-                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
-                }
-            })
-            ->where('penjualan.po', '=', 'False')
-            ->orderByDesc('penjualan.id')
-            ->paginate(10);
-        } else {
+        if(!$viewAll) {
             $query->whereDate('penjualan.tanggal', '=', $today);
-            $penjualans = $query
-            ->where(function ($query) use ($user) {
-                if ($user !== "Vicky Andriani") {
-                    $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user . '%')]);
-                }
-            })
-            ->where('penjualan.po', '=', 'False')
-            ->orderByDesc('penjualan.id')
-            ->paginate(10);
         }
+
+        $penjualans = $query
+        ->where(function ($query) use ($user) {
+            if ($user->role !== 1) {
+                $query->whereRaw('LOWER(penjualan.operator) like ?', [strtolower('%' . $user->name . '%')]);
+            } 
+        })
+        ->where('penjualan.po', '=', 'False')
+        ->orderByDesc('penjualan.id')
+        ->paginate(10);
 
         return new ResponseDataCollect($penjualans);
 
@@ -157,7 +153,7 @@ class DataPenjualanTokoController extends Controller
             if($data['piutang'] !== 'undefined') {
                 $newPenjualanToko->angsuran = $data['bayar'];
                 $newPenjualanToko->lunas = "False";
-                $newPenjualanToko->visa = 'HUTANG';
+                $newPenjualanToko->visa = 'PIUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
                 $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = "False";
@@ -440,7 +436,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             if($data['piutang']) {
                 $updatePembelian->angsuran = $data['bayar'] ? $data['bayar'] : $data['bayarDp'];
                 $updatePembelian->lunas = "False";
-                $updatePembelian->visa = 'HUTANG';
+                $updatePembelian->visa = 'PIUTANG';
                 $updatePembelian->piutang = $data['piutang'];
                 $updatePembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
                 $updatePembelian->receive = "False";

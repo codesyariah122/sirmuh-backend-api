@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
+    <title>{{$penjualan->visa !== "PIUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
 
     <?php
     $style = '
@@ -67,7 +67,7 @@
         <p>{{ $toko['name'] }}</p>
         <p>{{ $toko['address'] }}</p>
         <br/>
-        <p>No : {{ $penjualan->kode }}</p>
+        <p>No Referensi : {{ $penjualan->kode }}</p>
         <p>Tgl Transaksi : {{ $penjualan->tanggal }}</p>
         <p>Pelanggan : {{ $penjualan->pelanggan_nama }}({{$penjualan->pelanggan}})</p>
         <p>
@@ -93,20 +93,20 @@
         <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
             <tr>
-                <td>Total Harga:</td>
+                <td>Total Belanja:</td>
                 <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
             </tr>
-            <tr>
+           <!--  <tr>
                 <td>Total Item:</td>
-                <td>
+                <td style="text-align: left;">
                     @foreach ($barangs as $item)
-                    <tr>
+                    <tr colspan="12">
                         <td>{{ $item->nama_barang }} : </td>
                         <td>{{ round($item->qty)." ".$item->satuan }}</td>
                     </tr>
                     @endforeach
                 </td>
-            </tr>
+            </tr> -->
             <tr>
                 <td>Diskon:</td>
                 <td class="text-right">{{ $helpers->format_uang($penjualan->diskon) }}%</td>
@@ -140,6 +140,8 @@
         </table>
 
         <p class="text-center">===================================</p>
+        <br>
+
         <p class="text-center">Semoga Lancar</p>
         <p class="text-center">&</p>
         <p class="text-center">Tetap Menjadi Langganan</p>

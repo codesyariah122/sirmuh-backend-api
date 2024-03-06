@@ -37,7 +37,7 @@
                 <b>Kepada</b>
             </td>
             <td rowspan="4" width="40%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="150">
+                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100" />
                 <br>
                 <address>
                     {{ $toko['address'] }}
@@ -54,9 +54,9 @@
                 {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
             </td>
         </tr>
-        <tr>
+       <!--  <tr>
             <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
-        </tr>
+        </tr> -->
         <tr>
             <td>
                 Jenis : {{$penjualan->jenis}}
