@@ -465,22 +465,61 @@ class DataPurchaseOrderController extends Controller
 
          $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-            $delete_pembelian = Pembelian::whereNull('deleted_at')
-            ->where('po', 'True')
-            ->findOrFail($id);
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+            $delete_pembelian = Pembelian::findOrFail($id);
+
+            $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
+
+            if($dataHutang) {
+                $delete_hutang = Hutang::findOrFail($dataHutang->id);
+                $delete_hutang->delete();
+
+                $hutangItems = ItemHutang::where('kode', $delete_pembelian->kode)->get();
+                foreach($hutangItems as $itemHutang) {                    
+                    $deleteItemHutang = ItemHutang::findOrFail($itemHutang->id);
+                    $deleteItemHutang->delete();
+                }
+
+                $angsuranItems = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->get();
+                foreach($angsuranItems as $itemAngsuran) {                    
+                    $deleteAngsuran = PembayaranAngsuran::findOrFail($itemAngsuran->id);
+                    $deleteAngsuran->delete();
+                }
+            }
+
             $delete_pembelian->delete();
 
-                // $kas = Kas::whereKode($delete_pembelian->kode_kas)->first();
-                // $updateKas = Kas::findOrFail($kas->id);
-                // $updateKas->saldo = intval($kas->saldo) + intval($delete_pembelian->jumlah);
-                // $updateKas->save();
+            $pembelianItems = ItemPembelian::where('kode', $delete_pembelian->kode)->get();
+            foreach($pembelianItems as $itemPembelian) {                
+                $deleteItem = ItemPembelian::findOrFail($itemPembelian->id);
+                $deleteItem->delete();
+            }
+
+            $dataKas = Kas::where('kode', $delete_pembelian->kode_kas)->first();
+            $updateKas = Kas::findOrFail($dataKas->id);
+            $updateKas->saldo = $dataKas->saldo + $delete_pembelian->diterima;
+            $updateKas->save();
+
+            $orderItems = PurchaseOrder::where('kode_po', $delete_pembelian->kode)->get();
+            foreach($orderItems as $item) {                    
+                $barangItems = Barang::where('kode', $item->kode_barang)->get();
+                foreach($barangItems as $barang) {                        
+                    $updateStokBarang = Barang::findOrFail($barang->id);
+                    $lastQty = $updateStokBarang->toko;
+                    $updateStokBarang->toko = $updateStokBarang->toko - $item->qty;
+                    $updateStokBarang->last_qty = $lastQty;
+                    $updateStokBarang->save();
+                }
+
+                $deleted_order = PurchaseOrder::findOrFail($item->id);
+                $deleted_order->delete();
+            }
 
             $data_event = [
                 'alert' => 'error',
                 'routes' => 'purchase-order',
                 'type' => 'removed',
-                'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, has move to trash, please check trash!",
+                'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, successfully deleted!",
                 'user' => Auth::user()
             ];
 
@@ -488,7 +527,7 @@ class DataPurchaseOrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Pembelian dengan kode, {$delete_pembelian->kode} has move to trash, please check trash"
+                'message' => "Pembelian dengan kode, {$delete_pembelian->kode} berhasil dihapus 👏"
             ]);
         } else {
             return response()->json([

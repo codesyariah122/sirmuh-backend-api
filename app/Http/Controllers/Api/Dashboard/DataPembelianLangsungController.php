@@ -505,6 +505,26 @@ class DataPembelianLangsungController extends Controller
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
                 $delete_pembelian = Pembelian::findOrFail($id);
+
+                $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
+
+                if($dataHutang) {
+                    $delete_hutang = Hutang::findOrFail($dataHutang->id);
+                    $delete_hutang->delete();
+
+                    $hutangItems = ItemHutang::where('kode', $delete_pembelian->kode)->get();
+                    foreach($hutangItems as $itemHutang) {                    
+                        $deleteItemHutang = ItemHutang::findOrFail($itemHutang->id);
+                        $deleteItemHutang->delete();
+                    }
+
+                    $angsuranItems = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->get();
+                    foreach($angsuranItems as $itemAngsuran) {                    
+                        $deleteAngsuran = PembayaranAngsuran::findOrFail($itemAngsuran->id);
+                        $deleteAngsuran->delete();
+                    }
+                }
+                
                 $delete_pembelian->delete();
 
                 $dataItemPembelian = ItemPembelian::where('kode', $delete_pembelian->kode)->first();
@@ -522,26 +542,11 @@ class DataPembelianLangsungController extends Controller
                 $updateStokBarang->last_qty = $dataBarang->toko;
                 $updateStokBarang->save();
 
-                $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
-
-                if($dataHutang) {
-                    $delete_hutang = Hutang::findOrFail($dataHutang->id);
-                    $delete_hutang->delete();
-
-                    $dataItemHutang = ItemHutang::where('kode', $delete_pembelian->kode)->first();
-                    $deleteItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
-                    $deleteItemHutang->delete();
-
-                    $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->first();
-                    $deleteAngsuran = PembayaranAngsuran::findOrFail($dataPembayaranAngsuran);
-                    $deleteAngsuran->delete();
-                }
-
                 $data_event = [
                     'alert' => 'error',
                     'routes' => 'pembelian-langsung',
                     'type' => 'removed',
-                    'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, has move to trash, please check trash!",
+                    'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, successfully deleted!",
                     'user' => Auth::user()
                 ];
 
