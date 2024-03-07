@@ -35,6 +35,7 @@ class DataPenjualanTokoController extends Controller
         try {
          $keywords = $request->query('keywords');
          $today = now()->toDateString();
+         $pelanggan = $request->query('pelanggan');
          $dateTransaction = $request->query('date_transaction');
          $viewAll = $request->query('view_all');
          $user = Auth::user();
@@ -51,6 +52,10 @@ class DataPenjualanTokoController extends Controller
 
         if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
+        }
+
+        if ($pelanggan) {
+            $query->where('penjualan.pelanggan', 'like', '%' . $pelanggan . '%');
         }
 
         if ($keywords) {
