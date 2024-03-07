@@ -41,7 +41,8 @@ class DataLaporanUtangPiutangPelangganController extends Controller
         ->orderBy('jumlah', 'DESC')
         ->join('supplier', 'supplier.kode', '=', 'hutang.supplier')
         ->select("hutang.kode as hutang_kode", "tanggal", "supplier", "supplier.nama as supplier_nama", "jumlah", "kode_kas")
-        ->get();
+        ->limit(10)
+        ->paginate(10);
 
         $piutangs = Piutang::where('operator', strtoupper($owner->name))
         ->whereMonth('tanggal', '>=', 1)
@@ -49,7 +50,8 @@ class DataLaporanUtangPiutangPelangganController extends Controller
         ->orderBy('jumlah', 'DESC')
         ->join('pelanggan', 'pelanggan.kode', '=', 'piutang.pelanggan')
         ->select('piutang.kode as piutang_kode', 'tanggal', 'pelanggan', 'pelanggan.nama as pelanggan_nama', 'jumlah', 'kode_kas')
-        ->get();
+        ->limit(10)
+        ->paginate(10);
 
         $groupedHutangs = [];
         $groupedPiutangs = [];
