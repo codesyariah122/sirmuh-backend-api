@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Kas};
+use App\Models\{Kas, User, Roles};
 use Auth;
 
 class DataKasController extends Controller
