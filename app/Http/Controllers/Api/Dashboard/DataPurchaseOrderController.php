@@ -46,6 +46,7 @@ class DataPurchaseOrderController extends Controller
         try {
             $keywords = $request->query('keywords');
             $viewAll = $request->query('view_all');
+            $supplier = $request->query('supplier');
             $dateTransaction = $request->query('date_transaction');
             $today = now()->toDateString();
 
@@ -61,6 +62,10 @@ class DataPurchaseOrderController extends Controller
 
             if ($dateTransaction) {
                 $query->whereDate('pembelian.tanggal', '=', $dateTransaction);
+            }
+
+            if ($supplier) {
+                $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
             }
 
             if ($keywords) {

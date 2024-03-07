@@ -46,6 +46,7 @@ class DataPembelianLangsungController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $supplier = $request->query('supplier');
             $viewAll = $request->query('view_all');
             $today = now()->toDateString();
             $dateTransaction = $request->query('date_transaction');
@@ -65,6 +66,10 @@ class DataPembelianLangsungController extends Controller
 
             if ($keywords) {
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
+            }
+
+            if ($supplier) {
+                $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
             }
 
             if(!$viewAll) {
