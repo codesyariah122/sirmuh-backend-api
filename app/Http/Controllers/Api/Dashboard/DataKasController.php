@@ -173,31 +173,42 @@ class DataKasController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $updateKas = Kas::findOrFail($id);
-            $updateKas->nama = $request->nama ?? $updateKas->nama;
-            $updateKas->kode = $request->kode ?? $updateKas->kode;
-            $updateKas->saldo = $request->saldo ?? $updateKas->saldo;
-            $updateKas->save();
-            $kas = Kas::whereNull('deleted_at')
-            ->whereId($id)
-            ->get();
+            $user = Auth::user();
 
-            $userOnNotif = Auth::user();
-            $data_event = [
-                'routes' => 'kas',
-                'alert' => 'success',
-                'type' => 'update-data',
-                'notif' => "Data kas dengan kode {$updateKas->kode}, berhasil diupdate 🤙!",
-                'data' => $updateKas->kode,
-                'user' => $userOnNotif
-            ];
+            $userRole = Roles::findOrFail($user->role);
 
-            event(new EventNotification($data_event));
-            return response()->json([
-                'success' => true,
-                'message' => 'Successfully updated data kas !',
-                'data' => $updateKas
-            ]);
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+                $updateKas = Kas::findOrFail($id);
+                $updateKas->nama = $request->nama ?? $updateKas->nama;
+                $updateKas->kode = $request->kode ?? $updateKas->kode;
+                $updateKas->saldo = $request->saldo ?? $updateKas->saldo;
+                $updateKas->save();
+                $kas = Kas::whereNull('deleted_at')
+                ->whereId($id)
+                ->get();
+
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'kas',
+                    'alert' => 'success',
+                    'type' => 'update-data',
+                    'notif' => "Data kas dengan kode {$updateKas->kode}, berhasil diupdate 🤙!",
+                    'data' => $updateKas->kode,
+                    'user' => $userOnNotif
+                ];
+
+                event(new EventNotification($data_event));
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Successfully updated data kas !',
+                    'data' => $updateKas
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
         } catch (\Throwable $th) {
             throw $th;
         }
