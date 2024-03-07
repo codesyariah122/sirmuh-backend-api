@@ -1414,6 +1414,49 @@ class DataWebFiturController extends Controller
         }
     }
 
+
+    public function update_stok_barang_po(Request $request)
+    {
+        try {
+            $barangs = $request->barangs;
+            $type = $request->type;
+
+            switch($type) {
+                case "pembelian":
+                foreach ($barangs as $barang) {
+                    $checkItems = Barang::whereKode($barang['kode_barang'])->get();
+                    foreach($checkItems as $item) {
+                        $updateBarang = Barang::findOrFail($item['id']);
+                        $lastQty = $item->toko;
+                        $updateBarang->toko = $updateBarang->toko + $barang['qty'];
+                        $updateBarang->last_qty = $lastQty;
+                        $updateBarang->save();
+                    }
+                }
+                break;
+                case "penjualan":
+                break;
+            }
+
+            $data_event = [
+                'type' => 'updated',
+                'routes' => 'data-barang',
+                'notif' => "Stok barang, successfully update!"
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stok barang update!',
+                'data' => $barangs
+            ]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function update_stok_barang_all(Request $request)
     {
         try {

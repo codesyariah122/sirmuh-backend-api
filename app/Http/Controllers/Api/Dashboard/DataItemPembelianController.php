@@ -197,8 +197,7 @@ class DataItemPembelianController extends Controller
                         'message' => "Oops saldo tidak mencukupi 🤦"
                     ]);
                 }
-
-
+                
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
                     $updateItemPembelian->last_qty = $request->last_qty;

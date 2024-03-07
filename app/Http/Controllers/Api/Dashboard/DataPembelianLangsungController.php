@@ -502,9 +502,40 @@ class DataPembelianLangsungController extends Controller
             $userRole = Roles::findOrFail($user->role);
 
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-                $delete_pembelian = Pembelian::whereNull('deleted_at')
-                ->findOrFail($id);
+                // $delete_pembelian = Pembelian::whereNull('deleted_at')
+                // ->findOrFail($id);
+                $delete_pembelian = Pembelian::findOrFail($id);
                 $delete_pembelian->delete();
+
+                $dataItemPembelian = ItemPembelian::where('kode', $delete_pembelian->kode)->first();
+                $deleteItem = ItemPembelian::findOrFail($dataItemPembelian->id);
+                $deleteItem->delete();
+
+                $dataKas = Kas::where('kode', $delete_pembelian->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = $dataKas->saldo + $delete_pembelian->jumlah;
+                $updateKas->save();
+
+                $dataBarang = Barang::where('kode', $dataItemPembelian->kode_barang)->first();
+                $updateStokBarang = Barang::findOrFail($dataBarang->id);
+                $updateStokBarang->toko = $dataBarang->toko - $dataItemPembelian->qty;
+                $updateStokBarang->last_qty = $dataBarang->toko;
+                $updateStokBarang->save();
+
+                $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
+
+                if($dataHutang) {
+                    $delete_hutang = Hutang::findOrFail($dataHutang->id);
+                    $delete_hutang->delete();
+
+                    $dataItemHutang = ItemHutang::where('kode', $delete_pembelian->kode)->first();
+                    $deleteItemHutang = ItemHutang::findOrFail($dataItemHutang->id);
+                    $deleteItemHutang->delete();
+
+                    $dataPembayaranAngsuran = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->first();
+                    $deleteAngsuran = PembayaranAngsuran::findOrFail($dataPembayaranAngsuran);
+                    $deleteAngsuran->delete();
+                }
 
                 $data_event = [
                     'alert' => 'error',
@@ -518,7 +549,7 @@ class DataPembelianLangsungController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Pembelian dengan kode, {$delete_pembelian->kode} has move to trash, please check trash"
+                    'message' => "Pembelian dengan kode, {$delete_pembelian->kode} berhasil dihapus 👏"
                 ]);
             } else {
                 return response()->json([

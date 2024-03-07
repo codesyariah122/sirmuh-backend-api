@@ -191,17 +191,16 @@ class DataPurchaseOrderController extends Controller
                 ->orderBy('po_ke', 'desc')
                 ->first();
 
-                $poKeBaru = ($poTerakhir) ? $poTerakhir->po_ke + 1 : 1;
+                $poKeBaru = ($poTerakhir) ? $poTerakhir->po_ke + 1 : 0;
 
                 $supplier = Supplier::whereKode($newPembelian->supplier)->first();
-
 
                 if(count($items) > 0) {
                     foreach($items as $item) {
                         $newPurchaseOrder = new PurchaseOrder;
                         $newPurchaseOrder->kode_po = $newPembelian->kode;
                         $newPurchaseOrder->dp_awal = $newPembelian->jumlah;
-                        $newPurchaseOrder->po_ke = $item->nourut;
+                        $newPurchaseOrder->po_ke = $poKeBaru;
                         $newPurchaseOrder->qty = $item->qty;
                         $newPurchaseOrder->nama_barang = $item->nama_barang;
                         $newPurchaseOrder->kode_barang = $item->kode_barang;
@@ -386,11 +385,17 @@ class DataPurchaseOrderController extends Controller
                 // $bindCalc = $updatePembelian->diterima - $updatePembelian->jumlah;
                 // $updateKas->saldo = $kas->saldo - $bindCalc;
                 // $updateKas->save();
-            } else if($data['sisa_dp']) {
+            } else if($data['sisa_dp'] > 0) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
                 $updatePembelian->hutang = 0;
             } else {
+                if($bayar > $data['jumlah_saldo']) {
+                    $updateKas = Kas::findOrFail($kas->id);
+                    $bindCalc = $bayar - $data['jumlah_saldo'];
+                    $updateKas->saldo = $kas->saldo - $bindCalc;
+                    $updateKas->save();
+                }
                 $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
                 $updatePembelian->hutang = 0;
@@ -399,6 +404,12 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $bayar;
             $updatePembelian->diterima = $totalSubtotal;
+
+            $poItems = PurchaseOrder::where('kode_po', $updatePembelian->kode)->get();
+
+            foreach($poItems as $itemPo) {
+
+            }
 
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
