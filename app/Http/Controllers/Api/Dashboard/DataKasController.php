@@ -223,23 +223,35 @@ class DataKasController extends Controller
     public function destroy($id)
     {
         try {
-            $kas = Kas::whereNull('deleted_at')
-            ->findOrFail($id);
-            $kas->delete();
-            $data_event = [
-                'alert' => 'error',
-                'routes' => 'kas',
-                'type' => 'removed',
-                'notif' => "{$kas->nama}, has move to trash, please check trash!",
-                'user' => Auth::user()
-            ];
+            $user = Auth::user();
 
-            event(new EventNotification($data_event));
+            $userRole = Roles::findOrFail($user->role);
 
-            return response()->json([
-                'success' => true,
-                'message' => "Data supplier {$kas->nama} has move to trash, please check trash"
-            ]);
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+                $kas = Kas::whereNull('deleted_at')
+                ->findOrFail($id);
+                $kas->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'kas',
+                    'type' => 'removed',
+                    'notif' => "{$kas->nama}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data supplier {$kas->nama} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+            
         } catch (\Throwable $th) {
             throw $th;
         }
