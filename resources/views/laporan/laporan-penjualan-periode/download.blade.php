@@ -52,7 +52,7 @@
     </address>
 
 
-    <h3>Laporan Pembelian</h3>
+    <h3>Laporan Penjualan</h3>
     <hr style="margin-top:-.7rem;">
     <ul style="list-style: none; margin-left:-2rem;margin-top:-.2rem;">
         <li style="font-size: 10px;">PERIODE : {{$periode['start_date']}} S/D {{$periode['end_date']}}</li>
