@@ -39,26 +39,27 @@ class DataLaporanPembelianController extends Controller
 			->select(
 				'pembelian.id',
 				'pembelian.tanggal', 'pembelian.kode', 'pembelian.supplier', 'pembelian.operator','pembelian.jumlah','pembelian.bayar','pembelian.diskon','pembelian.tax','pembelian.lunas','pembelian.visa',
-				'itempembelian.qty','itempembelian.subtotal', 'itempembelian.harga_setelah_diskon',
 				'supplier.nama as nama_supplier',
-				'supplier.alamat as alamat_supplier',
-				'barang.nama as nama_barang',
-				'barang.satuan as satuan_barang'
+				'supplier.alamat as alamat_supplier'
 			)
-			->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
 			->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-			->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+			->groupBy(
+                'pembelian.id',
+                'pembelian.tanggal',
+                'pembelian.kode',
+                'pembelian.supplier',
+                'pembelian.operator',
+                'pembelian.jumlah',
+                'pembelian.bayar',
+                'pembelian.diskon',
+                'pembelian.tax',
+                'pembelian.lunas',
+                'pembelian.visa',
+                'supplier.nama',
+                'supplier.alamat'
+            )
 			->orderByDesc('pembelian.tanggal')
 			->limit(10);
-
-			if ($keywords) {
-				$query->where(function ($query) use ($keywords) {
-					$query->where('pembelian.kode', 'like', '%' . $keywords . '%')
-					->orWhere('pembelian.supplier', 'like', '%' . $keywords . '%')
-					->orWhere('pembelian.kode_kas', 'like', '%' . $keywords . '%')
-					->orWhere('pembelian.operator', 'like', '%' . $keywords . '%');
-				});
-			}
 
 			if ($startDate || $endDate) {
 				$query->whereBetween('pembelian.tanggal', [$startDate, $endDate]);

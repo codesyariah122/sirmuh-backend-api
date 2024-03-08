@@ -43,27 +43,30 @@ class DataLaporanPenjualanController extends Controller
             ->select(
                 'penjualan.id',
                 'penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan', 'penjualan.operator','penjualan.jumlah','penjualan.bayar','penjualan.diskon','penjualan.tax','penjualan.lunas','penjualan.visa',
-                'itempenjualan.qty','itempenjualan.subtotal', 'itempenjualan.harga',
+                // DB::raw('GROUP_CONCAT(itempenjualan.qty) as qty'),
+                // DB::raw('GROUP_CONCAT(itempenjualan.subtotal) as subtotal'),
+                // DB::raw('GROUP_CONCAT(itempenjualan.harga) as harga'),
                 'pelanggan.nama as nama_pelanggan',
-                'pelanggan.alamat as alamat_pelanggan',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang',
-                'barang.harga_toko as harga_toko'
+                'pelanggan.alamat as alamat_pelanggan'
             )
-            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-            ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+            ->groupBy(
+                'penjualan.id',
+                'penjualan.tanggal',
+                'penjualan.kode',
+                'penjualan.pelanggan',
+                'penjualan.operator',
+                'penjualan.jumlah',
+                'penjualan.bayar',
+                'penjualan.diskon',
+                'penjualan.tax',
+                'penjualan.lunas',
+                'penjualan.visa',
+                'pelanggan.nama',
+                'pelanggan.alamat'
+            )
             ->orderByDesc('penjualan.tanggal')
             ->limit(10);
-
-            if ($keywords) {
-                $query->where(function ($query) use ($keywords) {
-                    $query->where('penjualan.kode', 'like', '%' . $keywords . '%')
-                    ->orWhere('penjualan.pelanggan', 'like', '%' . $keywords . '%')
-                    ->orWhere('penjualan.kode_kas', 'like', '%' . $keywords . '%')
-                    ->orWhere('penjualan.operator', 'like', '%' . $keywords . '%');
-                });
-            }
 
             if ($startDate || $endDate) {
                 $query->whereBetween('penjualan.tanggal', [$startDate, $endDate]);
