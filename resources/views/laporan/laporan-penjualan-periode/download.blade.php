@@ -64,35 +64,33 @@
             <tr>
                 <th width="50">Tanggal</th>
                 <th width="50">No Faktur</th>
-                <th>Supplier</th>
+                <th>Barang</th>
+                <th>Pelanggan</th>
                 <th>Operator</th>
                 <th>Pembayaran</th>
-                <th>Disc</th>
-                <th>PPN</th>
                 <th>Jumlah</th>
                 <!-- Add more columns based on your query -->
             </tr>
         </thead>
         <tbody>
-            @foreach ($pembelians as $index => $pembelian)
+            @foreach ($penjualans as $index => $penjualan)
             <tr>
-                <td>{{ $helpers->format_date_only($pembelian->tanggal) }}</td>
-                <td>{{$pembelian->kode}}</td>
-                <td>{{$pembelian->nama_supplier}}</td>
-                <td>{{ $pembelian->operator }}</td>
-                <td>{{$pembelian->visa}}</td>
-                <td>{{ round($pembelian->diskon) }}</td>
-                <td>{{round($pembelian->tax)}}</td>
-                <td style="text-align: right;">{{$helpers->format_uang($pembelian->jumlah)}}</td>
+                <td>{{ $helpers->format_date_only($penjualan->tanggal) }}</td>
+                <td>{{$penjualan->kode}}</td>
+                <td>{{$penjualan->nama_barang}}</td>
+                <td>{{$penjualan->nama_pelanggan}}</td>
+                <td>{{ $penjualan->operator }}</td>
+                <td>{{$penjualan->visa}}</td>
+                <td style="text-align: right;">{{$helpers->format_uang($penjualan->jumlah)}}</td>
                 <!-- Add more columns based on your query -->
             </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6"></td>
+                <td colspan="5"></td>
                 <td>Total</td>
-                <td style="text-align: right;">Rp. {{ $helpers->format_uang($pembelians->sum('jumlah')) }}</td>
+                <td style="text-align: right;">Rp. {{ $helpers->format_uang($penjualans->sum('jumlah')) }}</td>
             </tr>
         </tfoot>
     </table>

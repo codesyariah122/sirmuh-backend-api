@@ -37,6 +37,15 @@ class WebFeatureHelpers
         echo $formatIndonesia;
     }
 
+    public function format_date_only($tanggal)
+    {
+        $carbonDate = Carbon::parse($tanggal);
+        Carbon::setLocale('id');
+        $formatIndonesia = $carbonDate->isoFormat('D MMMM YYYY');
+
+        echo $formatIndonesia;
+    }
+
     public static function initials($name)
     {
         preg_match('/(?:\w+\. )?(\w+).*?(\w+)(?: \w+\.)?$/', $name, $result);

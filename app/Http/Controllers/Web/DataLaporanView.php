@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
-use App\Models\{Pembelian, Toko, Hutang};
+use App\Models\{Pembelian, Toko, Hutang, Penjualan, Piutang};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
@@ -115,6 +115,58 @@ class DataLaporanView extends Controller
             ->get();
 
             $pdf = PDF::loadView('laporan.laporan-pembelian-periode.download', compact('pembelians','perusahaan', 'periode', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+
+            return $pdf->stream("laporan-periode-{$startDate}/{$endDate}.pdf");
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function laporan_penjualan_periode(Request $request, $id_perusahaan)
+    {
+        try {
+            $keywords = $request->keywords;
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+            $helpers = $this->helpers;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Penjualan::query()
+            ->select(
+                'penjualan.id',
+                'penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan', 'penjualan.operator','penjualan.jumlah','penjualan.bayar','penjualan.diskon','penjualan.tax','penjualan.lunas','penjualan.visa',
+                'itempenjualan.qty','itempenjualan.subtotal', 'itempenjualan.harga',
+                'pelanggan.nama as nama_pelanggan',
+                'pelanggan.alamat as alamat_pelanggan',
+                'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier',
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang'
+            )
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->leftJoin('supplier', 'itempenjualan.supplier', '=', 'supplier.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+            ->orderByDesc('penjualan.tanggal');
+            // ->limit(10);
+
+            if ($startDate || $endDate) {
+                $periode = [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ];
+                $query->whereBetween('penjualan.tanggal', [$startDate, $endDate]);
+            }
+
+            $penjualans = $query
+            ->orderByDesc('penjualan.tanggal')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.laporan-penjualan-periode.download', compact('penjualans','perusahaan', 'periode', 'helpers'));
 
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
 
