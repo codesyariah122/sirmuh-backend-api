@@ -59,7 +59,7 @@
 
         <div class="clear-both" style="clear: both;"></div>
         <p>No: {{ $penjualan->kode }}</p>
-        <p>Type: {{$penjualan->po == "True" ? 'Penjualan P.O' : 'Penjualan Toko'}}</p>
+        <p>Type: {{ $penjualan->jenis }}</p>
         <p class="text-center">===================================</p>
         <p>
             <img src="{{  Storage::url('tokos/' . $toko['logo']) }}" width="70">
@@ -95,17 +95,6 @@
             <tr>
                 <td>Total Harga:</td>
                 <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
-            </tr>
-            <tr>
-                <td>Total Item:</td>
-                <td>
-                    @foreach ($barangs as $item)
-                    <tr>
-                        <td>{{ $item->nama_barang }} : </td>
-                        <td>{{ round($item->qty)." ".$item->satuan }}</td>
-                    </tr>
-                    @endforeach
-                </td>
             </tr>
             <tr>
                 <td>Diskon:</td>

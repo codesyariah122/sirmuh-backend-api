@@ -62,7 +62,7 @@ class DataPenjualanTokoController extends Controller
             $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
 
-        if(!$viewAll) {
+        if($viewAll === false || $viewAll === "false") {
             $query->whereDate('penjualan.tanggal', '=', $today);
         }
 

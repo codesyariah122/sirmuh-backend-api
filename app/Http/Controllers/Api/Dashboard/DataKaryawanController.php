@@ -214,34 +214,44 @@ class DataKaryawanController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $roles = Roles::findOrFail($request->jabatan);
-            $update_karyawan = Karyawan::whereNull('deleted_at')
-            ->findOrFail($id);
-            $update_karyawan->nama = $request->nama ? $request->nama : $update_karyawan->nama;
-            $update_karyawan->level = $roles->name;
-            $update_karyawan->save();
+            $user = Auth::user();
 
-            if($update_karyawan) {
-                $userOnNotif = Auth::user();
-                $data_event = [
-                    'routes' => 'karyawan',
-                    'alert' => 'success',
-                    'type' => 'add-data',
-                    'notif' => "{$update_karyawan->nama}, berhasil diupdate 🤙!",
-                    'data' => $update_karyawan->nama,
-                    'user' => $userOnNotif
-                ];
+            $userRole = Roles::findOrFail($user->role);
 
-                event(new EventNotification($data_event));
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+                $roles = Roles::findOrFail($request->jabatan);
+                $update_karyawan = Karyawan::whereNull('deleted_at')
+                ->findOrFail($id);
+                $update_karyawan->nama = $request->nama ? $request->nama : $update_karyawan->nama;
+                $update_karyawan->level = $roles->name;
+                $update_karyawan->save();
 
-                $updateDataKaryawan = Karyawan::findOrFail($update_karyawan->id);
+                if($update_karyawan) {
+                    $userOnNotif = Auth::user();
+                    $data_event = [
+                        'routes' => 'karyawan',
+                        'alert' => 'success',
+                        'type' => 'add-data',
+                        'notif' => "{$update_karyawan->nama}, berhasil diupdate 🤙!",
+                        'data' => $update_karyawan->nama,
+                        'user' => $userOnNotif
+                    ];
+
+                    event(new EventNotification($data_event));
+
+                    $updateDataKaryawan = Karyawan::findOrFail($update_karyawan->id);
+                    return response()->json([
+                        'success' => true,
+                        'message' => "Karyawan dengan nama {$updateDataKaryawan->nama}, successfully added✨!",
+                        'data' => $updateDataKaryawan
+                    ]);
+                }
+            }else {
                 return response()->json([
-                    'success' => true,
-                    'message' => "Karyawan dengan nama {$updateDataKaryawan->nama}, successfully added✨!",
-                    'data' => $updateDataKaryawan
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
                 ]);
             }
-
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -260,7 +270,7 @@ class DataKaryawanController extends Controller
 
             $userRole = Roles::findOrFail($user->role);
                 
-            if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "GUDANG") {                
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 $karyawan = Karyawan::whereNull('deleted_at')
                 ->findOrFail($id);
                 $karyawan->delete();

@@ -72,7 +72,7 @@ class DataPembelianLangsungController extends Controller
                 $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
             }
 
-            if(!$viewAll) {
+            if($viewAll === false || $viewAll === "false") {
                 $query->whereDate('pembelian.tanggal', '=', $today);
             }
 

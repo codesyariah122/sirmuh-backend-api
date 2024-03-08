@@ -638,65 +638,76 @@ class DataBarangController extends Controller
             $supplierId = NULL;
 
             try {
-                if(count($barang_data->suppliers) > 0) {
-                    $supplier = Supplier::findOrFail($barang_data->suppliers[0]->id);
-                    $supplierId = $supplier->id;
-                } else {
-                    $supplier = Supplier::whereNama($request->supplier)->first();
-                    if($supplier !== NULL) {
-	                    $supplierId = $supplier->id;
+                $user = Auth::user();
+
+                $userRole = Roles::findOrFail($user->role);
+                
+                if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "GUDANG") {
+                    if(count($barang_data->suppliers) > 0) {
+                        $supplier = Supplier::findOrFail($barang_data->suppliers[0]->id);
+                        $supplierId = $supplier->id;
+                    } else {
+                        $supplier = Supplier::whereNama($request->supplier)->first();
+                        if($supplier !== NULL) {
+                            $supplierId = $supplier->id;
+                        }
                     }
-                }
 
-                if(count($barang_data->kategoris) > 0) {
-                    $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
-                }
+                    if(count($barang_data->kategoris) > 0) {
+                        $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
+                    }
 
-                $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
+                    $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
 
-                $update_barang = Barang::findOrFail($barang_data->id);
+                    $update_barang = Barang::findOrFail($barang_data->id);
 
-                $update_barang->nama = $request->nama ? $request->nama : $update_barang->nama;
-                $update_barang->kategori_barang = $request->kategori_barang ? $request->kategori_barang : $update_barang->kategori_barang;
-                $update_barang->kategori = $request->kategori ? $request->kategori : $update_barang->kategori;
-                $update_barang->satuanbeli = $request->satuanbeli ? $request->satuanbeli : $update_barang->satuanbeli;
-                $update_barang->isi = $request->isi ? $request->isi : $update_barang->isi;
-                $update_barang->toko = $request->stok ? $request->stok : $update_barang->toko;
-                $update_barang->hpp = $request->hargabeli ? $request->hargabeli : $update_barang->hpp;
-                $update_barang->harga_toko = $request->hargajual ? $request->hargajual : $update_barang->harga_toko;
-                $update_barang->diskon = $request->diskon ? $request->diskon : $update_barang->diskon;
-                $update_barang->supplier = $request->supplier ? $request->supplier : $update_barang->supplier;
-                $update_barang->tgl_terakhir = $request->tglbeli ? Carbon::parse($request->tglbeli)->format('Y-m-d') : $update_barang->tgl_terakhir;
-                $update_barang->ada_expired_date = $request->ada_expired_date ? $request->ada_expired_date : $update_barang->ada_expired_date;
-                $update_barang->expired = $request->expired ? Carbon::parse($request->expired)->format('Y-m-d') : $update_barang->expired;
-                $update_barang->ket = $request->keterangan ? $request->keterangan : $update_barang->ket;
+                    $update_barang->nama = $request->nama ? $request->nama : $update_barang->nama;
+                    $update_barang->kategori_barang = $request->kategori_barang ? $request->kategori_barang : $update_barang->kategori_barang;
+                    $update_barang->kategori = $request->kategori ? $request->kategori : $update_barang->kategori;
+                    $update_barang->satuanbeli = $request->satuanbeli ? $request->satuanbeli : $update_barang->satuanbeli;
+                    $update_barang->isi = $request->isi ? $request->isi : $update_barang->isi;
+                    $update_barang->toko = $request->stok ? $request->stok : $update_barang->toko;
+                    $update_barang->hpp = $request->hargabeli ? $request->hargabeli : $update_barang->hpp;
+                    $update_barang->harga_toko = $request->hargajual ? $request->hargajual : $update_barang->harga_toko;
+                    $update_barang->diskon = $request->diskon ? $request->diskon : $update_barang->diskon;
+                    $update_barang->supplier = $request->supplier ? $request->supplier : $update_barang->supplier;
+                    $update_barang->tgl_terakhir = $request->tglbeli ? Carbon::parse($request->tglbeli)->format('Y-m-d') : $update_barang->tgl_terakhir;
+                    $update_barang->ada_expired_date = $request->ada_expired_date ? $request->ada_expired_date : $update_barang->ada_expired_date;
+                    $update_barang->expired = $request->expired ? Carbon::parse($request->expired)->format('Y-m-d') : $update_barang->expired;
+                    $update_barang->ket = $request->keterangan ? $request->keterangan : $update_barang->ket;
 
-                $update_barang->save();
+                    $update_barang->save();
 
-                $update_barang->kategoris()->sync($kategori->id);
-                $update_barang->suppliers()->sync($supplierId);
+                    $update_barang->kategoris()->sync($kategori->id);
+                    $update_barang->suppliers()->sync($supplierId);
 
-                $data_event = [
-                    'type' => 'updated',
-                    'routes' => 'data-barang',
-                    'notif' => "{$update_barang->nama}, successfully update!"
-                ];
+                    $data_event = [
+                        'type' => 'updated',
+                        'routes' => 'data-barang',
+                        'notif' => "{$update_barang->nama}, successfully update!"
+                    ];
 
-                event(new EventNotification($data_event));
+                    event(new EventNotification($data_event));
 
-                $saving_barang = Barang::with('kategoris')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'kategori_barang','satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
-                ->with('suppliers')
-                ->whereId($update_barang->id)
-                ->get();
+                    $saving_barang = Barang::with('kategoris')
+                    ->select('id', 'kode', 'nama', 'photo', 'kategori', 'kategori_barang','satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                    ->with('suppliers')
+                    ->whereId($update_barang->id)
+                    ->get();
 
                 // return new RequestDataCollect($saving_barang);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "{$update_barang->nama}, successfully update!",
-                    'data' => $saving_barang
-                ]);
+                    return response()->json([
+                        'success' => true,
+                        'message' => "{$update_barang->nama}, successfully update!",
+                        'data' => $saving_barang
+                    ]);
+                } else {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Hak akses tidak di ijinkan 📛"
+                    ]);
+                }
             } catch (\Throwable $th) {
                 throw $th;
             }

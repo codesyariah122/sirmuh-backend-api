@@ -36,7 +36,7 @@ class DataPenjualanPoController extends Controller
            $keywords = $request->query('keywords');
            $today = now()->toDateString();
            $viewAll = $request->query('view_all');
-           $user = Auth::user()->name;
+           $user = Auth::user();
 
            $query = Penjualan::query()
            ->select(
@@ -54,7 +54,7 @@ class DataPenjualanPoController extends Controller
             $query->where('penjualan.kode', 'like', '%' . $keywords . '%');
         }
 
-        if(!$viewAll) {
+        if($viewAll === false || $viewAll === "false") {
             $query->whereDate('penjualan.tanggal', '=', $today);
         }
 
@@ -370,7 +370,7 @@ class DataPenjualanPoController extends Controller
             ->select('itempenjualan.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.photo', 'barang.hpp as harga_beli_barang', 'barang.expired as expired_barang', 'barang.ada_expired_date','pelanggan.id as id_pelanggan','pelanggan.nama as nama_pelanggan','pelanggan.alamat as alamat_pelanggan', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
             ->leftJoin('pelanggan', 'itempenjualan.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
-            ->leftJoin('supplier', 'itempenjualan.supplier', '=', 'supplier.kode')
+            ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama')
             ->where('itempenjualan.kode', $penjualan->kode)
             ->orderByDesc('itempenjualan.id')
             ->get();

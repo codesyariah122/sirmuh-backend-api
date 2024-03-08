@@ -2032,7 +2032,7 @@ public function check_roles_access()
 
         $userRole = Roles::findOrFail($user->role);
 
-        if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN" && $userRole->name !== "GUDANG") { 
+        if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN") { 
             return response()->json([
                 'error' => true,
                 'message' => 'Hak akses tidak di ijinkan 🚫'
