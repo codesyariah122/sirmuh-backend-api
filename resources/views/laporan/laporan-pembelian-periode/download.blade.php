@@ -9,24 +9,27 @@
             width: 100%;
             border-collapse: collapse;
         }
-
+        table td {
+            /* font-family: Arial, Helvetica, sans-serif; */
+            font-family: 'Courier New', monospace,
+            font-size: 13px;
+        }
         th, td {
             border: none;
             padding: 8px;
             text-align: left;
-            max-width: 130px; /* Set a maximum width for each cell */
+            max-width: 130px;
             overflow: hidden;
             white-space: nowrap;
-            /*text-overflow: ellipsis;*/
             font-size: 9.5px; 
         }
 
         th {
-            background-color: #8a8a8a; /* Header background color */
+            background-color: #8a8a8a;
         }
 
         tbody th, tbody td {
-            border: none; /* Remove border for table rows */
+            border: none;
         }
 
         tfoot {
@@ -73,14 +76,14 @@
         <tbody>
             @foreach ($pembelians as $index => $pembelian)
             <tr>
-                <td>{{ $pembelian->tanggal }}</td>
+                <td>{{ $helpers->format_tanggal($pembelian->tanggal) }}</td>
                 <td>{{$pembelian->kode}}</td>
                 <td>{{$pembelian->nama_supplier}}</td>
                 <td>{{ $pembelian->operator }}</td>
-                <td>{{$pembelian->lunas ? "Lunas" : "Hutang"}}</td>
+                <td>{{$pembelian->visa}}</td>
                 <td>{{ round($pembelian->diskon) }}</td>
                 <td>{{round($pembelian->tax)}}</td>
-                <td>{{$pembelian->jumlah}}</td>
+                <td style="text-align: right;">{{$helpers->format_uang($pembelian->jumlah)}}</td>
                 <!-- Add more columns based on your query -->
             </tr>
             @endforeach
@@ -89,7 +92,7 @@
             <tr>
                 <td colspan="6"></td>
                 <td>Total</td>
-                <td>Rp. {{ $pembelians->sum('jumlah') }}</td>
+                <td style="text-align: right;">Rp. {{ $helpers->format_uang($pembelians->sum('jumlah')) }}</td>
             </tr>
         </tfoot>
     </table>

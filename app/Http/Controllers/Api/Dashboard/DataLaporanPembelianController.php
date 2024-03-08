@@ -38,7 +38,7 @@ class DataLaporanPembelianController extends Controller
 			$query = Pembelian::query()
 			->select(
 				'pembelian.id',
-				'pembelian.tanggal', 'pembelian.kode', 'pembelian.supplier', 'pembelian.operator','pembelian.jumlah','pembelian.bayar','pembelian.diskon','pembelian.tax',
+				'pembelian.tanggal', 'pembelian.kode', 'pembelian.supplier', 'pembelian.operator','pembelian.jumlah','pembelian.bayar','pembelian.diskon','pembelian.tax','pembelian.lunas','pembelian.visa',
 				'itempembelian.qty','itempembelian.subtotal', 'itempembelian.harga_setelah_diskon',
 				'supplier.nama as nama_supplier',
 				'supplier.alamat as alamat_supplier',

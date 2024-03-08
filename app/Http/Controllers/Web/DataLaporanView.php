@@ -24,6 +24,13 @@ use PDF;
 
 class DataLaporanView extends Controller
 {
+
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
     // public function laporan_pembelian_periode(Request $request, $id_perusahaan)
     // {
     //     $perusahaan = Toko::with('setup_perusahaan')
@@ -74,6 +81,7 @@ class DataLaporanView extends Controller
             $keywords = $request->keywords;
             $startDate = $request->start_date;
             $endDate = $request->end_date;
+            $helpers = $this->helpers;
 
             $perusahaan = Toko::with('setup_perusahaan')
             ->findOrFail($id_perusahaan);
@@ -81,7 +89,7 @@ class DataLaporanView extends Controller
             $query = Pembelian::query()
             ->select(
                 'pembelian.id',
-                'pembelian.tanggal', 'pembelian.kode', 'pembelian.supplier', 'pembelian.operator','pembelian.jumlah','pembelian.bayar','pembelian.diskon','pembelian.tax',
+                'pembelian.tanggal', 'pembelian.kode', 'pembelian.supplier', 'pembelian.operator','pembelian.jumlah','pembelian.bayar','pembelian.diskon','pembelian.tax','pembelian.lunas','pembelian.visa',
                 'itempembelian.qty','itempembelian.subtotal', 'itempembelian.harga_setelah_diskon',
                 'supplier.nama as nama_supplier',
                 'supplier.alamat as alamat_supplier',
@@ -106,7 +114,7 @@ class DataLaporanView extends Controller
             ->orderByDesc('pembelian.tanggal')
             ->get();
 
-            $pdf = PDF::loadView('laporan.laporan-pembelian-periode.download', compact('pembelians','perusahaan', 'periode'));
+            $pdf = PDF::loadView('laporan.laporan-pembelian-periode.download', compact('pembelians','perusahaan', 'periode', 'helpers'));
 
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
 
