@@ -215,6 +215,10 @@ class DataPembelianLangsungController extends Controller
                 $angsuran->bayar_angsuran = $data['diterima'];
                 $angsuran->jumlah = $item_hutang->jumlah_hutang;
                 $angsuran->save();
+
+                $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
+                $updateSaldoSupplier->saldo_hutang = $supplier->saldo_hutang + $data['hutang'];
+                $updateSaldoSupplier->save();
             } else {            
                 $newPembelian->lunas = $data['pembayaran'] == 'cash' ? "True" : "False";
                 $newPembelian->visa = "LUNAS";

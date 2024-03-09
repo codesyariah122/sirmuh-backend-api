@@ -213,6 +213,7 @@ class DataPurchaseOrderController extends Controller
                         $newPurchaseOrder->harga_satuan = $item->harga_beli;
                         $newPurchaseOrder->subtotal = $item->qty * $item->harga_beli;
                         $newPurchaseOrder->sisa_dp = $newPembelian->jumlah - ($item->qty * $item->harga_beli);
+                        $newPurchaseOrder->type = "pembelian";
                         $newPurchaseOrder->save();
                     }
                 } else {
@@ -227,6 +228,7 @@ class DataPurchaseOrderController extends Controller
                     $newPurchaseOrder->harga_satuan = $dataItemPembelian->harga_beli;
                     $newPurchaseOrder->subtotal = $dataItemPembelian->qty * $dataItemPembelian->harga_beli;
                     $newPurchaseOrder->sisa_dp = $newPembelian->jumlah - ($dataItemPembelian->qty * $dataItemPembelian->harga_beli);
+                    $newPurchaseOrder->type = "pembelian";
                     $newPurchaseOrder->save();
                 }
 

@@ -1269,6 +1269,9 @@ class DataWebFiturController extends Controller
             case "penjualan-toko":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-'. $currentDate . $randomNumber;
             break;
+            case "penjualan-po":
+            $generatedCode = "PO". '-'. $currentDate . $randomNumber;
+            break;
             case "penjualan-partai":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-PRT'. $currentDate . $randomNumber;
             break;
@@ -1767,36 +1770,37 @@ class DataWebFiturController extends Controller
         try {
             $draft = $request->draft;
             $kode = $request->kode;
+            $kode_kas = $request->kode_kas;
             $kd_barang = $request->kd_barang;
             $pelanggan = null;
             $supplierId = null;
             $barangs = $request->barangs;
 
             foreach($barangs as $barang) {
-                $supplierId = $barang['supplier_id'];
                 $pelanggan = $barang['pelanggan'];
+                $supplierId = $barang['supplier_id'];
             }
 
             $lastItemPembelianId = NULL;
 
-            $supplier = Supplier::findOrFail($supplierId);
             $pelanggan = Pelanggan::findOrFail($pelanggan);
+            $supplier = Supplier::findOrFail($supplierId);
+            $checkingKas = Kas::findOrFail($kode_kas);
 
             if($draft) {
-                foreach($barangs as $barang) {
+                foreach($barangs as $key => $barang) {
                     $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
 
                     $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
                     ->where('draft', 1)
                     ->first();
                     if ($existingItem) {
-                            // Jika sudah ada, update informasi yang diperlukan
-                        $existingItem->qty = intval($barang['qty']);
-                        $existingItem->harga = intval($barang['harga_toko']);
-                        $existingItem->subtotal = $barang['harga_toko'] * $barang['qty'];
-                            // Update atribut lainnya sesuai kebutuhan
-                        $existingItem->save();
-                        $lastItemPembelianId = $existingItem->id;
+                        $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
+                        $updateExistingItem->qty = intval($barang['qty']);
+                        $updateExistingItem->harga = intval($barang['harga_toko']);
+                        $updateExistingItem->subtotal = $barang['harga_toko'] * $barang['qty'];
+                        $updateExistingItem->save();
+                        $lastItemPembelianId = $updateExistingItem->id;
                     } else {
                         $draftItemPembelian = new ItemPenjualan;
                         $draftItemPembelian->kode = $kode;
@@ -1808,7 +1812,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->satuan = $dataBarang->satuan;
                         $draftItemPembelian->qty = $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
-                        $draftItemPembelian->nourut = $barang['nourut'];
+                        $draftItemPembelian->nourut = $key+=1;
                         $draftItemPembelian->harga = $barang['harga_toko'] ?? $dataBarang->harga_toko;
                         $draftItemPembelian->subtotal = $dataBarang->harga_toko * $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
@@ -1819,13 +1823,6 @@ class DataWebFiturController extends Controller
                             $totalSetelahDiskon = $total - $diskonAmount;
                             $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
                         }
-                                // if($barang['ppn']) {
-                                //     $total = $dataBarang->hpp * $barang['qty'];
-                                //     $ppnAmount = $barang['ppn'] / 100 * $total;
-                                //     $totalSetelahPpn = $total - $diskonAmount;
-                                //     $draftItemPembelian->harga_setelah_diskon = $totalSetelahDiskon;
-                                // }
-
                         $draftItemPembelian->save();
                         $lastItemPembelianId = $draftItemPembelian->id;
                     }
@@ -1837,7 +1834,7 @@ class DataWebFiturController extends Controller
                     'itempembelian_id' => $lastItemPembelianId
                 ], 200);
             } else {
-                foreach($barangs as $barang) {
+                foreach($barangs as $key => $barang) {
                     $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
 
                     $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
@@ -1846,11 +1843,9 @@ class DataWebFiturController extends Controller
 
                     if ($existingItem) {
                         $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
-                            // Jika sudah ada, update informasi yang diperlukan
                         $updateExistingItem->qty = intval($barang['qty']);
                         $updateExistingItem->harga = intval($barang['harga_toko']);
                         $updateExistingItem->subtotal = $barang['harga_toko'] * $barang['qty'];
-                            // Update atribut lainnya sesuai kebutuhan
                         $updateExistingItem->save();
                         $lastItemPembelianId = $updateExistingItem->id;
                     } else {
@@ -1864,7 +1859,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->satuan = $dataBarang->satuan;
                         $draftItemPembelian->qty = $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
-                        $draftItemPembelian->nourut = $barang['nourut'];
+                        $draftItemPembelian->nourut = $key+=1;
                         $draftItemPembelian->harga = $dataBarang->harga_toko;
                         $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
@@ -2073,7 +2068,7 @@ public function check_password_access()
 
 public function checkInternetConnection()
 {
-    $urlToCheck = 'https://sirmuh.api.dksindo.com';
+    $urlToCheck = 'https://sockjs-ap1.pusher.com';
     try {
         $startTime = microtime(true);
 
