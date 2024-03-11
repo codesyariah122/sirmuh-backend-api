@@ -273,7 +273,7 @@ class DataPurchaseOrderController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.multiple_input', 'pembelian.hutang', 'pembelian.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->where('pembelian.id', $id)
@@ -322,6 +322,24 @@ class DataPurchaseOrderController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+
+    public function updateMultipleInput(Request $request, $id)
+    {
+        try {
+            $multiple_input = $request->multiple_input;
+            $updatePembelian = Pembelian::findOrFail($id);
+            $updatePembelian->multiple_input = $multiple_input ? "True" : "False";
+            $updatePembelian->save();
+            return response()->json([
+                'success' => true,
+                'message' => "Detail pembelian {$updatePembelian->kode}, multipe input successfully updated",
+                'data' => $updatePembelian
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function update(Request $request, $id)
     {
         try {
@@ -405,21 +423,24 @@ class DataPurchaseOrderController extends Controller
                 }
                 $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
+                $updatePembelian->jt = 0;
                 $updatePembelian->hutang = 0;
             }
 
+            $updatePembelian->multiple_input = $data["multiple_input"];
             $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $bayar;
             $updatePembelian->diterima = $totalSubtotal;
 
-            $poItems = PurchaseOrder::where('kode_po', $updatePembelian->kode)->get();
-
-            foreach($poItems as $itemPo) {
-
-            }
-
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
+
+                $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
+                foreach($dataItems as $item) {
+                    $updateItemPembelian = ItemPembelian::findOrFail($item->id);
+                    $updateItemPembelian->stop_qty = "False";
+                    $updateItemPembelian->save();
+                }
 
                 // $updateKas = Kas::findOrFail($kas->id);
                 // $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;

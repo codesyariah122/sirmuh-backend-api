@@ -126,7 +126,7 @@
                 <td>Diskon:</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->diskon) }}</td>
             </tr>
-            @if($pembelian->po == 'False')
+           <!--  @if($pembelian->po == 'False')
                 <tr>
                     <td>Total Pembelian : </td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
@@ -135,14 +135,7 @@
                     <td>Dibayar:</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
                 </tr>
-            @else
-                <tr>
-                    @foreach($barangs as $item)
-                        <td>Total Item Pembelian:</td>
-                        <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
-                    @endforeach
-                </tr>
-            @endif
+            @endif -->
             {{-- @if(count($barangs) > 0)
                 <tr>
                     <td>Total Item:</td>
@@ -200,10 +193,12 @@
                 @endif
             @else
             @if($pembelian->po == 'True')
-                <tr>
-                    <td>Dibayar:</td>
-                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
-                </tr>
+                @if($pembelian->lunas == "True")
+                    <tr>
+                        <td>Dibayar:</td>
+                        <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                    </tr>
+                @endif
                 <tr>
                     <td>Dp Awal:</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>

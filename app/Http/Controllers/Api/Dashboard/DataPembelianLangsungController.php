@@ -324,7 +324,7 @@ class DataPembelianLangsungController extends Controller
         foreach($barangs as $barang) {            
             $orders = PurchaseOrder::where('kode_po', $kode)
             ->where('kode_barang', $barang->kode_barang)
-            ->get();
+            ->get()->sum('qty');
         }
         $setting = "";
 

@@ -217,6 +217,11 @@ class RouteSelection {
             'controllers' => DataPurchaseOrderController::class
         ],
         [
+            'endPoint' => '/multiple-input-po/{id}',
+            'method' => 'put',
+            'controllers' => [DataPurchaseOrderController::class, 'updateMultipleInput']
+        ],
+        [
             'endPoint' => '/lists-of-po',
             'method' => 'get',
             'controllers' => [DataPurchaseOrderController::class, 'list_item_po']

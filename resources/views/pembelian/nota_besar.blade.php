@@ -99,9 +99,9 @@
                 <td>{{ $item->kode_barang }}</td>
                 <td>{{ $item->nama_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
-                <td class="text-right">{{ $orders->sum('qty') ." ".$item->satuan }}</td>
+                <td class="text-right">{{ $item->qty_terima ." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->visa }}</td>
-                <td class="text-right">{{ $helpers->format_uang($orders->sum('qty') * $item->harga_beli) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($item->qty_terima * $item->harga_beli) }}</td>
             </tr>
             @endforeach
         @endif
@@ -158,8 +158,8 @@
             @endif
             <tr>
                 <td colspan="6" class="text-right">
-                    @if($pembelian->bayar >= $pembelian->diterima)
-                    <b>Kembali</b>
+                    @if($pembelian->visa === "LUNAS")
+                    <b>Kembali</b> 
                     @else
                     <b>Sisa DP</b>
                     @endif

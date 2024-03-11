@@ -104,6 +104,7 @@ class DataItemPembelianController extends Controller
             $updatePurchaseOrder->supplier = "{$supplier->nama}({$updateItemPembelian->supplier})";
             $updatePurchaseOrder->harga_satuan = $updateItemPembelian->harga_beli;
             $updatePurchaseOrder->subtotal = $totalSubtotal;
+            $updatePurchaseOrder->type = "pembelian";
             $updatePurchaseOrder->sisa_dp = $dataPembelian->bayar - $totalSubtotal;
             $updatePurchaseOrder->save();
 
@@ -133,6 +134,8 @@ class DataItemPembelianController extends Controller
             $dataItemPembelian->qty = $request->qty;
             $dataItemPembelian->last_qty = $request->last_qty;
             $dataItemPembelian->subtotal = $request->qty * $dataItemPembelian->harga_beli;
+            $dataItemPembelian->qty_terima = $request->qty + $dataItemPembelian->qty_terima;
+
             $dataItemPembelian->save();
 
 
@@ -201,8 +204,10 @@ class DataItemPembelianController extends Controller
                 if($request->qty) {
                     $updateItemPembelian->qty = intval($request->qty);
                     $updateItemPembelian->last_qty = $request->last_qty;
+                    $updateItemPembelian->stop_qty = $request->stop_qty;
                     $totalQty = $request->qty + $request->last_qty;
                     $updateItemPembelian->subtotal = intval($totalQty) * intval($updateItemPembelian->harga_beli);
+                    $updateItemPembelian->qty_terima = $updateItemPembelian->qty_terima + $request->qty;
                 }
 
                 if($request->harga_beli) {
@@ -239,6 +244,7 @@ class DataItemPembelianController extends Controller
                 $updatePurchaseOrder->harga_satuan = $updateItemPembelian->harga_beli;
                 $updatePurchaseOrder->subtotal = $request->qty * $updateItemPembelian->harga_beli;
                 $updatePurchaseOrder->sisa_dp = $subTotalPo < 0 ? 0 : $subTotalPo;
+                $updatePurchaseOrder->type = "pembelian";
                 $updatePurchaseOrder->save();
 
                 $dataItemPembelian = ItemPembelian::whereKode($updateItemPembelian->kode)->get();
