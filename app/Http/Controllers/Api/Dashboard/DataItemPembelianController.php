@@ -125,6 +125,15 @@ class DataItemPembelianController extends Controller
         }
     }
 
+    public function update_item_harga_po(Request $request, $id)
+    {
+        try {
+            echo "test";
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function update_item_pembelian_po_qty(Request $request, $id)
     {
         try {
@@ -212,7 +221,7 @@ class DataItemPembelianController extends Controller
 
                 if($request->harga_beli) {
                     $updateItemPembelian->harga_beli = intval($request->harga_beli);
-                    $totalQty = $updateItemPembelian->qty + $updateItemPembelian->last_qty;
+                    $totalQty = $updateItemPembelian->qty_terima;
                     $updateItemPembelian->subtotal = intval($totalQty) * intval($request->harga_beli);
                 }
 
