@@ -187,7 +187,13 @@ class DataItemPembelianController extends Controller
             $dataItemPembelian->qty = $request->qty;
             $dataItemPembelian->last_qty = $request->last_qty;
             $dataItemPembelian->subtotal = $request->qty * $dataItemPembelian->harga_beli;
-            $dataItemPembelian->qty_terima = $request->qty + $request->last_qty;
+
+            if($request->qty < $dataItemPembelian->last_qty) {
+                $totalTerima = $dataItemPembelian->last_qty - $dataItemPembelian->qty;
+            } else {
+                $totalTerima = $request->qty;
+            }
+            $dataItemPembelian->qty_terima = $totalTerima;
 
             $dataItemPembelian->save();
 
