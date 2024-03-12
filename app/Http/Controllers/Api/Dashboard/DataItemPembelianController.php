@@ -191,7 +191,6 @@ class DataItemPembelianController extends Controller
 
             $dataItemPembelian->save();
 
-
             $previousPo = PurchaseOrder::where('id', '<', $order_id)
             ->orderBy('id', 'desc')
             ->first();
