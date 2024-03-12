@@ -34,7 +34,8 @@ use App\Models\{
     Kas,
     FakturTerakhir,
     Karyawan,
-    Biaya
+    Biaya,
+    PurchaseOrder
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -1755,6 +1756,10 @@ class DataWebFiturController extends Controller
         try {
             $itemPembelian = ItemPembelian::findOrFail($id);
             $itemPembelian->forceDelete();
+
+            $purchaseOrdes = PurchaseOrder::where('kode_barang', $itemPembelian->kode_barang)->first();
+            $updateOrder = PurchaseOrder::findOrFail($purchaseOrdes->id);
+            $updateOrder->forceDelete();
 
             return response()->json([
                 'success' => true,
