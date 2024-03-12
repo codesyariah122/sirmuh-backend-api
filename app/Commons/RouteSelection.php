@@ -508,6 +508,11 @@ class RouteSelection {
             'controllers' => [DataItemPembelianController::class, 'update_item_pembelian_po_qty']
         ],
         [
+            'endPoint' => '/update-item-pembelian-po-harga/{id}',
+            'method' => 'put',
+            'controllers' => [DataItemPembelianController::class, 'update_item_harga_po']
+        ],
+        [
             'endPoint' => '/draft-item-pembelian/{kode}',
             'method' => 'get',
             'controllers' => [DataWebFiturController::class, 'list_draft_itempembelian']

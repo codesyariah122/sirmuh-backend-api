@@ -128,7 +128,51 @@ class DataItemPembelianController extends Controller
     public function update_item_harga_po(Request $request, $id)
     {
         try {
-            echo "test";
+            $order_id = $request->order_id;
+
+            $dataItemPembelian = ItemPembelian::findOrFail($id);
+            $dataItemPembelian->harga_beli = $request->harga_beli;
+            $dataItemPembelian->subtotal = $request->qty * $request->harga_beli;
+            $dataItemPembelian->save();
+
+
+            $previousPo = PurchaseOrder::where('id', '<', $order_id)
+            ->orderBy('id', 'desc')
+            ->first();
+            $dataPoUpdate = PurchaseOrder::findOrFail($order_id);
+            $dataPoUpdate->harga_satuan = $request->harga_beli;
+            $dataPoUpdate->subtotal = $dataPoUpdate->qty * $request->harga_beli;
+
+            $previousSubTotal = $dataItemPembelian->qty * $dataItemPembelian->harga_beli;
+            
+            if($previousSubTotal > $dataPoUpdate->subtotal) {
+                $sisaDp = $previousSubTotal - $dataPoUpdate->subtotal;
+            } else {
+                $sisaDp = $dataPoUpdate->subtotal - $previousSubTotal;
+            }
+
+            $dataPoUpdate->sisa_dp = $sisaDp;
+            $dataPoUpdate->save();
+
+            $itemPurchaseOrders = PurchaseOrder::where('kode_po', $dataPoUpdate->kode_po)->get();
+            $totalSubTotalOrder = $itemPurchaseOrders->sum('subtotal');
+            $dataPembelian = Pembelian::whereKode($dataItemPembelian->kode)->first();
+            $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
+            $updatePembelian->diterima = $totalSubTotalOrder;
+            $updatePembelian->save();
+
+            $newDataPembelian = Pembelian::select('pembelian.kode', 'pembelian.draft', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima', 'pembelian.jt', 'pembelian.lunas','pembelian.visa','pembelian.hutang','pembelian.po', 'itempembelian.kode as kode_item_pembelian', 'itempembelian.draft', 'itempembelian.kode_barang', 'itempembelian.nama_barang', 'itempembelian.satuan', 'itempembelian.qty', 'itempembelian.last_qty', 'itempembelian.harga_beli', 'itempembelian.subtotal')
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->where('pembelian.kode', $updatePembelian->kode)
+            ->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Item pembelian update!",
+                'data' => $newDataPembelian,
+                'orders' => $order_id,
+                'sisa_dp' => $dataPoUpdate->sisa_dp
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -221,7 +265,7 @@ class DataItemPembelianController extends Controller
 
                 if($request->harga_beli) {
                     $updateItemPembelian->harga_beli = intval($request->harga_beli);
-                    $totalQty = $updateItemPembelian->qty_terima;
+                    $totalQty = $updateItemPembelian->qty + $updateItemPembelian->last_qty;
                     $updateItemPembelian->subtotal = intval($totalQty) * intval($request->harga_beli);
                 }
 
