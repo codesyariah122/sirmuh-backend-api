@@ -435,12 +435,12 @@ class DataPurchaseOrderController extends Controller
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
 
-                $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
-                foreach($dataItems as $item) {
-                    $updateItemPembelian = ItemPembelian::findOrFail($item->id);
-                    $updateItemPembelian->stop_qty = "False";
-                    $updateItemPembelian->save();
-                }
+                // $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
+                // foreach($dataItems as $item) {
+                //     $updateItemPembelian = ItemPembelian::findOrFail($item->id);
+                //     $updateItemPembelian->stop_qty = "False";
+                //     $updateItemPembelian->save();
+                // }
 
                 // $updateKas = Kas::findOrFail($kas->id);
                 // $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
