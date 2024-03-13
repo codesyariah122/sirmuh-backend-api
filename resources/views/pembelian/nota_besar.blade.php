@@ -99,9 +99,9 @@
                 <td>{{ $item->kode_barang }}</td>
                 <td>{{ $item->nama_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
-                <td class="text-right">{{ $item->qty_terima ." ".$item->satuan }}</td>
+                <td class="text-right">{{ $orders ." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->visa }}</td>
-                <td class="text-right">{{ $helpers->format_uang($item->qty_terima * $item->harga_beli) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
             </tr>
             @endforeach
         @endif
