@@ -323,7 +323,7 @@ class RouteSelection {
         [
             'endPoint' => '/check-bayar-piutang/{id}',
             'method' => 'get',
-            'controllers' => [DataPiutangController::class, 'check_bayar_hutang']
+            'controllers' => [DataPiutangController::class, 'check_bayar_piutang']
         ],
 
         [

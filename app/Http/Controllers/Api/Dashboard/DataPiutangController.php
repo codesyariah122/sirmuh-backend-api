@@ -283,18 +283,18 @@ class DataPiutangController extends Controller
         //
     }
 
-    public function check_bayar_hutang(Request $request, $id)
+    public function check_bayar_piutang(Request $request, $id)
     {
         try {
-            $query =  DB::table('hutang')
-            ->select('hutang.*', 'pembelian.jt as jatuh_tempo','pembelian.kode_kas','pembelian.jumlah as jumlah_pembelian', 'pembelian.diterima','pembelian.bayar', 'pembelian.visa','pembelian.lunas', 'supplier.id as id_supplier', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier', 'itempembelian.nama_barang', 'itempembelian.kode_barang', 'itempembelian.qty as qty_pembelian', 'itempembelian.satuan as satuan_pembelian_barang', 'itempembelian.harga_beli as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
-            ->leftJoin('pembelian', 'hutang.kode', '=', 'pembelian.kode')
-            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-            ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
-            ->leftJoin('barang', 'barang.kode', '=', 'itempembelian.kode_barang')
-            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode');
+            $query =  DB::table('piutang')
+            ->select('piutang.*', 'penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan', 'penjualan.bayar', 'penjualan.kembali', 'penjualan.visa','penjualan.lunas', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_satuan', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama')
+            ->leftJoin('penjualan', 'piutang.kode', '=', 'penjualan.kode')
+            ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('itempenjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
+            ->leftJoin('barang', 'barang.kode', '=', 'itempenjualan.kode_barang')
+            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode');
 
-            $piutang = $query->where('hutang.id', $id)->first();
+            $piutang = $query->where('piutang.id', $id)->first();
             $jmlHutang = intval($piutang->jumlah);
             $bayar = intval($request->query('bayar'));
             if($bayar >= $jmlHutang) {
@@ -305,7 +305,7 @@ class DataPiutangController extends Controller
                 $data = [
                     'lunas' => true,
                     'jmlHutang' => $this->helpers->format_uang($jmlHutang),
-                    'message' => 'Pembayaran hutang telah terbayar lunas 🏦💵💵',
+                    'message' => 'Pembayaran piutang telah dibayar lunas 🏦💵💵',
                     'bayar' => $bayar,
                     'bayarRupiah' => $this->helpers->format_uang($bayar),
                     'kembali' => $kembali,
@@ -319,7 +319,7 @@ class DataPiutangController extends Controller
                 $sisaHutangTerbilang = ''.ucwords($this->helpers->terbilang($jmlHutang). ' Rupiah');
                 $data = [
                     'lunas' => false,
-                    'message' => 'Pembayaran hutang masuk dalam angsuran 💱',
+                    'message' => 'Pembayaran piutang masuk dalam angsuran 💱',
                     'jmlHutang' => $this->helpers->format_uang($jmlHutang),
                     'bayar' => $bayar,
                     'bayarRupiah' => $this->helpers->format_uang($bayar),
