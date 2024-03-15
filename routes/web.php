@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\DetailProductController;
 use App\Http\Controllers\Api\Dashboard\{
 	DataPembelianLangsungController,
@@ -24,6 +25,34 @@ use App\Http\Controllers\Web\{DataLaporanView};
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/test', function() {
+	return "Hallo World";
+});
+
+Route::get('/config-clear', function() {
+    Artisan::call('config:clear');
+
+    return 'Config cache cleared!';
+});
+
+Route::get('/cache-clear', function() {
+    Artisan::call('cache:clear');
+
+    return 'Cache cleared!';
+});
+
+Route::get('/config-cache', function() {
+    Artisan::call('config:cache');
+
+    return 'Config cached!';
+});
+
+Route::get('/route-cache', function() {
+    Artisan::call('route:cache');
+
+    return 'Route cached!';
 });
 
 Route::get('/transaksi/beli/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPembelianLangsungController::class, 'cetak_nota']);
