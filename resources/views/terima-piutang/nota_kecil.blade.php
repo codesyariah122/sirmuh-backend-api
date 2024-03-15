@@ -57,11 +57,11 @@
     <body onload="window.print()">
         <button class="btn-print" style="position: absolute; right: 1rem; top: rem;" onclick="window.print()">Print</button>
        {{-- @php
-       dd($hutang); die;
+       dd($piutang); die;
        @endphp --}}
         <div class="clear-both" style="clear: both;"></div>
-        <p>No: {{ $hutang->kode }}</p>
-        <p>Type: {{$hutang->po === 'True' ? "Pembelian P.O" : "Pembelian Langsung"}}</p>
+        <p>No: {{ $piutang->kode }}</p>
+        <p>Type: {{$piutang->po === 'True' ? "Penjualan P.O" : "Penjualan Langsung"}}</p>
         <p class="text-center">===================================</p>
         <p>
             <img src="{{  Storage::url('tokos/' . $toko['logo']) }}" width="70">
@@ -69,51 +69,51 @@
         <p>{{ $toko['name'] }}</p>
         <p>{{ $toko['address'] }}</p>
         <br/>
-        <p>No : {{ $hutang->kode }}</p>
-        <p>Tgl Transaksi : {{ $hutang->tanggal }}</p>
-        <p>Supplier : {{ $hutang->nama_supplier }}</p>
-        <p>Kode Supplier : {{$hutang->supplier}}</p>
-        <p>Alamat Supplier : {{ $hutang->alamat_supplier }}</p>
-        <p>Operator : {{ strtoupper($hutang->operator) }}</p>
+        <p>No : {{ $piutang->kode }}</p>
+        <p>Tgl Transaksi : {{ $piutang->tanggal }}</p>
+        <p>Supplier : {{ $piutang->nama_supplier }}</p>
+        <p>Kode Supplier : {{$piutang->supplier}}</p>
+        <p>Alamat Supplier : {{ $piutang->alamat_supplier }}</p>
+        <p>Operator : {{ strtoupper($piutang->operator) }}</p>
         {{-- @php
-        var_dump($hutang->jumlah_hutang); 
-        var_dump($hutang->jumlah);
+        var_dump($piutang->jumlah_hutang); 
+        var_dump($piutang->jumlah);
         die;
         @endphp --}}
         <p class="text-center">===================================</p>
         <table width="100%" style="border: 0;">
             <tr>
-                <td colspan="3">{{ $hutang->nama_barang }} - {{$hutang->kode_barang}}</td>
+                <td colspan="3">{{ $piutang->nama_barang }} - {{$piutang->kode_barang}}</td>
             </tr>
             <tr>
-                <td>{{ round($hutang->qty) }} x {{ $helpers->format_uang($hutang->harga_beli) }}</td>
+                <td>{{ round($piutang->qty) }} x {{ $helpers->format_uang($piutang->harga_beli) }}</td>
                 <td></td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_pembelian) }}</td>
             </tr>
         </table>
         <p class="text-center">-----------------------------------</p>
         <table width="100%" style="border: 0;">
             <tr>
                 <td>Total Bayar:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_pembelian) }}</td>
             </tr>
             <tr>
                 <td>Total Item:</td>
                 <td class="text-right">
-                     {{round($hutang->qty)}} {{$hutang->satuan}}
+                     {{round($piutang->qty)}} {{$piutang->satuan}}
                  </td>
             </tr>
             <tr>
                 <td>Diterima:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_penjualan - $piutang->jumlah_piutang) }}</td>
             </tr>
             <tr>
                 <td>Diskon:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->diskon) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->diskon) }}</td>
             </tr>
             <tr>
-                <td>Hutang:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
+                <td>Piutang:</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->jumlah) }}</td>
             </tr>
             @foreach($angsurans as $angsuran)
             <tr>
@@ -122,18 +122,18 @@
             </tr>
             @endforeach
             <tr>
-                <td>Sisa Hutang:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jml_hutang) }}</td>
+                <td>Sisa Piutang:</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->jml_hutang) }}</td>
             </tr>
             <tr>
                 <td>Kembali:</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->bayar - $hutang->hutang) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->bayar - $piutang->hutang) }}</td>
             </tr>
 
             @if(count($angsurans) > 0)
             <tr>
                 <td>Status:</td>
-                <td class="text-right">{{ intval($hutang->jml_hutang) === 0 ? "Lunas" : "Angsuran" }}</td>
+                <td class="text-right">{{ intval($piutang->jml_hutang) === 0 ? "Lunas" : "Angsuran" }}</td>
             </tr>
             @else
             <tr>
