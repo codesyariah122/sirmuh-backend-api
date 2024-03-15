@@ -25,7 +25,7 @@ class Cors
     public function handle($request, Closure $next)
     {
         try {
-            $api_key = $request->header('Sirmuh-Key');
+            $api_key = $request->header('sirmuh_key');
             $check_api_onDb = ApiKey::whereToken($api_key)->first();
 
             if ($check_api_onDb !== null) {
