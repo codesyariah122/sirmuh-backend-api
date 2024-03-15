@@ -41,7 +41,7 @@ class DataPiutangController extends Controller
             $startDate = $request->query("start_date");
             $endDate = $request->query("end_date");
 
-            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as jumlah_piutang', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode')
             ->where('penjualan.jt', '>', 0);
@@ -109,7 +109,7 @@ class DataPiutangController extends Controller
     {
         try {
             $query =  Piutang::query()
-            ->select('piutang.*', 'itempiutang.jumlah_piutang','itempiutang.return','itempiutang.jumlah','penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan','penjualan.bayar as bayar_penjualan', 'penjualan.visa','penjualan.lunas', 'penjualan.piutang as piutang_penjualan', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
+            ->select('piutang.*', 'itempiutang.jumlah_piutang as jumlah_piutang','itempiutang.return','itempiutang.jumlah','penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan','penjualan.bayar as bayar_penjualan', 'penjualan.visa','penjualan.lunas', 'penjualan.piutang as piutang_penjualan', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
             ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
             ->leftJoin('penjualan', 'piutang.kode', '=', 'penjualan.kode')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
