@@ -103,7 +103,7 @@
             @else 
                 <tr>
                     <td colspan="6" class="text-right"><b>Diterima</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($piutang->jumlah_pembelian - $piutang->jumlah) }}</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($piutang->jumlah_penjualan - $piutang->jumlah) }}</b></td>
                 </tr>
             @endif
             
@@ -114,7 +114,7 @@
             </tr>
             @endforeach
 
-            @if($piutang->status_lunas === 'False' || $piutang->status_lunas === '0')
+            @if($piutang->status_lunas === 'False')
                 <tr>
                     <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($piutang->piutang_penjualan) }}</b></td>
@@ -122,7 +122,7 @@
             @else
                 <tr>
                     <td colspan="6" class="text-right"><b>Kembali</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($piutang->diterima - $piutang->jumlah) }}</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($piutang->kembali) }}</b></td>
                 </tr>
             @endif
         </tfoot>

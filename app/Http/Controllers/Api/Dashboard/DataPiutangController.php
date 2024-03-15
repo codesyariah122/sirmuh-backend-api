@@ -191,11 +191,11 @@ class DataPiutangController extends Controller
                 $updatePenjualan->bayar = intval($dataPenjualan->bayar_pembelian) + $bayar;
 
                 if($bayar >= $dataPenjualan->piutang) {
-                    $updatePenjualan->lunas = 1;
+                    $updatePenjualan->lunas = "True";
                     $updatePenjualan->visa = "LUNAS";
                     $updatePenjualan->piutang = $bayar - intval($dataPenjualan->hutang);
                 } else {
-                    $updatePenjualan->lunas = 0;
+                    $updatePenjualan->lunas = "False";
                     $updatePenjualan->visa = "HUTANG";
                     $updatePenjualan->piutang = intval($dataPenjualan->piutang) - $bayar;
                 }
@@ -356,6 +356,7 @@ class DataPiutangController extends Controller
             'penjualan.kode_kas',
             'penjualan.jumlah as jumlah_penjualan',
             'penjualan.bayar as bayar_penjualan',
+            'penjualan.kembali',
             'penjualan.visa',
             'penjualan.po',
             'penjualan.jenis as jenis_penjualan',

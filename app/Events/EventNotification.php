@@ -34,7 +34,7 @@ class EventNotification implements ShouldBroadcast
     public function broadcastOn()
     {
         // return new PrivateChannel('channel-name');
-        return new Channel('sirmuh-pos');
+        return new Channel(env('PUSHER_APP_CHANNEL'));
     }
 
     public function broadcastWith()
