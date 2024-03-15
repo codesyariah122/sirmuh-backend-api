@@ -41,7 +41,7 @@ class DataPiutangController extends Controller
             $startDate = $request->query("start_date");
             $endDate = $request->query("end_date");
 
-            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as jumlah_piutang', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode')
             ->where('penjualan.jt', '>', 0);
