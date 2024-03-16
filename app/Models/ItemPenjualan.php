@@ -31,15 +31,17 @@ class ItemPenjualan extends Model
 		$tanggalMulai = now();
 		$tanggalAkhir = now()->addMonth();
 
-		$topSellingItem = DB::table('itempenjualan')
+		$topSellingItemQuery = DB::table('itempenjualan')
 		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
-		->limit(1)
-		->get();
+		->limit(1);
 
-		$result = DB::table('barang')
-		->joinSub($topSellingItem, 'top_selling', function ($join) {
+		$topSellingItem = DB::table('barang')
+		->joinSub(function ($query) use ($topSellingItemQuery) {
+			$query->from(DB::raw("({$topSellingItemQuery->toSql()}) as top_selling_subquery"))
+			->mergeBindings($topSellingItemQuery);
+		}, 'top_selling', function ($join) {
 			$join->on('barang.kode', '=', 'top_selling.kode_barang');
 		})
 		->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan')
@@ -49,7 +51,7 @@ class ItemPenjualan extends Model
 		->latest('penjualan.tanggal')
 		->first();
 
-	    Cache::put('top_selling_item', $result, now()->addHours(1)); // Menyimpan data dalam cache selama 1 jam
+	    Cache::put('top_selling_item', $result, now()->addHours(1));
 
 	    return $result;
 	}
