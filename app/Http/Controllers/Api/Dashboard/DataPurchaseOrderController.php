@@ -72,7 +72,7 @@ class DataPurchaseOrderController extends Controller
                 $query->where('pembelian.kode', 'like', '%' . $keywords . '%');
             }
 
-            if(!$viewAll) {
+            if($viewAll === false || $viewAll === "false") {
                 $query->whereDate('pembelian.tanggal', '=', $today);
             }
 
