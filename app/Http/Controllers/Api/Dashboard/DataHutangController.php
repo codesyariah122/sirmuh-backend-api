@@ -10,6 +10,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Collection;
+use App\Jobs\ProcessLargeRequest;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Events\{EventNotification};
 use App\Models\{Toko, Hutang, Pembelian, ItemPembelian,PembayaranAngsuran,Kas,ItemHutang};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
@@ -36,23 +38,36 @@ class DataHutangController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
-            
 
-            $query = Hutang::select('hutang.id','hutang.kode', 'hutang.tanggal','hutang.supplier','hutang.jumlah','hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian','pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
+        // Inisialisasi variabel kosong untuk menampung hasil paginasi
+            $hutangsPaginated = collect();
+
+        // Jalankan query dengan menggunakan chunk
+            $hutangChunk = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
             ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode');
-            ->where('pembelian.jt', '>', 0);
+            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
+            ->where('pembelian.jt', '>', 0)
+            ->when($keywords, function ($query, $keywords) {
+                return $query->where('hutang.kode', 'like', '%' . $keywords . '%');
+            })
+            ->orderByDesc('hutang.id')
+            ->chunk(1000, function ($hutangsChunk) use (&$hutangsPaginated) {
+                // Untuk setiap chunk, tambahkan ke koleksi hasil paginasi
+                $hutangsPaginated = $hutangsPaginated->concat($hutangsChunk);
+            });
 
-            if ($keywords) {
-                $query->where('hutang.kode', 'like', '%' . $keywords . '%');
-            }
+            // Ambil nomor halaman dari parameter query jika ada, jika tidak, setel ke 1
+            $page = $request->query('page', 1);
 
-            $query->orderByDesc('hutang.id');
+            // Buat objek Collection menjadi objek Paginator
+            $perPage = 10;
+            $total = $hutangsPaginated->count();
+            $items = $hutangsPaginated->forPage($page, $perPage)->values();
+            $paginator = new LengthAwarePaginator($items, $total, $perPage, $page);
 
-            $hutangs = $query->paginate(10);
-
-            return new ResponseDataCollect($hutangs);
+            // Kembalikan hasil paginasi
+            return new ResponseDataCollect($paginator);
 
         } catch (\Throwable $th) {
             throw $th;
