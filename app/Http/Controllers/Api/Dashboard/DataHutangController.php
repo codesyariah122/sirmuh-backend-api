@@ -72,27 +72,25 @@ class DataHutangController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
-            $sortName = $request->query('sort_name');
-            $sortType = $request->query('sort_type');
-            $startDate = $request->query("start_date");
-            $endDate = $request->query("end_date");
+            $viewAll = $request->query('view_all');
+            $dateTransaction = $request->query('date_transaction');
+
 
             $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
             ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
-            ->where('pembelian.jt', '>', 0);
+            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode');
 
             if ($keywords) {
                 $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
             }
 
-            if ($sortName && $sortType) {
-                $query->orderBy($sortName, $sortType);
-            } else {
-                if($startDate && $endDate) {
-                    $query->whereBetween('pembelian.tanggal', [$startDate, $endDate]);
-                }
+            if ($dateTransaction) {
+                $query->whereDate('hutang.tanggal', '=', $dateTransaction);
+            }
+
+            if($viewAll === false || $viewAll === "false") {
+                $query->where('pembelian.jt', '>', 0);
             }
 
             $query->orderByDesc('pembelian.id');
