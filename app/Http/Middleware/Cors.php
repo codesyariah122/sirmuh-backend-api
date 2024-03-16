@@ -22,27 +22,24 @@ class Cors
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle($request, Closure $next)
-    {
-        try {
-            $api_key = $request->header('Sirmuh-Key');
-            $check_api_onDb = ApiKey::whereToken($api_key)->first();
+        public function handle($request, Closure $next)
+        {
+            try {
+                $api_key = $request->header('Sirmuh-Key');
+                $check_api_onDb = ApiKey::whereToken($api_key)->first();
 
-            if ($check_api_onDb !== null) {
-                $response = $next($request);
+                if ($check_api_onDb !== null) {
+                    $response = $next($request);
 
-                if ($response !== null) {
+                if ($response->getStatusCode() === 200) { // Pastikan respons tidak null
                     return $response
                     ->header('Access-Control-Allow-Origin', '*')
                     ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                    ->header('Access-Control-Allow-Headers', 'Authorization')
-                    ->header('Access-Control-Allow-Headers', 'Content-Type');
+                    ->header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
                 } else {
-                // Jika $response null, Anda bisa mengembalikan respons yang sesuai
+                    // Jika respons tidak 200, kembalikan respons yang sesuai
                     $userData = Auth::user();
-
                     Login::whereUserId($userData->id)->delete();
-
                     return response()->json([
                         'error' => true,
                         'message' => 'Internal Server Error, please login again 🔑'
