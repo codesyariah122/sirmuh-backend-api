@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Events\{EventNotification};
 use App\Models\{Toko, Piutang, Penjualan, ItemPenjualan,PembayaranAngsuran,Kas,ItemPiutang};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
@@ -36,34 +37,32 @@ class DataPiutangController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
-            $sortName = $request->query('sort_name');
-            $sortType = $request->query('sort_type');
-            $startDate = $request->query("start_date");
-            $endDate = $request->query("end_date");
 
-            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+            $keywords = $request->query('keywords');
+
+            $piutangsPaginated = collect();
+
+            Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
             ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode')
-            ->where('penjualan.jt', '>', 0);
+            // ->where('penjualan.jt', '>', 0)
+            ->when($keywords, function ($query, $keywords) {
+                return $query->where('piutang.kode', 'like', '%' . $keywords . '%');
+            })
+            ->orderByDesc('piutang.id')
+            ->chunk(1000, function ($piutangsChunk) use (&$piutangsPaginated) {
+                $piutangsPaginated = $piutangsPaginated->concat($piutangsChunk);
+            });
 
-            if ($keywords) {
-                $query->where('piutang.supplier', 'like', '%' . $keywords . '%');
-            }
+            $page = $request->query('page', 1);
 
-            if ($sortName && $sortType) {
-                $query->orderBy($sortName, $sortType);
-            } else {
-                if($startDate && $endDate) {
-                    $query->whereBetween('piutang.tanggal', [$startDate, $endDate]);
-                }
-            }
+            $perPage = 10;
+            $total = $piutangsPaginated->count();
+            $items = $piutangsPaginated->forPage($page, $perPage)->values();
+            $paginator = new LengthAwarePaginator($items, $total, $perPage, $page);
 
-            $query->orderByDesc('piutang.id');
-
-            $piutangs = $query->paginate(10);
-
-            return new ResponseDataCollect($piutangs);
+            return new ResponseDataCollect($paginator);
 
         } catch (\Throwable $th) {
             throw $th;

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -21,18 +22,21 @@ class ItemPenjualan extends Model
 
 	public static function penjualanTerbaikSatuBulanKedepan()
 	{
+		$cachedResult = Cache::get('top_selling_item');
+
+		if ($cachedResult) {
+			return $cachedResult;
+		}
+
 		$tanggalMulai = now();
 		$tanggalAkhir = now()->addMonth();
 
 		$topSellingItem = DB::table('itempenjualan')
 		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
-		// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
-		->limit(1);
-		// ->get();
-
-		// var_dump($topSellingItem); die;
+		->limit(1)
+		->get();
 
 		$result = DB::table('barang')
 		->joinSub($topSellingItem, 'top_selling', function ($join) {
@@ -41,13 +45,13 @@ class ItemPenjualan extends Model
 		->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan')
 		->join('itempenjualan', 'barang.kode', '=', 'itempenjualan.kode_barang')
 		->join('penjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
-		// ->whereBetween('itempenjualan.expired', [$tanggalMulai, $tanggalAkhir])
 		->orderByDesc('total_penjualan')
-		// ->distinct()
 		->latest('penjualan.tanggal')
 		->first();
-		
-		return $result;
+
+	    Cache::put('top_selling_item', $result, now()->addHours(1)); // Menyimpan data dalam cache selama 1 jam
+
+	    return $result;
 	}
 
 	public static function barangTerlaris()
