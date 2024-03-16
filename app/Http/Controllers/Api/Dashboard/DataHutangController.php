@@ -34,8 +34,8 @@ class DataHutangController extends Controller
         $this->user_helpers = new UserHelpers;
     }
 
-    public function index(Request $request)
-    {
+    // public function index(Request $request)
+    // {
     //     try {
     //         $keywords = $request->query('keywords');
 
