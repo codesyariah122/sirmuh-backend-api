@@ -70,15 +70,6 @@ class DataPiutangController extends Controller
         }
     }
 
-    public function data_hutang()
-    {
-        try {
-
-        }catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
     /**
      * Show the form for creating a new resource.
      *
