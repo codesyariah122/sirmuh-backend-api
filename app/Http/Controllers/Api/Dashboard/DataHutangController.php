@@ -37,17 +37,18 @@ class DataHutangController extends Controller
         try {
             $keywords = $request->query('keywords');
             
+
             $query = Hutang::select('hutang.id','hutang.kode', 'hutang.tanggal','hutang.supplier','hutang.jumlah','hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian','pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
-            ->leftJoin('itemhutang', 'hutang.kode', 'itemhutang.kode_hutang')
-            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
-            ->leftJoin('supplier', 'hutang.supplier', 'supplier.kode')
-            ->limit(10)
-            // ->where('pembelian.jt', '>', 0)
-            ->orderByDesc('hutang.id');
+            ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_piutang')
+            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+            ->leftJoin('penjualan', 'hutang.kode', 'penjualan.kode')
+            ->where('pembelian.jt', '>', 0);
 
             if ($keywords) {
                 $query->where('hutang.supplier', 'like', '%' . $keywords . '%');
             }
+
+            $query->orderByDesc('hutang.id');
 
             $hutangs = $query->paginate(10);
 
