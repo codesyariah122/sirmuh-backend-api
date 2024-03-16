@@ -36,32 +36,70 @@ class DataHutangController extends Controller
 
     public function index(Request $request)
     {
+    //     try {
+    //         $keywords = $request->query('keywords');
+
+    //         $hutangsPaginated = collect();
+
+    //         Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
+    //         ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
+    //         ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+    //         ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
+    //         // ->where('pembelian.jt', '>', 0)
+    //         ->when($keywords, function ($query, $keywords) {
+    //             return $query->where('hutang.kode', 'like', '%' . $keywords . '%');
+    //         })
+    //         ->orderByDesc('hutang.id')
+    //         ->chunk(1000, function ($hutangsChunk) use (&$hutangsPaginated) {
+    //             $hutangsPaginated = $hutangsPaginated->concat($hutangsChunk);
+    //         });
+
+    //         $page = $request->query('page', 1);
+
+    //         $perPage = 10;
+    //         $total = $hutangsPaginated->count();
+    //         $items = $hutangsPaginated->forPage($page, $perPage)->values();
+    //         $paginator = new LengthAwarePaginator($items, $total, $perPage, $page);
+
+    //         return new ResponseDataCollect($paginator);
+
+    //     } catch (\Throwable $th) {
+    //         throw $th;
+    //     }
+    // }
+
+    public function index(Request $request)
+    {
         try {
             $keywords = $request->query('keywords');
+            $sortName = $request->query('sort_name');
+            $sortType = $request->query('sort_type');
+            $startDate = $request->query("start_date");
+            $endDate = $request->query("end_date");
 
-            $hutangsPaginated = collect();
-
-            Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
+            $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
             ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
             ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
-            // ->where('pembelian.jt', '>', 0)
-            ->when($keywords, function ($query, $keywords) {
-                return $query->where('hutang.kode', 'like', '%' . $keywords . '%');
-            })
-            ->orderByDesc('hutang.id')
-            ->chunk(1000, function ($hutangsChunk) use (&$hutangsPaginated) {
-                $hutangsPaginated = $hutangsPaginated->concat($hutangsChunk);
-            });
+            ->where('pembelian.jt', '>', 0);
 
-            $page = $request->query('page', 1);
+            if ($keywords) {
+                $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
+            }
 
-            $perPage = 10;
-            $total = $hutangsPaginated->count();
-            $items = $hutangsPaginated->forPage($page, $perPage)->values();
-            $paginator = new LengthAwarePaginator($items, $total, $perPage, $page);
+            if ($sortName && $sortType) {
+                $query->orderBy($sortName, $sortType);
+            } else {
+                if($startDate && $endDate) {
+                    $query->whereBetween('pembelian.tanggal', [$startDate, $endDate]);
+                }
+            }
 
-            return new ResponseDataCollect($paginator);
+            $query->orderByDesc('pembelian.id');
+
+            $piutangs = $query->paginate(10);
+
+            return new ResponseDataCollect($piutangs);
 
         } catch (\Throwable $th) {
             throw $th;

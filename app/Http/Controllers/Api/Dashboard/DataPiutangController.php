@@ -85,7 +85,7 @@ class DataPiutangController extends Controller
             ->where('penjualan.jt', '>', 0);
 
             if ($keywords) {
-                $query->where('piutang.supplier', 'like', '%' . $keywords . '%');
+                $query->where('piutang.pelanggan', 'like', '%' . $keywords . '%');
             }
 
             if ($sortName && $sortType) {
