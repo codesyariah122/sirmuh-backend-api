@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Dashboard;
 
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +33,13 @@ class DataUserDataController extends Controller
     {
         try {
             $user = $request->user();
+
+            $cachedResult = Cache::get('user_data_' . $user->email);
+
+            if ($cachedResult) {
+                return response()->json($cachedResult, 200);
+            }
+
             $user_login = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
             ->whereEmail($user->email)
             ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
@@ -47,6 +55,7 @@ class DataUserDataController extends Controller
                 }
             ])
             ->get();
+
             $karyawans = Karyawan::withTrashed()->whereNama($user->name)->get();
 
             if (count($user_login->logins) === 0) {
@@ -56,13 +65,18 @@ class DataUserDataController extends Controller
                     'message' => 'Anauthenticated'
                 ]);
             }
-            return response()->json([
+
+            $responseData = [
                 'success' => true,
                 'message' => 'User is login 🧑🏻‍💻',
                 'data' => $user_login,
                 'menus' => $menus,
                 'karyawans' => $karyawans
-            ], 200);
+            ];
+
+            Cache::put('user_data_' . $user->email, $responseData, now()->addMinutes(10));
+
+            return response()->json($responseData, 200);
         } catch (\Throwable $th) {
             throw $th;
         }
