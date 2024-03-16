@@ -303,11 +303,18 @@ class RouteSelection {
             'method' => 'get',
             'controllers' => [DataItemHutangController::class, 'index']
         ],
+        // [
+        //     'endPoint' => '/data-hutang',
+        //     'method' => 'resource',
+        //     'controllers' => DataHutangController::class
+        // ],
+
         [
-            'endPoint' => '/data-hutang',
+            'endPoint' => '/data-hutang-pembelian',
             'method' => 'resource',
             'controllers' => DataHutangController::class
         ],
+
         [
             'endPoint' => '/check-bayar-hutang/{id}',
             'method' => 'get',
