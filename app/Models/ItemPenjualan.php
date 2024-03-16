@@ -46,9 +46,7 @@ class ItemPenjualan extends Model
 		// ->distinct()
 		->latest('penjualan.tanggal')
 		->first();
-
-		// var_dump($result); die;
-
+		
 		return $result;
 	}
 

@@ -39,34 +39,28 @@ class DataHutangController extends Controller
         try {
             $keywords = $request->query('keywords');
 
-        // Inisialisasi variabel kosong untuk menampung hasil paginasi
             $hutangsPaginated = collect();
 
-        // Jalankan query dengan menggunakan chunk
             $hutangChunk = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
             ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
             ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
             ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
-            ->where('pembelian.jt', '>', 0)
+            // ->where('pembelian.jt', '>', 0)
             ->when($keywords, function ($query, $keywords) {
                 return $query->where('hutang.kode', 'like', '%' . $keywords . '%');
             })
             ->orderByDesc('hutang.id')
             ->chunk(1000, function ($hutangsChunk) use (&$hutangsPaginated) {
-                // Untuk setiap chunk, tambahkan ke koleksi hasil paginasi
                 $hutangsPaginated = $hutangsPaginated->concat($hutangsChunk);
             });
 
-            // Ambil nomor halaman dari parameter query jika ada, jika tidak, setel ke 1
             $page = $request->query('page', 1);
 
-            // Buat objek Collection menjadi objek Paginator
             $perPage = 10;
             $total = $hutangsPaginated->count();
             $items = $hutangsPaginated->forPage($page, $perPage)->values();
             $paginator = new LengthAwarePaginator($items, $total, $perPage, $page);
 
-            // Kembalikan hasil paginasi
             return new ResponseDataCollect($paginator);
 
         } catch (\Throwable $th) {
