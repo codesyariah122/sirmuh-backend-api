@@ -66,8 +66,20 @@ class LoginController extends Controller
                     else :
                         if ($this->forbidenIsUserLogin($user->is_login)) {
                             $last_login = Carbon::parse($user->last_login)->locale('id')->diffForHumans();
-                            $login_data = Login::whereUserId($user->id)
-                            ->firstOrFail();
+                            $login_data = Login::where('user_id', $user->id)
+                            ->first();
+
+                            if($login_data === NULL) {
+                                $removeUserIsLogin = User::findOrFail($user->id);
+                                $removeUserIsLogin->is_login = 0;
+                                $removeUserIsLogin->expires_at = NULL;
+                                $removeUserIsLogin->save();
+
+                                return response()->json([
+                                    'error' => true,
+                                    'message' => 'Silahkan login ulang 🤦‍♂️💥'
+                                ]);
+                            }
 
                             $dashboard = env('DASHBOARD_APP');
 
