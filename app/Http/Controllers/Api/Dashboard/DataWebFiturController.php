@@ -1755,11 +1755,26 @@ class DataWebFiturController extends Controller
     {
         try {
             $itemPembelian = ItemPembelian::findOrFail($id);
-            $itemPembelian->forceDelete();
+            $itemPembelian->qty = 0;
+            $itemPembelian->last_qty = NULL;
+            $itemPembelian->stop_qty = "False";
+            $itemPembelian->subtotal = $itemPembelian->harga_beli;
+            $itemPembelian->qty_terima = 0;
+            $itemPembelian->save();
 
-            $purchaseOrdes = PurchaseOrder::where('kode_barang', $itemPembelian->kode_barang)->first();
-            $updateOrder = PurchaseOrder::findOrFail($purchaseOrdes->id);
-            $updateOrder->forceDelete();
+            $dataPembelian = Pembelian::whereKode($itemPembelian->kode)->first();
+            $udpateDataPembelian = Pembelian::findOrFail($dataPembelian->id);
+            $udpateDataPembelian->diterima = 0;
+            $udpateDataPembelian->save();
+
+            $purchaseOrders = PurchaseOrder::where('kode_barang', $itemPembelian->kode_barang)
+            ->where('po_ke', '!=', 0)
+            ->get();
+
+            foreach($purchaseOrders as $poitem) {
+                $deletePo = PurchaseOrder::findOrFail($poitem->id);
+                $deletePo->forceDelete();
+            }
 
             return response()->json([
                 'success' => true,
