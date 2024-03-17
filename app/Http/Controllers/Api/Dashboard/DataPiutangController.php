@@ -38,6 +38,7 @@ class DataPiutangController extends Controller
         try {
             $keywords = $request->query('keywords');
             $page = $request->query('page');
+            $pelanggan = $request->query('pelanggan');
             $viewAll = $request->query('view_all');
             $now = now();
             $startOfMonth = $now->startOfMonth()->toDateString();
@@ -58,6 +59,10 @@ class DataPiutangController extends Controller
 
             if ($keywords) {
                 $query->where('piutang.pelanggan', 'like', '%' . $keywords . '%');
+            }
+
+            if ($pelanggan) {
+                $query->where('penjualan.pelanggan', 'like', '%' . $pelanggan . '%');
             }
 
             if ($dateTransaction) {

@@ -73,6 +73,7 @@ class DataHutangController extends Controller
         try {
             $keywords = $request->query('keywords');
             $page = $request->query('page');
+            $supplier = $request->query('supplier');
             $viewAll = $request->query('view_all');
             $now = now();
             $startOfMonth = $now->startOfMonth()->toDateString();
@@ -93,6 +94,10 @@ class DataHutangController extends Controller
 
             if ($keywords) {
                 $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
+            }
+
+            if ($supplier) {
+                $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
             }
 
             if ($dateTransaction) {
