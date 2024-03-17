@@ -62,7 +62,7 @@ class DataPiutangController extends Controller
             }
 
             if ($pelanggan) {
-                $query->where('penjualan.pelanggan', 'like', '%' . $pelanggan . '%');
+                $query->where('piutang.pelanggan', 'like', '%' . $pelanggan . '%');
             }
 
             if ($dateTransaction) {

@@ -97,7 +97,7 @@ class DataHutangController extends Controller
             }
 
             if ($supplier) {
-                $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
+                $query->where('hutang.supplier', 'like', '%' . $supplier . '%');
             }
 
             if ($dateTransaction) {
