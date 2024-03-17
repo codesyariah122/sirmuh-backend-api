@@ -79,59 +79,29 @@ class DataHutangController extends Controller
             $endOfMonth = $now->endOfMonth()->toDateString();
             $dateTransaction = $request->query('date_transaction');
 
+            $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
+            ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
+            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+            ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode');
+            // ->where('pembelian.jt', '>', 0);
+
             if ($viewAll === true || $viewAll === "true") {
-               $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
-                ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
-                ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-                ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode');
-                // ->where('pembelian.jt', '>', 0);
+                $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);    
+            } 
 
-                $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
-
-                if ($keywords) {
-                    $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
-                }
-
-                if ($dateTransaction) {
-                    $query->whereDate('hutang.tanggal', '=', $dateTransaction);
-                }
-
-                $query->orderByDesc('pembelian.id');
-
-                $piutangs = $query->paginate(10);
-            } else {
-                $hutangsPaginated = collect();
-
-                Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
-                ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
-                ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-                ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
-                // ->where('pembelian.jt', '>', 0)
-                ->when($keywords, function ($query, $keywords) {
-                    return $query->where('hutang.kode', 'like', '%' . $keywords . '%');
-                })
-                ->orderByDesc('hutang.id')
-                ->chunk(1000, function ($hutangsChunk) use (&$hutangsPaginated) {
-                    $hutangsPaginated = $hutangsPaginated->concat($hutangsChunk);
-                });
-
-                if ($keywords) {
-                    $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
-                }
-
-                if ($dateTransaction) {
-                    $query->whereDate('hutang.tanggal', '=', $dateTransaction);
-                }
-
-                $pageStart = $request->query('page', $page);
-
-                $perPage = 10;
-                $total = $hutangsPaginated->count();
-                $items = $hutangsPaginated->forPage($pageStart, $perPage)->values();
-                $piutangs = new LengthAwarePaginator($items, $total, $perPage, $pageStart);
+            if ($keywords) {
+                $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
             }
 
-            return new ResponseDataCollect($piutangs);
+            if ($dateTransaction) {
+                $query->whereDate('hutang.tanggal', '=', $dateTransaction);
+            }
+
+            $query->orderByDesc('pembelian.id');
+
+            $hutangs = $query->paginate(10);
+
+            return new ResponseDataCollect($hutangs);
 
         } catch (\Throwable $th) {
             throw $th;
