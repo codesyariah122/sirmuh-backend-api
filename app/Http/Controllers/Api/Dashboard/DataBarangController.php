@@ -116,9 +116,9 @@ class DataBarangController extends Controller
                     ->orWhere('barang.kode', 'like', '%' . $keywords . '%');
                 });
             })
-           ->when($supplier, function ($query) use ($supplier) {
-                return $query->where('barang.supplier', $supplier );
-            })
+           // ->when($supplier, function ($query) use ($supplier) {
+           //      return $query->where('barang.supplier', $supplier );
+           //  })
            ->when($startDate, function ($query) use ($startDate) {
                 return $query->where('barang.tgl_terakhir', $startDate );
             })
@@ -129,6 +129,10 @@ class DataBarangController extends Controller
                 return $query->where('barang.kode_barcode', $barcode );
             });
 
+
+            if($supplier) {
+                $query->where('barang.supplier', $supplier );
+            }
 
             if($sortName && $sortType) {
                 $barangs = $query
