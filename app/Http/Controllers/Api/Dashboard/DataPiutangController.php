@@ -52,6 +52,8 @@ class DataPiutangController extends Controller
 
             if ($viewAll === true || $viewAll === "true") {
                 $query->whereBetween('piutang.tanggal', [$startOfMonth, $endOfMonth]);
+            } else {
+                $query->limit(1000);
             }
 
             if ($keywords) {
