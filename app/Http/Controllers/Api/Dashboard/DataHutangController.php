@@ -72,6 +72,7 @@ class DataHutangController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $page = $request->query('page');
             $viewAll = $request->query('view_all');
             $now = now();
             $startOfMonth = $now->startOfMonth()->toDateString();
@@ -80,9 +81,10 @@ class DataHutangController extends Controller
 
             if ($viewAll === true || $viewAll === "true") {
                $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
-               ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
-               ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
-               ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode');
+                ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
+                ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+                ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode');
+                // ->where('pembelian.jt', '>', 0);
 
                 $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
 
@@ -104,7 +106,7 @@ class DataHutangController extends Controller
                 ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
                 ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
                 ->leftJoin('pembelian', 'hutang.kode', 'pembelian.kode')
-                ->where('pembelian.jt', '>', 0)
+                // ->where('pembelian.jt', '>', 0)
                 ->when($keywords, function ($query, $keywords) {
                     return $query->where('hutang.kode', 'like', '%' . $keywords . '%');
                 })
@@ -113,12 +115,20 @@ class DataHutangController extends Controller
                     $hutangsPaginated = $hutangsPaginated->concat($hutangsChunk);
                 });
 
-                $page = $request->query('page', 1);
+                if ($keywords) {
+                    $query->where('pembelian.supplier', 'like', '%' . $keywords . '%');
+                }
+
+                if ($dateTransaction) {
+                    $query->whereDate('hutang.tanggal', '=', $dateTransaction);
+                }
+
+                $pageStart = $request->query('page', $page);
 
                 $perPage = 10;
                 $total = $hutangsPaginated->count();
-                $items = $hutangsPaginated->forPage($page, $perPage)->values();
-                $piutangs = new LengthAwarePaginator($items, $total, $perPage, $page);
+                $items = $hutangsPaginated->forPage($pageStart, $perPage)->values();
+                $piutangs = new LengthAwarePaginator($items, $total, $perPage, $pageStart);
             }
 
             return new ResponseDataCollect($piutangs);

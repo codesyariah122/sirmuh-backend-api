@@ -33,72 +33,67 @@ class DataPiutangController extends Controller
         $this->user_helpers = new UserHelpers;
     }
 
-    // public function index(Request $request)
-    // {
-    //     try {
-    //         $keywords = $request->query('keywords');
-
-    //         $keywords = $request->query('keywords');
-
-    //         $piutangsPaginated = collect();
-
-    //         Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
-    //         ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
-    //         ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
-    //         ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode')
-    //         // ->where('penjualan.jt', '>', 0)
-    //         ->when($keywords, function ($query, $keywords) {
-    //             return $query->where('piutang.kode', 'like', '%' . $keywords . '%');
-    //         })
-    //         ->orderByDesc('piutang.id')
-    //         ->chunk(1000, function ($piutangsChunk) use (&$piutangsPaginated) {
-    //             $piutangsPaginated = $piutangsPaginated->concat($piutangsChunk);
-    //         });
-
-    //         $page = $request->query('page', 1);
-
-    //         $perPage = 10;
-    //         $total = $piutangsPaginated->count();
-    //         $items = $piutangsPaginated->forPage($page, $perPage)->values();
-    //         $paginator = new LengthAwarePaginator($items, $total, $perPage, $page);
-
-    //         return new ResponseDataCollect($paginator);
-
-    //     } catch (\Throwable $th) {
-    //         throw $th;
-    //     }
-    // }
-
     public function index(Request $request)
     {
         try {
             $keywords = $request->query('keywords');
+            $page = $request->query('page');
             $viewAll = $request->query('view_all');
             $now = now();
             $startOfMonth = $now->startOfMonth()->toDateString();
             $endOfMonth = $now->endOfMonth()->toDateString();
             $dateTransaction = $request->query('date_transaction');
 
-            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
-            ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
-            ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
-            ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode');
-
-            if ($keywords) {
-                $query->where('piutang.pelanggan', 'like', '%' . $keywords . '%');
-            }
-
-            if ($dateTransaction) {
-                $query->whereDate('hutang.tanggal', '=', $dateTransaction);
-            }
-
             if ($viewAll === true || $viewAll === "true") {
+                $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+                ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
+                ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
+                ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode');
+                // ->where('penjualan.jt', '>', 0);
+
+                if ($keywords) {
+                    $query->where('piutang.pelanggan', 'like', '%' . $keywords . '%');
+                }
+
+                if ($dateTransaction) {
+                    $query->whereDate('hutang.tanggal', '=', $dateTransaction);
+                }
+
                 $query->whereBetween('piutang.tanggal', [$startOfMonth, $endOfMonth]);
+
+                $query->orderByDesc('piutang.id');
+
+                $piutangs = $query->paginate(10);
+            } else {
+                $piutangsPaginated = collect();
+
+                Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+                ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
+                ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
+                ->leftJoin('penjualan', 'piutang.kode', 'penjualan.kode')
+                // ->where('penjualan.jt', '>', 0)
+                ->when($keywords, function ($query, $keywords) {
+                    return $query->where('piutang.kode', 'like', '%' . $keywords . '%');
+                })
+                ->orderByDesc('piutang.id')
+                ->chunk(1000, function ($piutangsChunk) use (&$piutangsPaginated) {
+                    $piutangsPaginated = $piutangsPaginated->concat($piutangsChunk);
+                });
+
+                if ($keywords) {
+                    $query->where('piutang.pelanggan', 'like', '%' . $keywords . '%');
+                }
+
+                if ($dateTransaction) {
+                    $query->whereDate('hutang.tanggal', '=', $dateTransaction);
+                }
+
+                $pageStart = $request->query('page', $page);
+                $perPage = 10;
+                $total = $piutangsPaginated->count();
+                $items = $piutangsPaginated->forPage($pageStart, $perPage)->values();
+                $piutangs = new LengthAwarePaginator($items, $total, $perPage, $pageStart);
             }
-
-            $query->orderByDesc('piutang.id');
-
-            $piutangs = $query->paginate(10);
 
             return new ResponseDataCollect($piutangs);
 

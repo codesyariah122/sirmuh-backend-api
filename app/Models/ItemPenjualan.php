@@ -51,9 +51,9 @@ class ItemPenjualan extends Model
 		->latest('penjualan.tanggal')
 		->first();
 
-	    Cache::put('top_selling_item', $result, now()->addHours(1));
+	    Cache::put('top_selling_item', $topSellingItem, now()->addHours(1));
 
-	    return $result;
+	    return $topSellingItem;
 	}
 
 	// public static function penjualanTerbaikSatuBulanKedepan()
