@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Dashboard;
 
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -33,25 +34,49 @@ class DataLaporanUtangPiutangPelangganController extends Controller
         $supplierList = ['GR.KB', 'GR.AF', 'RT'];
         $owner = User::where('role', 1)->first();
 
-        $hutangs = Hutang::where('operator', strtoupper($owner->name))
-        ->whereIn('supplier', $supplierList)
-        ->whereMonth('tanggal', '>=', 7)
-        ->whereMonth('tanggal', '<=', 10)
-        ->whereYear('tanggal', '>=', 2022)
-        ->orderBy('jumlah', 'DESC')
-        ->join('supplier', 'supplier.kode', '=', 'hutang.supplier')
-        ->select("hutang.kode as hutang_kode", "tanggal", "supplier", "supplier.nama as supplier_nama", "jumlah", "kode_kas")
-        ->limit(10)
-        ->paginate(10);
+        // $hutangs = Hutang::where('operator', strtoupper($owner->name))
+        // // ->whereIn('supplier', $supplierList)
+        // ->whereMonth('tanggal', '>=', 7)
+        // ->whereMonth('tanggal', '<=', 10)
+        // ->whereYear('tanggal', '>=', 2023)
+        // ->orderBy('tanggal', 'DESC')
+        // ->join('supplier', 'supplier.kode', '=', 'hutang.supplier')
+        // ->select("hutang.kode as hutang_kode", "tanggal", "supplier", "supplier.nama as supplier_nama", "jumlah", "kode_kas")
+        // ->limit(10)
+        // ->paginate(10);
 
-        $piutangs = Piutang::where('operator', strtoupper($owner->name))
-        ->whereMonth('tanggal', '>=', 1)
-        ->whereYear('tanggal', '>=', 2020) 
-        ->orderBy('jumlah', 'DESC')
-        ->join('pelanggan', 'pelanggan.kode', '=', 'piutang.pelanggan')
-        ->select('piutang.kode as piutang_kode', 'tanggal', 'pelanggan', 'pelanggan.nama as pelanggan_nama', 'jumlah', 'kode_kas')
-        ->limit(10)
-        ->paginate(10);
+        // $piutangs = Piutang::where('operator', strtoupper($owner->name))
+        // ->whereMonth('tanggal', '>=', 1)
+        // ->whereYear('tanggal', '>=', 2024) 
+        // ->orderBy('tanggal', 'DESC')
+        // ->join('pelanggan', 'pelanggan.kode', '=', 'piutang.pelanggan')
+        // ->select('piutang.kode as piutang_kode', 'tanggal', 'pelanggan', 'pelanggan.nama as pelanggan_nama', 'jumlah', 'kode_kas')
+        // ->limit(10)
+        // ->paginate(10);
+
+        $hutangs = Cache::remember('hutangs_data', now()->addMinutes(10), function () use ($owner, $supplierList, $tenggatWaktu) {
+            return Hutang::where('operator', strtoupper($owner->name))
+            ->whereIn('supplier', $supplierList)
+            ->whereMonth('tanggal', '>=', 7)
+            ->whereMonth('tanggal', '<=', 10)
+            ->whereYear('tanggal', '>=', 2023)
+            ->orderBy('tanggal', 'DESC')
+            ->join('supplier', 'supplier.kode', '=', 'hutang.supplier')
+            ->select("hutang.kode as hutang_kode", "tanggal", "supplier", "supplier.nama as supplier_nama", "jumlah", "kode_kas")
+            ->limit(10)
+            ->get();
+        });
+
+        $piutangs = Cache::remember('piutangs_data', now()->addMinutes(10), function () use ($owner, $tenggatWaktu) {
+            return Piutang::where('operator', strtoupper($owner->name))
+            ->whereMonth('tanggal', '>=', 1)
+            ->whereYear('tanggal', '>=', 2024)
+            ->orderBy('tanggal', 'DESC')
+            ->join('pelanggan', 'pelanggan.kode', '=', 'piutang.pelanggan')
+            ->select('piutang.kode as piutang_kode', 'tanggal', 'pelanggan', 'pelanggan.nama as pelanggan_nama', 'jumlah', 'kode_kas')
+            ->limit(10)
+            ->get();
+        });
 
         $groupedHutangs = [];
         $groupedPiutangs = [];
@@ -114,7 +139,10 @@ class DataLaporanUtangPiutangPelangganController extends Controller
                 'supplier' => $supplierCount,
                 'pelanggan' => $pelangganCount
             ],
-            'data' => $result
+            'data' => [
+                'hutangs' => $groupedHutangs,
+                'piutangs' => $groupedPiutangs
+            ]
         ]);
     }
 
