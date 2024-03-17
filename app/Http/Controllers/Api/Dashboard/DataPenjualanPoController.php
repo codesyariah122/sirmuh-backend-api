@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,PurchaseOrder, Supplier};
 use Auth;
 use PDF;
 
@@ -121,7 +121,7 @@ class DataPenjualanPoController extends Controller
 
             $formattedIncrement = sprintf('%03d', $increment);
 
-            $pelanggan = Supplier::findOrFail($data['pelanggan']);
+            $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
 
             $barangIds = array_column($dataBarangs, 'id');
             $barangs = Barang::whereIn('id', $barangIds)->get();
@@ -137,6 +137,7 @@ class DataPenjualanPoController extends Controller
 
             $dataItemPenjualan = ItemPenjualan::whereKode($data['ref_code'])->first();
             $subtotal = intval($dataItemPenjualan->subtotal);
+            $dataSupplier = Supplier::where('kode', $dataItemPenjualan->supplier)->first();
 
             $newPenjualan = new Penjualan;
             $newPenjualan->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
@@ -191,10 +192,12 @@ class DataPenjualanPoController extends Controller
                         $newPurchaseOrder->qty = $item->qty;
                         $newPurchaseOrder->nama_barang = $item->nama_barang;
                         $newPurchaseOrder->kode_barang = $item->kode_barang;
-                        $newPurchaseOrder->pelanggan = "{$pelanggan->nama}({$item->supplier})";
+                        // $newPurchaseOrder->pelanggan = "{$pelanggan->nama}({$item->supplier})";
+                        $newPurchaseOrder->supplier = "{$dataSupplier->kode}({$dataItemPenjualan->supplier})";
                         $newPurchaseOrder->harga_satuan = $item->harga_beli;
                         $newPurchaseOrder->subtotal = $item->qty * $item->harga_beli;
                         $newPurchaseOrder->sisa_dp = $newPenjualan->jumlah - ($item->qty * $item->harga_beli);
+                        $newPurchaseOrder->type = "penjualan";
                         $newPurchaseOrder->save();
                     }
                 } else {
@@ -205,10 +208,12 @@ class DataPenjualanPoController extends Controller
                     $newPurchaseOrder->qty = $dataItemPenjualan->qty;
                     $newPurchaseOrder->nama_barang = $dataItemPenjualan->nama_barang;
                     $newPurchaseOrder->kode_barang = $dataItemPenjualan->kode_barang;
-                    $newPurchaseOrder->pelanggan = "{$pelanggan->kode}({$newPenjualan->pelanggan})";
+                    // $newPurchaseOrder->pelanggan = "{$pelanggan->kode}({$newPenjualan->pelanggan})";
+                    $newPurchaseOrder->supplier = "{$dataSupplier->kode}({$dataItemPenjualan->supplier})";
                     $newPurchaseOrder->harga_satuan = $dataItemPenjualan->harga_beli;
                     $newPurchaseOrder->subtotal = $dataItemPenjualan->qty * $dataItemPenjualan->harga_beli;
                     $newPurchaseOrder->sisa_dp = $newPenjualan->jumlah - ($dataItemPenjualan->qty * $dataItemPenjualan->harga_beli);
+                    $newPurchaseOrder->type = "penjualan";
                     $newPurchaseOrder->save();
                 }
 

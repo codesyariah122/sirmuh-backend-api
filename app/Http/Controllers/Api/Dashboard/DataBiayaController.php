@@ -26,32 +26,19 @@ class DataBiayaController extends Controller
         $keywords = $request->query('keywords');
         $kode = $request->query('kode');
         $sort = $request->query('sort');
+        $query = Biaya::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'saldo')
+            ->where('nama', 'like', '%'.$keywords.'%');
 
         if($keywords) {
-            $biaya = Biaya::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama')
-            ->where('nama', 'like', '%'.$keywords.'%')
-            // ->orderByDesc('id', 'DESC')
-            ->orderBy('nama', 'ASC')
-            ->paginate(10);
-        } elseif($kode) {
-            $biaya = Biaya::whereNull('deleted_at')
-            ->select('id','kode', 'nama')
-            ->where('kode', $kode)
-            ->paginate(10);
-        } else {
-            if($sort === "by-id") {
-                $biaya = Biaya::whereNull('deleted_at')
-                 ->select('id','kode', 'nama')
-                 ->orderByDesc('id')
-                 ->paginate(10);
-               } else {            
-                $biaya =  Biaya::whereNull('deleted_at')
-                ->select('id','kode', 'nama')
-                ->orderBy('nama', 'ASC')
-                ->paginate(10);
-            }
+            $query->orderBy('nama', 'ASC');
         }
+
+        if($kode) {
+            $query->where('kode', $kode);
+        }
+
+        $biaya = $query->paginate(10);
 
         return new ResponseDataCollect($biaya);
     }
@@ -121,7 +108,7 @@ class DataBiayaController extends Controller
                 $newDataBiaya = Biaya::findOrFail($new_biaya->id);
                 return response()->json([
                     'success' => true,
-                    'message' => "Pelanggan dengan nama {$newDataBiaya->nama}, successfully added✨!",
+                    'message' => "Data biaya dengan nama {$newDataBiaya->nama}, successfully added✨!",
                     'data' => $newDataBiaya
                 ]);
             }
@@ -174,21 +161,13 @@ class DataBiayaController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'nama' => 'required'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
             $new_biaya = Biaya::findOrFail($id);
             if($request->nama) {
                 $kode = explode(' ', $request->nama);
                 $substringArray = [];
 
                 foreach ($kode as $i) {
-                    $substringArray[] = substr($i, 0, 1);
+                    $substringArray[] = substr($i, 1, 2);
                 } 
                 $new_biaya->kode = strtoupper(implode('', $substringArray));
             } else {
@@ -214,7 +193,7 @@ class DataBiayaController extends Controller
                 $newDataBiaya = Biaya::findOrFail($new_biaya->id);
                 return response()->json([
                     'success' => true,
-                    'message' => "Pelanggan dengan nama {$newDataBiaya->nama}, successfully added✨!",
+                    'message' => "Data biaya dengan nama {$newDataBiaya->nama}, successfully added✨!",
                     'data' => $newDataBiaya
                 ]);
             }
