@@ -88,7 +88,7 @@ class DataHutangController extends Controller
             if ($viewAll === true || $viewAll === "true") {
                 $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);    
             }  else {
-                $query->limit(1000);
+                $query->limit(10);
             }
 
             if ($keywords) {
