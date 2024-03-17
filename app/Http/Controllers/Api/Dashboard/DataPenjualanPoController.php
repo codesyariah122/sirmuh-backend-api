@@ -41,7 +41,7 @@ class DataPenjualanPoController extends Controller
 
            $query = Penjualan::query()
            ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.piutang', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
            ->orderByDesc('penjualan.id')

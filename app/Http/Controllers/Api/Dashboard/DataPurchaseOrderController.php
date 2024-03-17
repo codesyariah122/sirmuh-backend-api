@@ -525,7 +525,7 @@ class DataPurchaseOrderController extends Controller
 
             $dataKas = Kas::where('kode', $delete_pembelian->kode_kas)->first();
             $updateKas = Kas::findOrFail($dataKas->id);
-            $updateKas->saldo = $dataKas->saldo + $delete_pembelian->diterima;
+            $updateKas->saldo = $dataKas->saldo + $delete_pembelian->jumlah;
             $updateKas->save();
 
             $orderItems = PurchaseOrder::where('kode_po', $delete_pembelian->kode)->get();
