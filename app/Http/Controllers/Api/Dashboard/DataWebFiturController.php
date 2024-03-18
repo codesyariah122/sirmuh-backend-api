@@ -1755,6 +1755,22 @@ class DataWebFiturController extends Controller
     {
         try {
             $itemPembelian = ItemPembelian::findOrFail($id);
+            $itemPembelian->forceDelete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item pembelian successfully deleted!'
+            ], 200);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+    public function delete_item_pembelian_po($id)
+    {
+        try {
+            $itemPembelian = ItemPembelian::findOrFail($id);
             $itemPembelian->qty = 0;
             $itemPembelian->last_qty = NULL;
             $itemPembelian->stop_qty = "False";

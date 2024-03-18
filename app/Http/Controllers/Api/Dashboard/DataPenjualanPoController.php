@@ -41,7 +41,8 @@ class DataPenjualanPoController extends Controller
 
            $query = Penjualan::query()
            ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.piutang', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.piutang','itempenjualan.stop_qty', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
+           ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
            ->orderByDesc('penjualan.id')
@@ -166,7 +167,7 @@ class DataPenjualanPoController extends Controller
             }
 
             $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updateKas->saldo = intval($updateKas->saldo) - $newPenjualan->jumlah;
+            $updateKas->saldo = intval($updateKas->saldo) + $newPenjualan->jumlah;
             $updateKas->save();
 
             $userOnNotif = Auth::user();

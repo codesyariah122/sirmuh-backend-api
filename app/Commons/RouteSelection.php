@@ -524,6 +524,11 @@ class RouteSelection {
             'controllers' => [DataWebFiturController::class, 'delete_item_pembelian']
         ],
         [
+            'endPoint' => '/delete-item-pembelian-po/{id}',
+            'method' => 'delete',
+            'controllers' => [DataWebFiturController::class, 'delete_item_pembelian_po']
+        ],
+        [
             'endPoint' => '/data-barang-item-pembelian/{id}',
             'method' => 'get',
             'controllers' => [DataBarangController::class, 'data_barang_with_item_pembelian']
