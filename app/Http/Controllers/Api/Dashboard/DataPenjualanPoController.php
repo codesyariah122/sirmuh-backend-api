@@ -461,7 +461,7 @@ class DataPenjualanPoController extends Controller
                 ->first();
 
                 $data_event = [
-                    'routes' => 'penjualan-toko',
+                    'routes' => 'penjualan-po',
                     'alert' => 'success',
                     'type' => 'add-data',
                     'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",

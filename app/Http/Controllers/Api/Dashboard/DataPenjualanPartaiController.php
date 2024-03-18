@@ -283,7 +283,7 @@ class DataPenjualanPartaiController extends Controller
                 ->get();
 
                 $data_event = [
-                    'routes' => 'penjualan-toko',
+                    'routes' => 'penjualan-partai',
                     'alert' => 'success',
                     'type' => 'add-data',
                     'notif' => "Penjualan dengan kode {$newPenjualanToko->kode}, baru saja ditambahkan 🤙!",
@@ -526,7 +526,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
                 ->first();
 
                 $data_event = [
-                    'routes' => 'penjualan-toko',
+                    'routes' => 'penjualan-partai',
                     'alert' => 'success',
                     'type' => 'add-data',
                     'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
@@ -567,7 +567,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
 
                 $data_event = [
                     'alert' => 'error',
-                    'routes' => 'penjualan-toko',
+                    'routes' => 'penjualan-partai',
                     'type' => 'removed',
                     'notif' => "Penjualan dengan kode, {$delete_penjualan->kode}, has move to trash, please check trash!",
                     'user' => Auth::user()

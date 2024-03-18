@@ -460,7 +460,7 @@ class DataPurchaseOrderController extends Controller
                 ->first();
 
                 $data_event = [
-                    'routes' => $updatePembelian->po === "False" ? 'pembelian-langsung' : 'purchase-order',
+                    'routes' => 'purchase-order',
                     'alert' => 'success',
                     'type' => 'add-data',
                     'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
