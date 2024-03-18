@@ -161,7 +161,8 @@ class LoginController extends Controller
                                 'email' => $user->email,
                                 'role' => $user->role,
                                 'notif' => "{$user->name}, baru saja login!",
-                                'data' => $userIsLogin
+                                'data' => $userIsLogin,
+                                'showNotif' => $request->email === $user->email ? false : true
                             ];
 
                             event(new LoginEvent($data_event));
@@ -216,7 +217,8 @@ class LoginController extends Controller
                 'type' => 'logout',
                 'notif' => "{$user->name}, telah logout!",
                 'email' => $user->email,
-                'user' => Auth::user()
+                'user' => Auth::user(),
+                'showNotif' => $user->email === $userLogout->email ? false : true
             ];
 
             event(new LogoutEvent($data_event));
