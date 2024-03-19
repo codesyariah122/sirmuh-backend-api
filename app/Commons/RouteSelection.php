@@ -540,6 +540,16 @@ class RouteSelection {
             'controllers' => [DataWebFiturController::class, 'update_item_penjualan']
         ],
         [
+            'endPoint' => '/update-item-penjualan-po-qty/{id}',
+            'method' => 'put',
+            'controllers' => [DataItemPenjualanController::class, 'update_item_penjualan_po_qty']
+        ],
+        [
+            'endPoint' => '/update-item-penjualan-po-harga/{id}',
+            'method' => 'put',
+            'controllers' => [DataItemPenjualanController::class, 'update_item_harga_po']
+        ],
+        [
             'endPoint' => '/draft-item-penjualan/{kode}',
             'method' => 'get',
             'controllers' => [DataWebFiturController::class, 'list_draft_itempenjualan']
@@ -549,6 +559,11 @@ class RouteSelection {
             'endPoint' => '/delete-item-penjualan/{id}',
             'method' => 'delete',
             'controllers' => [DataWebFiturController::class, 'delete_item_penjualan']
+        ],
+        [
+            'endPoint' => '/delete-item-penjualan-po/{id}',
+            'method' => 'delete',
+            'controllers' => [DataWebFiturController::class, 'delete_item_penjualan_po']
         ],
 
         // Koreksi stok

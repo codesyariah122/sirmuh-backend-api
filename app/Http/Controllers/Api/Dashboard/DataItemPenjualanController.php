@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Supplier,Pelanggan,Barang,Kas,Piutang,ItemPiutang, PembayaranAngsuran};
+use App\Models\{Penjualan,ItemPenjualan,Supplier,Pelanggan,Barang,Kas,Piutang,ItemPiutang, PembayaranAngsuran, PurchaseOrder};
 use Auth;
 
 class DataItemPenjualanController extends Controller
@@ -110,10 +110,10 @@ class DataItemPenjualanController extends Controller
     {
         try {
             $itemId = $request->item_id;
-            $dataPembelian = Pembelian::findOrFail($id);
-            $updateItemPembelian = ItemPembelian::findOrFail($itemId);
+            $dataPenjualan = Penjualan::findOrFail($id);
+            $updateItemPenjualan = ItemPenjualan::findOrFail($itemId);
 
-            $updatePurchaseOrderItem = PurchaseOrder::where('kode_barang', $updateItemPembelian->kode_barang)
+            $updatePurchaseOrderItem = PurchaseOrder::where('kode_barang', $updateItemPenjualan->kode_barang)
             ->orderBy('qty', 'ASC')
             ->first();
 
@@ -122,27 +122,27 @@ class DataItemPenjualanController extends Controller
             ->first();
 
             $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
-            $supplier = Supplier::whereKode($updateItemPembelian->supplier)->first();
+            $supplier = Supplier::whereKode($updateItemPenjualan->supplier)->first();
 
             $updatePurchaseOrder = PurchaseOrder::findOrFail($updatePurchaseOrderItem->id);
-            $updatePurchaseOrder->kode_po = $dataPembelian->kode;
-            $updatePurchaseOrder->dp_awal = $dataPembelian->bayar;
+            $updatePurchaseOrder->kode_po = $dataPenjualan->kode;
+            $updatePurchaseOrder->dp_awal = $dataPenjualan->bayar;
             $updatePurchaseOrder->po_ke = $poKeBaru;
-            $updatePurchaseOrder->nama_barang = $updateItemPembelian->nama_barang;
-            $updatePurchaseOrder->kode_barang = $updateItemPembelian->kode_barang;
-            $updatePurchaseOrder->qty = $updateItemPembelian->qty;
-            $updatePurchaseOrder->supplier = "{$supplier->nama}({$updateItemPembelian->supplier})";
-            $updatePurchaseOrder->harga_satuan = $updateItemPembelian->harga_beli;
+            $updatePurchaseOrder->nama_barang = $updateItemPenjualan->nama_barang;
+            $updatePurchaseOrder->kode_barang = $updateItemPenjualan->kode_barang;
+            $updatePurchaseOrder->qty = $updateItemPenjualan->qty;
+            $updatePurchaseOrder->supplier = "{$supplier->nama}({$updateItemPenjualan->supplier})";
+            $updatePurchaseOrder->harga_satuan = $updateItemPenjualan->harga;
             $updatePurchaseOrder->subtotal = $totalSubtotal;
-            $updatePurchaseOrder->type = "pembelian";
-            $updatePurchaseOrder->sisa_dp = $dataPembelian->bayar - $totalSubtotal;
+            $updatePurchaseOrder->type = "Penjualan";
+            $updatePurchaseOrder->sisa_dp = $dataPenjualan->bayar - $totalSubtotal;
             $updatePurchaseOrder->save();
 
 
             $data_event = [
                 'type' => 'updated',
-                'routes' => 'purchase-order-edit',
-                'notif' => "Update itempembelian, successfully update!"
+                'routes' => 'penjualan-po',
+                'notif' => "Update ItemPenjualan, successfully update!"
             ];
 
             return response()->json([
@@ -160,20 +160,20 @@ class DataItemPenjualanController extends Controller
         try {
             $order_id = $request->order_id;
 
-            $dataItemPembelian = ItemPembelian::findOrFail($id);
-            $dataItemPembelian->harga_beli = $request->harga_beli;
-            $dataItemPembelian->subtotal = $request->qty * $request->harga_beli;
-            $dataItemPembelian->save();
+            $dataItemPenjualan = ItemPenjualan::findOrFail($id);
+            $dataItemPenjualan->harga = $request->harga;
+            $dataItemPenjualan->subtotal = $request->qty * $request->harga;
+            $dataItemPenjualan->save();
 
 
             $previousPo = PurchaseOrder::where('id', '<', $order_id)
             ->orderBy('id', 'desc')
             ->first();
             $dataPoUpdate = PurchaseOrder::findOrFail($order_id);
-            $dataPoUpdate->harga_satuan = $request->harga_beli;
-            $dataPoUpdate->subtotal = $dataPoUpdate->qty * $request->harga_beli;
+            $dataPoUpdate->harga_satuan = $request->harga;
+            $dataPoUpdate->subtotal = $dataPoUpdate->qty * $request->harga;
 
-            $previousSubTotal = $dataItemPembelian->qty * $dataItemPembelian->harga_beli;
+            $previousSubTotal = $dataItemPenjualan->qty * $dataItemPenjualan->harga;
             
             if($previousSubTotal > $dataPoUpdate->subtotal) {
                 $sisaDp = $previousSubTotal - $dataPoUpdate->subtotal;
@@ -186,20 +186,20 @@ class DataItemPenjualanController extends Controller
 
             $itemPurchaseOrders = PurchaseOrder::where('kode_po', $dataPoUpdate->kode_po)->get();
             $totalSubTotalOrder = $itemPurchaseOrders->sum('subtotal');
-            $dataPembelian = Pembelian::whereKode($dataItemPembelian->kode)->first();
-            $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
-            $updatePembelian->diterima = $totalSubTotalOrder;
-            $updatePembelian->save();
+            $dataPenjualan = Penjualan::whereKode($dataItemPenjualan->kode)->first();
+            $updatePenjualan = Penjualan::findOrFail($dataPenjualan->id);
+            $updatePenjualan->dikirim = $totalSubTotalOrder;
+            $updatePenjualan->save();
 
-            $newDataPembelian = Pembelian::select('pembelian.kode', 'pembelian.draft', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima', 'pembelian.jt', 'pembelian.lunas','pembelian.visa','pembelian.hutang','pembelian.po', 'itempembelian.kode as kode_item_pembelian', 'itempembelian.draft', 'itempembelian.kode_barang', 'itempembelian.nama_barang', 'itempembelian.satuan', 'itempembelian.qty', 'itempembelian.last_qty', 'itempembelian.harga_beli', 'itempembelian.subtotal')
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->where('pembelian.kode', $updatePembelian->kode)
+            $newDataPenjualan = Penjualan::select('penjualan.kode', 'penjualan.draft', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.dikirim', 'penjualan.jt', 'penjualan.lunas','penjualan.visa','penjualan.piutang','penjualan.po', 'itempenjualan.kode as kode_item_Penjualan', 'itempenjualan.draft', 'itempenjualan.kode_barang', 'itempenjualan.nama_barang', 'itempenjualan.satuan', 'itempenjualan.qty', 'itempenjualan.last_qty', 'itempenjualan.harga', 'itempenjualan.subtotal')
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->where('penjualan.kode', $updatePenjualan->kode)
             ->first();
 
             return response()->json([
                 'success' => true,
-                'message' => "Item pembelian update!",
-                'data' => $newDataPembelian,
+                'message' => "Item penjualan update!",
+                'data' => $newDataPenjualan,
                 'orders' => $order_id,
                 'sisa_dp' => $dataPoUpdate->sisa_dp
             ]);
@@ -208,33 +208,33 @@ class DataItemPenjualanController extends Controller
         }
     }
 
-    public function update_item_pembelian_po_qty(Request $request, $id)
+    public function update_item_penjualan_po_qty(Request $request, $id)
     {
         try {
             $order_id = $request->order_id;
 
-            $dataItemPembelian = ItemPembelian::findOrFail($id);
-            $dataItemPembelian->qty = $request->qty;
-            $dataItemPembelian->last_qty = $request->last_qty;
-            $dataItemPembelian->subtotal = $request->qty * $dataItemPembelian->harga_beli;
+            $dataItemPenjualan = ItemPenjualan::findOrFail($id);
+            $dataItemPenjualan->qty = $request->qty;
+            $dataItemPenjualan->last_qty = $request->last_qty;
+            $dataItemPenjualan->subtotal = $request->qty * $dataItemPenjualan->harga;
 
-            if($request->qty < $dataItemPembelian->last_qty) {
-                $totalTerima = $dataItemPembelian->last_qty - $dataItemPembelian->qty;
+            if($request->qty < $dataItemPenjualan->last_qty) {
+                $totalTerima = $dataItemPenjualan->last_qty - $dataItemPenjualan->qty;
             } else {
                 $totalTerima = $request->qty;
             }
-            $dataItemPembelian->qty_terima = $totalTerima;
+            $dataItemPenjualan->qty_terima = $totalTerima;
 
-            $dataItemPembelian->save();
+            $dataItemPenjualan->save();
 
             $previousPo = PurchaseOrder::where('id', '<', $order_id)
             ->orderBy('id', 'desc')
             ->first();
             $dataPoUpdate = PurchaseOrder::findOrFail($order_id);
             $dataPoUpdate->qty = $request->qty;
-            $dataPoUpdate->subtotal = $request->qty * $dataItemPembelian->harga_beli;
+            $dataPoUpdate->subtotal = $request->qty * $dataItemPenjualan->harga;
 
-            $previousSubTotal = $dataItemPembelian->qty * $dataItemPembelian->harga_beli;
+            $previousSubTotal = $dataItemPenjualan->qty * $dataItemPenjualan->harga;
             
             if($previousSubTotal > $dataPoUpdate->subtotal) {
                 $sisaDp = $previousSubTotal - $dataPoUpdate->subtotal;
@@ -247,20 +247,20 @@ class DataItemPenjualanController extends Controller
 
             $itemPurchaseOrders = PurchaseOrder::where('kode_po', $dataPoUpdate->kode_po)->get();
             $totalSubTotalOrder = $itemPurchaseOrders->sum('subtotal');
-            $dataPembelian = Pembelian::whereKode($dataItemPembelian->kode)->first();
-            $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
-            $updatePembelian->diterima = $totalSubTotalOrder;
-            $updatePembelian->save();
+            $dataPenjualan = Penjualan::whereKode($dataItemPenjualan->kode)->first();
+            $updatePenjualan = Penjualan::findOrFail($dataPenjualan->id);
+            $updatePenjualan->dikirim = $totalSubTotalOrder;
+            $updatePenjualan->save();
 
-            $newDataPembelian = Pembelian::select('pembelian.kode', 'pembelian.draft', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima', 'pembelian.jt', 'pembelian.lunas','pembelian.visa','pembelian.hutang','pembelian.po', 'itempembelian.kode as kode_item_pembelian', 'itempembelian.draft', 'itempembelian.kode_barang', 'itempembelian.nama_barang', 'itempembelian.satuan', 'itempembelian.qty', 'itempembelian.last_qty', 'itempembelian.harga_beli', 'itempembelian.subtotal')
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-            ->where('pembelian.kode', $updatePembelian->kode)
+            $newDataPenjualan = Penjualan::select('penjualan.kode', 'penjualan.draft', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.dikirim', 'penjualan.jt', 'penjualan.lunas','penjualan.visa','penjualan.piutang','penjualan.po', 'itempenjualan.kode as kode_item_penjualan', 'itempenjualan.draft', 'itempenjualan.kode_barang', 'itempenjualan.nama_barang', 'itempenjualan.supplier', 'itempenjualan.satuan', 'itempenjualan.qty', 'itempenjualan.last_qty', 'itempenjualan.harga', 'itempenjualan.subtotal')
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->where('penjualan.kode', $updatePenjualan->kode)
             ->first();
 
             return response()->json([
                 'success' => true,
-                'message' => "Item pembelian update!",
-                'data' => $newDataPembelian,
+                'message' => "Item Penjualan update!",
+                'data' => $newDataPenjualan,
                 'orders' => $order_id,
                 'sisa_dp' => $dataPoUpdate->sisa_dp
             ]);
@@ -273,46 +273,125 @@ class DataItemPenjualanController extends Controller
     {
         try {
             $itemId = $request->item_id;
-            $dataPembelian = Penjualan::findOrFail($id);
+            $dataPenjualan = Penjualan::findOrFail($id);
 
+            if($dataPenjualan->po === "True") {
+                $updateItemPenjualan = ItemPenjualan::findOrFail($itemId);
+                $dataKas = Kas::whereKode($dataPenjualan->kode_kas)->first();
+                $dataItemPenjualan = ItemPenjualan::whereKode($updateItemPenjualan->kode)->get();
 
-            if($dataPembelian->po === "True") {
-                $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
+                $totalSubtotal = $dataItemPenjualan->sum('subtotal');
 
+                if($dataKas->saldo < $totalSubtotal) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Oops saldo tidak mencukupi 🤦"
+                    ]);
+                }
+                
                 if($request->qty) {
-                    $updateItemPembelian->qty = intval($request->qty);
-                    $updateItemPembelian->last_qty = $updateItemPembelian->qty;
-                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga);
+                    $updateItemPenjualan->qty = intval($request->qty);
+                    $updateItemPenjualan->last_qty = $request->last_qty;
+                    $updateItemPenjualan->stop_qty = $request->stop_qty;
+                    $totalQty = $request->qty + $request->last_qty;
+                    $updateItemPenjualan->subtotal = intval($totalQty) * intval($updateItemPenjualan->harga);
+                    $updateItemPenjualan->qty_terima = $updateItemPenjualan->qty_terima + $request->qty;
                 }
 
                 if($request->harga) {
-                    $updateItemPembelian->harga = intval($request->harga);
-                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga);
+                    $updateItemPenjualan->harga = intval($request->harga);
+                    $totalQty = $updateItemPenjualan->qty + $updateItemPenjualan->last_qty;
+                    $updateItemPenjualan->subtotal = intval($totalQty) * intval($request->harga);
                 }
 
-                $updateItemPembelian->save();
+                $updateItemPenjualan->save();
+                
+                $supplier = Supplier::whereKode($updateItemPenjualan->supplier)->first();
 
-                $dataItemPembelian = ItemPenjualan::whereKode($updateItemPembelian->kode)->get();
+                $updatePurchaseOrderItems = PurchaseOrder::where('kode_po', $updateItemPenjualan->kode)->get();
+                $itemPurchaseOrders = PurchaseOrder::where('kode_po', $updateItemPenjualan->kode)
+                ->get();
+                $totalQty = $itemPurchaseOrders->sum('qty');
+                $purchaseOrderTerakhir = PurchaseOrder::where('kode_barang', $updateItemPenjualan->kode_barang)
+                ->where('kode_po', $dataPenjualan->kode)
+                ->latest('po_ke')
+                ->first();
 
-                $totalSubtotal = $dataItemPembelian->sum('subtotal');
+                $subQtyTotal = ($totalQty + $request->qty) * $updateItemPenjualan->harga;
+                $subTotalPo = $dataPenjualan->jumlah - $subQtyTotal;
+                $poKeBaru = $purchaseOrderTerakhir ? $purchaseOrderTerakhir->po_ke + 1 : 1;
 
-                $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $request->bayar;
-                $dataPembelian->kembali = $totalSubtotal - $request->bayar;
-                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
+                $updatePurchaseOrder = new PurchaseOrder;
+                $updatePurchaseOrder->kode_po = $dataPenjualan->kode;
+                $updatePurchaseOrder->dp_awal = $dataPenjualan->bayar;
+                $updatePurchaseOrder->po_ke = $poKeBaru;
+                $updatePurchaseOrder->nama_barang = $updateItemPenjualan->nama_barang;
+                $updatePurchaseOrder->kode_barang = $updateItemPenjualan->kode_barang;
+                $updatePurchaseOrder->qty = $updateItemPenjualan->qty;
+                $updatePurchaseOrder->supplier = "{$supplier->nama}({$updateItemPenjualan->supplier})";
+                $updatePurchaseOrder->harga_satuan = $updateItemPenjualan->harga;
+                $updatePurchaseOrder->subtotal = $request->qty * $updateItemPenjualan->harga;
+                $updatePurchaseOrder->sisa_dp = $subTotalPo < 0 ? 0 : $subTotalPo;
+                $updatePurchaseOrder->type = "Penjualan";
+                $updatePurchaseOrder->save();
+
+                $dataItemPenjualan = ItemPenjualan::whereKode($updateItemPenjualan->kode)->get();
+
+                $totalSubtotal = $dataItemPenjualan->sum('subtotal');
+
+                $itemPurchaseOrders = PurchaseOrder::where('kode_po', $updateItemPenjualan->kode)->get();
+                $totalSubtotalPo = $itemPurchaseOrders->sum('subtotal');
+
+                $dataPenjualan->jumlah = $dataPenjualan->jumlah;
+                $dataPenjualan->bayar = $dataPenjualan->jumlah;
+                $dataPenjualan->dikirim = $totalSubtotalPo;
+                $dataPenjualan->jt = $request->jt ? $request->jt : $dataPenjualan->jt;
                
-                $dataPembelian->save();
+                $dataPenjualan->save();
+
+
+                // $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $dataPenjualan->kode)
+                // ->orderBy('po_ke', 'desc')
+                // ->first();
+
+                // $poKeBaru = ($purchaseOrderTerakhir) ? $purchaseOrderTerakhir->po_ke + 1 : 1;
+                // $supplier = Supplier::whereKode($updateItemPenjualan->supplier)->first();
+
+                // $updatePurchaseOrderItem = new PurchaseOrder;
+                // $updatePurchaseOrderItem->kode_po = $dataPenjualan->kode;
+                // $updatePurchaseOrderItem->dp_awal = $dataPenjualan->bayar;
+                // $updatePurchaseOrderItem->po_ke = $poKeBaru;
+                // $updatePurchaseOrderItem->nama_barang = $updateItemPenjualan->nama_barang;
+                // $updatePurchaseOrderItem->kode_barang = $updateItemPenjualan->kode_barang;
+                // $updatePurchaseOrderItem->qty = $updateItemPenjualan->qty;
+                // $updatePurchaseOrderItem->supplier = "{$supplier->nama}({$updateItemPenjualan->supplier})";
+                // $updatePurchaseOrderItem->harga_satuan = $updateItemPenjualan->harga;
+                // $updatePurchaseOrderItem->subtotal = $totalSubtotal;
+                // $updatePurchaseOrderItem->sisa_dp = $dataPenjualan->bayar - $totalSubtotal;
+                // $updatePurchaseOrderItem->save();
 
                 $data_event = [
                     'type' => 'updated',
-                    'routes' => 'penjualan-toko',
-                    'notif' => "Update itempenjualan, successfully update!"
+                    'routes' => 'purchase-order-edit',
+                    'notif' => "Update ItemPenjualan, successfully update!"
                 ];
             } else {                
-                $updateItemPembelian = ItemPenjualan::findOrFail($itemId);
-                $qty = $updateItemPembelian->qty;
-                $lastQty = $updateItemPembelian->last_qty;
+                $updateItemPenjualan = ItemPenjualan::findOrFail($itemId);
+                $qty = $updateItemPenjualan->qty;
+                $lastQty = $updateItemPenjualan->last_qty;
                 $newQty = $request->qty;
+
+                $dataKas = Kas::whereKode($dataPenjualan->kode_kas)->first();
+                $dataItemPenjualan = ItemPenjualan::whereKode($updateItemPenjualan->kode)->get();
+
+                $totalSubtotal = $dataItemPenjualan->sum('subtotal');
+
+                if($dataKas->saldo < $totalSubtotal) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Oops saldo tidak mencukupi 🤦"
+                    ]);
+                }
 
                 // echo "Qty = " . $qty;
                 // echo "<br>";
@@ -322,32 +401,32 @@ class DataItemPenjualanController extends Controller
                 // die;
 
                 if($request->qty) {
-                    $updateItemPembelian->qty = $newQty;
-                    $updateItemPembelian->last_qty = $qty;
-                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga);
+                    $updateItemPenjualan->qty = $newQty;
+                    $updateItemPenjualan->last_qty = $qty;
+                    $updateItemPenjualan->subtotal = intval($request->qty) * intval($updateItemPenjualan->harga);
                 }
 
                 if($request->harga) {
-                    $updateItemPembelian->harga = intval($request->harga);
-                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga);
+                    $updateItemPenjualan->harga = intval($request->harga);
+                    $updateItemPenjualan->subtotal = intval($updateItemPenjualan->qty) * intval($request->harga);
                 }
 
-                $updateItemPembelian->save();
+                $updateItemPenjualan->save();
 
-                $dataItemPembelian = ItemPenjualan::whereKode($updateItemPembelian->kode)->get();
+                $dataItemPenjualan = ItemPenjualan::whereKode($updateItemPenjualan->kode)->get();
 
-                $totalSubtotal = $dataItemPembelian->sum('subtotal');
+                $totalSubtotal = $dataItemPenjualan->sum('subtotal');
 
-                $dataPembelian->jumlah = $totalSubtotal;
-                $dataPembelian->bayar = $dataPembelian->bayar;
-                $dataPembelian->kembali = $dataPembelian->bayar - $totalSubtotal;
-                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
-                $dataPembelian->save();
+                $dataPenjualan->jumlah = $totalSubtotal;
+                $dataPenjualan->bayar = $dataPenjualan->bayar;
+                $dataPenjualan->dikirim = $dataPenjualan->dikirim;
+                $dataPenjualan->jt = $request->jt ? $request->jt : $dataPenjualan->jt;
+                $dataPenjualan->save();
 
                 $data_event = [
                     'type' => 'updated',
-                    'routes' => 'pembelian-langsung-edit',
-                    'notif' => "Update itempembelian, successfully update!"
+                    'routes' => 'Penjualan-langsung-edit',
+                    'notif' => "Update ItemPenjualan, successfully update!"
                 ];
 
             }
@@ -355,13 +434,14 @@ class DataItemPenjualanController extends Controller
             event(new EventNotification($data_event));
 
             $newUpdateItem = ItemPenjualan::findOrFail($itemId);
-            $newDataPembelian = Penjualan::findOrFail($dataPembelian->id);
+            $newDataPenjualan = Penjualan::findOrFail($dataPenjualan->id);
 
             return response()->json([
                 'success' => true,
-                'message' => "Item penjualan update!",
-                'data' => $newDataPembelian,
-                'items' => $newUpdateItem
+                'message' => "Item Penjualan update!",
+                'data' => $newDataPenjualan,
+                'items' => $newUpdateItem,
+                'orders' => $updatePurchaseOrder ?? []
             ]);
         } catch (\Throwable $th) {
             throw $th;

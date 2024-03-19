@@ -41,7 +41,7 @@ class DataPenjualanPoController extends Controller
 
            $query = Penjualan::query()
            ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.piutang','itempenjualan.stop_qty', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.piutang','penjualan.receive','penjualan.biayakirim','itempenjualan.stop_qty', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
@@ -151,6 +151,7 @@ class DataPenjualanPoController extends Controller
             $newPenjualan->kembali = $data['jumlah'] - $data['bayar'];
             $newPenjualan->lunas = "False";
             $newPenjualan->visa = "DP AWAL";
+            $newPenjualan->jenis = "PENJUALAN PO";
             $newPenjualan->piutang = $data['piutang'];
             $newPenjualan->po = 'True';
             $newPenjualan->receive = "False";
@@ -278,24 +279,30 @@ class DataPenjualanPoController extends Controller
         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
         ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
-        ->where('penjualan.jenis', 'PENJUALAN PARTAI')
+        ->where('penjualan.jenis', 'PENJUALAN PO')
         ->where('penjualan.kode', $kode);
 
         $barangs = $query->get();
-        $penjualan = $query->get()[0];
         // echo "<pre>";
         // var_dump($barangs);
         // echo "</pre>";
         // die;
+        $penjualan = $query->get()[0];
+
+        foreach($barangs as $barang) {            
+            $orders = PurchaseOrder::where('kode_po', $kode)
+            ->where('kode_barang', $barang->kode_barang)
+            ->get()->sum('qty');
+        }
 
         $setting = "";
 
         switch($type) {
             case "nota-kecil":
-            return view('penjualan.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            return view('penjualan.po.nota_kecil', compact('penjualan', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
             break;
             case "nota-besar":
-            $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+            $pdf = PDF::loadView('penjualan.po.nota_besar', compact('penjualan', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
             $pdf->setPaper(0,0,350,440, 'potrait');
             return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
             break;
@@ -313,7 +320,7 @@ class DataPenjualanPoController extends Controller
         try {
             $penjualan = Penjualan::query()
             ->select(
-                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
+                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.dikirim', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po','penjualan.receive','penjualan.biayakirim', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
             )
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
@@ -323,7 +330,7 @@ class DataPenjualanPoController extends Controller
 
 
             $items = ItemPenjualan::query()
-            ->select('itempenjualan.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.photo', 'barang.hpp as harga_beli_barang', 'barang.expired as expired_barang', 'barang.ada_expired_date','pelanggan.id as id_pelanggan','pelanggan.nama as nama_pelanggan','pelanggan.alamat as alamat_pelanggan', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+            ->select('itempenjualan.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.photo', 'barang.hpp as harga_beli_barang', 'barang.toko as available_stok', 'barang.expired as expired_barang', 'barang.ada_expired_date','pelanggan.id as id_pelanggan','pelanggan.nama as nama_pelanggan','pelanggan.alamat as alamat_pelanggan', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
             ->leftJoin('pelanggan', 'itempenjualan.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
             ->leftJoin('supplier', 'barang.kategori', '=', 'supplier.nama')
@@ -331,11 +338,16 @@ class DataPenjualanPoController extends Controller
             ->orderByDesc('itempenjualan.id')
             ->get();
 
+            $purchaseOrders = PurchaseOrder::where('kode_po', '=', $penjualan->kode)
+            ->orderBy('po_ke', 'DESC')
+            ->get();
+
             return response()->json([
                 'success' => true,
                 'message' => "Detail penjualan {$penjualan->kode}",
                 'data' => $penjualan,
-                'items' => $items
+                'items' => $items,
+                'purchase_orders' => $purchaseOrders
             ]);
         } catch (\Throwable $th) {
             throw $th;
@@ -363,49 +375,62 @@ class DataPenjualanPoController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $data = $request->all();
+            $validator = Validator::make($request->all(), [
+                'ongkir' => 'required',
+            ]);
 
-            if(gettype($data['bayar']) === 'string') {
-                $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
-            } else {
-                $bayar = $data['bayar'];
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
             }
 
-            $updatePembelian = Penjualan::findOrFail($id);
-            $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
-            $kas = Kas::whereKode($data['kode_kas'])->first();
-            $dataFaktur = FakturTerakhir::whereFaktur($updatePembelian->kode)->first();
-
-            $updatePembelian->draft = 0;
-            $updatePembelian->kode_kas = $kas->kode;
+            $data = $request->all();
             $currentDate = now()->format('ymd');
+            $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
+            $dikirim = preg_replace("/[^0-9]/", "", $data['dikirim']);
 
-            
-            if($data['piutang']) {
-                $updatePembelian->angsuran = $data['bayar'] ? $data['bayar'] : $data['bayarDp'];
-                $updatePembelian->lunas = "False";
-                $updatePembelian->visa = 'HUTANG';
-                $updatePembelian->piutang = $data['piutang'];
-                $updatePembelian->po = $data['pembayaran'] !== 'cash' ? 'True' : 'False';
-                $updatePembelian->receive = "False";
-                $updatePembelian->jt = $data['jt'];
+            $updatePenjualan = Penjualan::where('po', 'True')
+            ->findOrFail($id);
+            $dataItemPo = PurchaseOrder::where('kode_po', $updatePenjualan->kode)->get();
+            $totalSubtotal = $dataItemPo->sum('subtotal');
 
+            $kas = Kas::whereKode($data['kode_kas'])->first();
+
+            if(intval($kas->saldo) < $dikirim) {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Saldo tidak mencukupi!!"
+                ]);
+            }
+
+            $updatePenjualan->draft = 0;
+            $updatePenjualan->kode_kas = $kas->kode;
+ 
+            if($dikirim > $bayar) {
+                $updatePenjualan->lunas = "False";
+                $updatePenjualan->visa = "PIUTANG";
+                $updatePenjualan->piutang = $data['piutang'];
+                $updatePenjualan->receive = "False";
+                $updatePenjualan->tahan = "True";
+                $updatePenjualan->status = "PENDING";
                 // Masuk ke piutang
                 $masuk_piutang = new Piutang;
-                $masuk_piutang->kode = $updatePembelian->kode;
+                $masuk_piutang->kode = $updatePenjualan->kode;
                 $masuk_piutang->tanggal = $currentDate;
-                $masuk_piutang->pelanggan = $pelanggan->kode;
+                $masuk_piutang->pelanggan = $updatePenjualan->pelanggan;
                 $masuk_piutang->jumlah = $data['piutang'];
-                $masuk_piutang->kode_kas = $updatePembelian->kode_kas;
-                $masuk_piutang->operator = $updatePembelian->operator;
+                // $masuk_piutang->bayar = $totalSubtotal;
+                $masuk_piutang->bayar = $bayar - $data['jumlah_saldo'];
+                $masuk_piutang->kode_kas = $updatePenjualan->kode_kas;
+                $masuk_piutang->operator = $data['operator'];
                 $masuk_piutang->save();
 
                 $item_piutang = new ItemPiutang;
-                $item_piutang->kode = $updatePembelian->kode;
+                $item_piutang->kode = $updatePenjualan->kode;
                 $item_piutang->kode_piutang = $masuk_piutang->kode;
                 $item_piutang->tgl_piutang = $currentDate;
                 $item_piutang->jumlah_piutang = $masuk_piutang->jumlah;
-                $item_piutang->jumlah = $masuk_piutang->jumlah;
+                $sisa_piutang = $masuk_piutang->jumlah - $masuk_piutang->bayar;
+                $item_piutang->jumlah = $sisa_piutang < 0 ? 0 : $sisa_piutang;
                 $item_piutang->save();
 
                 $angsuranTerakhir = PembayaranAngsuran::where('kode', $masuk_piutang->kode)
@@ -420,52 +445,77 @@ class DataPenjualanPoController extends Controller
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
-                $angsuran->bayar_angsuran = $data['bayarDp'];
-                $angsuran->jumlah = $item_piutang->jumlah_hutang;
+                $angsuran->bayar_angsuran = $data['bayar'] ? $bayar - $data['jumlah_saldo'] : 0;
+                $angsuran->jumlah = $item_piutang->jumlah_piutang;
                 $angsuran->save();
-            } else {
-                $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
-                $updatePembelian->bayar = $data['bayar'] ? $bayar : $updatePembelian->bayar;
 
-                if($data['bayar'] > $updatePembelian->jumlah) {
-                    $updatePembelian->kembali = $data['bayar'] - $updatePembelian->jumlah;
-                } else {
-                    $updatePembelian->kembali = $updatePembelian->jumlah - $data['bayar'];
+                // $updateKas = Kas::findOrFail($kas->id);
+                // $bindCalc = $updatePenjualan->diterima - $updatePenjualan->jumlah;
+                // $updateKas->saldo = $kas->saldo - $bindCalc;
+                // $updateKas->save();
+            } else if($data['sisa_dp'] > 0) {
+                $updatePenjualan->dikirim = $totalSubtotal;
+                $updatePenjualan->lunas = "False";
+                $updatePenjualan->visa = "DP AWAL";
+                $updatePenjualan->receive = "False";
+                $updatePenjualan->tahan = "False";
+                $updatePenjualan->status = "PROSES PENGIRIMAN";
+                $updatePenjualan->piutang = 0;
+            } else {
+                if($bayar > $data['jumlah_saldo']) {
+                    $updateKas = Kas::findOrFail($kas->id);
+                    $bindCalc = $bayar - $data['jumlah_saldo'];
+                    $updateKas->saldo = $kas->saldo - $bindCalc;
+                    $updateKas->save();
                 }
-                
+                $updatePenjualan->dikirim = $totalSubtotal;
+                $updatePenjualan->lunas = "True";
+                $updatePenjualan->visa = "LUNAS";
+                $updatePenjualan->jt = 0;
+                $updatePenjualan->piutang = 0;
+                $updatePenjualan->receive = "True";
+                $updatePenjualan->tahan = "False";
+                $updatePenjualan->status = "DIKIRIM";
             }
 
-            $updatePembelian->save();
+            $updatePenjualan->multiple_input = $data["multiple_input"];
+            $updatePenjualan->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePenjualan->jumlah;
+            $updatePenjualan->bayar = $bayar;
+            $updatePenjualan->kembali = $data['piutang'];
+            $updatePenjualan->biayakirim = $updatePenjualan->biayakirim + $data['ongkir'];
 
-            $updateFakturTerakhir = FakturTerakhir::findOrFail($dataFaktur->id);
-            $updateFakturTerakhir = $currentDate;
-            $updateFakturTerakhir->save();
-            
-            $updateKas = Kas::findOrFail($kas->id);
-            $updateKas->saldo = intval($kas->saldo) - intval($data['bayar']);
-            $updateKas->save();
-
-            if($updatePembelian) {
+            if($updatePenjualan->save()) {
                 $userOnNotif = Auth::user();
 
-                $updatePembelianSaved =  Penjualan::query()
+                $dataItems = ItemPenjualan::whereKode($updatePenjualan->kode)->get();
+                foreach($dataItems as $item) {
+                    $updateItemPenjualan = ItemPenjualan::findOrFail($item->id);
+                    $updateItemPenjualan->stop_qty = "False";
+                    $updateItemPenjualan->save();
+                }
+
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
+                $updateKas->save();
+
+                $updatePenjualanSaved =  Penjualan::query()
                 ->select(
                     'penjualan.*',
                     'itempenjualan.*',
-                    'supplier.nama as nama_supplier',
-                    'supplier.alamat as alamat_supplier'
+                    'pelanggan.nama as nama_pelanggan',
+                    'pelanggan.alamat as alamat_pelanggan'
                 )
                 ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-                ->leftJoin('supplier', 'penjualan.supplier', '=', 'supplier.kode')
-                ->where('penjualan.id', $updatePembelian->id)
+                ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+                ->where('penjualan.id', $updatePenjualan->id)
                 ->first();
 
                 $data_event = [
                     'routes' => 'penjualan-po',
                     'alert' => 'success',
                     'type' => 'add-data',
-                    'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
-                    'data' => $updatePembelian->kode,
+                    'notif' => "Penjualan dengan kode {$updatePenjualan->kode}, berhasil diupdate 🤙!",
+                    'data' => $updatePenjualan->kode,
                     'user' => $userOnNotif
                 ];
 
@@ -473,7 +523,8 @@ class DataPenjualanPoController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Data penjualan , berhasil diupdate 👏🏿"
+                    'message' => "Data penjualan , berhasil diupdate 👏🏿",
+                    'data' => $updatePenjualan
                 ]);
             }
         } catch (\Throwable $th) {

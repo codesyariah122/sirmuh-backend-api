@@ -1265,13 +1265,13 @@ class DataWebFiturController extends Controller
             $generatedCode = $perusahaan->kd_pembelian .'-'. $currentDate . $randomNumber;
             break;
             case "purchase-order":
-            $generatedCode = "PO" .'-'. $currentDate . $randomNumber;
+            $generatedCode = $perusahaan->kd_pembelian .'-'. "PO".$currentDate . $randomNumber;
             break;
             case "penjualan-toko":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-'. $currentDate . $randomNumber;
             break;
             case "penjualan-po":
-            $generatedCode = "PO". '-'. $currentDate . $randomNumber;
+            $generatedCode = $perusahaan->kd_penjualan_toko. '-'. "PO".$currentDate . $randomNumber;
             break;
             case "penjualan-partai":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-PRT'. $currentDate . $randomNumber;
@@ -1794,7 +1794,8 @@ class DataWebFiturController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Item pembelian successfully deleted!'
+                'message' => 'Item pembelian successfully deleted!',
+                'data' => $udpateDataPembelian
             ], 200);
         } catch (\Throwable $th) {
             throw $th;
@@ -2012,6 +2013,42 @@ class DataWebFiturController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Item penjualan successfully deleted!'
+            ], 200);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function delete_item_penjualan_po($id)
+    {
+        try {
+            $itemPenjualan = ItemPenjualan::findOrFail($id);
+            $itemPenjualan->qty = 0;
+            $itemPenjualan->last_qty = NULL;
+            $itemPenjualan->stop_qty = "False";
+            $itemPenjualan->subtotal = $itemPenjualan->harga;
+            $itemPenjualan->qty_terima = 0;
+            $itemPenjualan->save();
+
+            $dataPenjualan = Penjualan::whereKode($itemPenjualan->kode)->first();
+            $updatePenjualan = Penjualan::findOrFail($dataPenjualan->id);
+            $updatePenjualan->dikirim = 0;
+            $updatePenjualan->kembali = 0;
+            $updatePenjualan->save();
+
+            $purchaseOrders = PurchaseOrder::where('kode_barang', $itemPenjualan->kode_barang)
+            ->where('po_ke', '!=', 0)
+            ->get();
+
+            foreach($purchaseOrders as $poitem) {
+                $deletePo = PurchaseOrder::findOrFail($poitem->id);
+                $deletePo->forceDelete();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item pembelian successfully deleted!',
+                'data' => $updatePenjualan
             ], 200);
         } catch (\Throwable $th) {
             throw $th;

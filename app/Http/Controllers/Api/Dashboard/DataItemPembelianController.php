@@ -111,7 +111,7 @@ class DataItemPembelianController extends Controller
 
             $data_event = [
                 'type' => 'updated',
-                'routes' => 'purchase-order-edit',
+                'routes' => 'purchase-order',
                 'notif' => "Update itempembelian, successfully update!"
             ];
 
