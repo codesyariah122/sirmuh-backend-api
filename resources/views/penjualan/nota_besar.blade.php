@@ -73,6 +73,7 @@
                 <th>Barang / Harga Satuan</th>
                 <th>Jumlah</th>
                 <th>Diskon</th>
+                <th>Biaya Kirim</th>
                 <th>Subtotal</th>
             </tr>
         </thead>
@@ -85,37 +86,38 @@
                 <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
                 <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->diskon }}%</td>
+                <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
             </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" class="text-right"><b>Total</b></td>
+                <td colspan="7" class="text-right"><b>Total</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
             </tr>
             <tr>
-                <td colspan="6" class="text-right"><b>Diskon</b></td>
+                <td colspan="7" class="text-right"><b>Diskon</b></td>
                 <td class="text-right"><b>{{  $helpers->format_uang($penjualan->diskon) }}%</b></td>
             </tr>
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="6" class="text-right"><b>Total Bayar</b></td>
+                <td colspan="7" class="text-right"><b>Total Bayar</b></td>
                 <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             @endif
             <tr>
-                <td colspan="6" class="text-right"><b>Diterima</b></td>
+                <td colspan="7" class="text-right"><b>Diterima</b></td>
                 <td class="text-right"><b>{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="6" class="text-right"><b>Kembali</b></td>
+                <td colspan="7" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</b></td>
             </tr>
             @else
             <tr>
-                <td colspan="6" class="text-right"><b>Masuk Piutang</b></td>
+                <td colspan="7" class="text-right"><b>Masuk Piutang</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->piutang) }}</b></td>
             </tr>
             @endif

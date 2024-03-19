@@ -476,6 +476,33 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->receive = "True";
                 $updatePenjualan->tahan = "False";
                 $updatePenjualan->status = "DIKIRIM";
+
+                $itemPenjualanBarang = ItemPenjualan::whereKode($updatePenjualan->kode)->first();
+                $newPenjualanData = Penjualan::findOrFail($updatePenjuala->id);
+                $hpp = $itemPenjualanBarang->hpp * $data['qty'];
+                $diskon = $updatePenjuala->diskon;
+                $labarugi = ($updatePenjuala->bayar - $hpp) - $diskon;
+                
+                $newLabaRugi = new LabaRugi;
+                $newLabaRugi->tanggal = now()->toDateString();
+                $newLabaRugi->kode = $newPenjualanData->kode;
+                $newLabaRugi->kode_barang = $itemPenjualanBarang->kode_barang;
+                $newLabaRugi->nama_barang = $itemPenjualanBarang->nama_barang;
+                $newLabaRugi->penjualan = $newPenjualanData->bayar;
+                $newLabaRugi->hpp = $itemPenjualanBarang->hpp;
+                $newLabaRugi->diskon =  $newPenjualanData->diskon;
+                $newLabaRugi->labarugi = $labarugi;
+                $newLabaRugi->operator = $data['operator'];
+                $newLabaRugi->keterangan = $data['keterangan'];
+                $newLabaRugi->pelanggan = $pelanggan->kode;
+                $newLabaRugi->nama_pelanggan = $pelanggan->nama;
+
+                $newLabaRugi->save();
+
+                $simpanFaktur = new FakturTerakhir;
+                $simpanFaktur->faktur = $newPenjualanData->kode;
+                $simpanFaktur->tanggal = $newPenjualanData->tanggal;
+                $simpanFaktur->save();
             }
 
             $updatePenjualan->multiple_input = $data["multiple_input"];
