@@ -44,7 +44,8 @@ use App\Http\Controllers\Api\Dashboard\{
     DataPemakaianBarangController,
     DataPurchaseOrderController,
     DataLaporanPembelianController,
-    DataLaporanPenjualanController
+    DataLaporanPenjualanController,
+    RajaOngkirController
 };
 
 class RouteSelection {
@@ -267,6 +268,11 @@ class RouteSelection {
             'endPoint' => '/data-penjualan-toko',
             'method' => 'resource',
             'controllers' => DataPenjualanTokoController::class
+        ],
+        [
+            'endPoint' => '/status-kirim/{id}',
+            'method' => 'put',
+            'controllers' => [DataPenjualanTokoController::class, 'update_status_kirim']
         ],
         [
             'endPoint' => '/data-penjualan-po',
@@ -641,6 +647,18 @@ class RouteSelection {
             'endPoint' => '/check-password-access',
             'method' => 'get',
             'controllers' => [DataWebFiturController::class, 'check_password_access']
+        ],
+
+        // Raja ongkir api
+        [
+        	'endPoint' => '/province-lists',
+        	'method' => 'get',
+        	'controllers' => [RajaOngkirController::class, 'provinces']
+        ],
+        [
+        	'endPoint' => '/citys/{id}',
+        	'method' => 'get',
+        	'controllers' => [RajaOngkirController::class, 'citys']
         ]
     ];
 

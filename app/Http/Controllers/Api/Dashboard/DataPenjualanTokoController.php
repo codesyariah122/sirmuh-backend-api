@@ -42,7 +42,7 @@ class DataPenjualanTokoController extends Controller
 
          $query = Penjualan::query()
          ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim','penjualan.status', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
          ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
          ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
@@ -164,6 +164,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 7;
+                $newPenjualanToko->status = "HOLD";
 
                 // Masuk ke hutang
                 $masuk_hutang = new Piutang;
@@ -219,15 +220,16 @@ class DataPenjualanTokoController extends Controller
                 // $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
                 // $newPenjualanToko->piutang = $data['piutang'];
                 $newPenjualanToko->po = 'False';
-                $newPenjualanToko->receive = "True";
+                $newPenjualanToko->receive = $data['status_kirim'] ? "True" : "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
+                $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'DIKIRIM';
             }
 
             $newPenjualanToko->jenis = "PENJUALAN TOKO";
             $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPenjualanToko->operator = $data['operator'];
             $newPenjualanToko->biayakirim = $data['ongkir'];
-            $newPenjualanToko->status = "DIKIRIM";
+            
             $newPenjualanToko->save();
             
             $updateDrafts = ItemPenjualan::whereKode($newPenjualanToko->kode)->get();
@@ -240,7 +242,7 @@ class DataPenjualanTokoController extends Controller
             $updateKas = Kas::findOrFail($data['kode_kas']);
             $updatesaldo = intval($kas->saldo) + intval($diterima);
 
-            $updateKas->saldo = intval($kas->saldo) + $diterima;
+            $updateKas->saldo = $updatesaldo;
             $updateKas->save();
 
             $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
@@ -589,6 +591,36 @@ public function cetak_nota($type, $kode, $id_perusahaan)
                     'message' => "Hak akses tidak di ijinkan 📛"
                 ]);
             }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function update_status_kirim(Request $request, $id)
+    {
+        try {
+            $user = Auth::user();
+            $userRole = Roles::findOrFail($user->role);
+
+            $dataPenjualan = Penjualan::findOrFail($id);
+            $dataPenjualan->receive = "True";
+            $dataPenjualan->status = $request->status_kirim;
+            $dataPenjualan->save();
+
+            $data_event = [
+                'alert' => 'success',
+                'routes' => 'penjualan-toko',
+                'type' => 'updated',
+                'notif' => "Status kirim Penjualan dengan kode, {$dataPenjualan->kode}, has been updated!",
+                'user' => Auth::user()
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Penjualan dengan kode, {$dataPenjualan->kode} has move to trash, please check trash"
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
