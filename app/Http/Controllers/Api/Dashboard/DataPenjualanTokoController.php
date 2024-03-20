@@ -251,7 +251,7 @@ class DataPenjualanTokoController extends Controller
                 $updatePenjualanDraft->save();
 
                 $userOnNotif = Auth::user();
-                
+
                 $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
                 $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
                 $hpp = $itemPenjualanBarang->hpp * $data['qty'];
@@ -610,6 +610,8 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             $dataPenjualan->receive = "True";
             $dataPenjualan->status = $request->status_kirim;
             $dataPenjualan->save();
+
+            $kas = Kas::findOrFail($dataPenjualan['kode_kas']);
 
             $updateKas = Kas::findOrFail($kas->id);
             $updateKas->saldo = $kas->saldo - intval($dataPenjualan->biayakirim);
