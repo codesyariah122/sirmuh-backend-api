@@ -105,8 +105,8 @@ class DataPenjualanPartaiController extends Controller
             $validator = Validator::make($request->all(), [
                 'kode_kas' => 'required',
                 'barangs' => 'required',
+                'ongkir' => ['required', 'not_in:0']
             ]);
-
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
@@ -152,16 +152,18 @@ class DataPenjualanPartaiController extends Controller
             } else {
                 $newPenjualanToko->jumlah = 0;
             }
+            
             $newPenjualanToko->bayar = $data['bayar'];
 
             if($data['piutang'] !== 'undefined') {
                 $newPenjualanToko->angsuran = $data['bayar'];
                 $newPenjualanToko->lunas = "False";
-                $newPenjualanToko->visa = 'HUTANG';
+                $newPenjualanToko->visa = 'PIUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
                 $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 7;
+                $newPenjualanToko->status = "HOLD";
 
                 // Masuk ke hutang
                 $masuk_hutang = new Piutang;
@@ -216,15 +218,18 @@ class DataPenjualanPartaiController extends Controller
                 // $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 // $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
                 // $newPenjualanToko->piutang = $data['piutang'];
+                $newPenjualanToko->dikirim = $data['status_kirim'] !== 'PROSES' ? $data['jumlah'] : 0;
                 $newPenjualanToko->po = 'False';
-                $newPenjualanToko->receive = "True";
+                $newPenjualanToko->receive = $data['status_kirim'] !== "PROSES" ? "True" : "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
+                $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'DIKIRIM';
             }
-            
-            $newPenjualanToko->jenis = "PENJUALAN PARTAI";
-            $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
-            $newPenjualanToko->operator = $data['operator'];
 
+            $newPenjualanToko->jenis = "PENJUALAN PARTAI";
+            $newPenjualanToko->keterangan = $data['keterangan'];
+            $newPenjualanToko->operator = $data['operator'];
+            $newPenjualanToko->biayakirim = $data['ongkir'];
+            
             $newPenjualanToko->save();
             
             $updateDrafts = ItemPenjualan::whereKode($newPenjualanToko->kode)->get();
@@ -237,15 +242,19 @@ class DataPenjualanPartaiController extends Controller
             $updateKas = Kas::findOrFail($data['kode_kas']);
             $updatesaldo = intval($kas->saldo) + intval($diterima);
 
-            $updateKas->saldo = intval($kas->saldo) + $diterima;
+            $updateKas->saldo = $updatesaldo;
             $updateKas->save();
+
+            $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
+            $updatePenjualanDraft->draft = 0;
+            $updatePenjualanDraft->save();
 
             $userOnNotif = Auth::user();
 
             if($newPenjualanToko) {
                 $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
                 $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
-                $hpp = $itemPenjualanBarang->hpp * $data['qty'];
+                $hpp = $itemPenjualanBarang->harga * $data['qty'];
                 $diskon = $newPenjualanToko->diskon;
                 $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
 
@@ -255,11 +264,11 @@ class DataPenjualanPartaiController extends Controller
                 $newLabaRugi->kode_barang = $itemPenjualanBarang->kode_barang;
                 $newLabaRugi->nama_barang = $itemPenjualanBarang->nama_barang;
                 $newLabaRugi->penjualan = $newPenjualanData->bayar;
-                $newLabaRugi->hpp = $itemPenjualanBarang->hpp;
+                $newLabaRugi->hpp = $itemPenjualanBarang->harga;
                 $newLabaRugi->diskon =  $newPenjualanData->diskon;
                 $newLabaRugi->labarugi = $labarugi;
                 $newLabaRugi->operator = $data['operator'];
-                $newLabaRugi->keterangan = "PENJUALAN BARANG";
+                $newLabaRugi->keterangan = $data['keterangan'];
                 $newLabaRugi->pelanggan = $pelanggan->kode;
                 $newLabaRugi->nama_pelanggan = $pelanggan->nama;
 
@@ -269,6 +278,10 @@ class DataPenjualanPartaiController extends Controller
                 $simpanFaktur->faktur = $newPenjualanData->kode;
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
+
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
+                $updateKas->save();
 
                 $newPenjualanTokoSaved =  Penjualan::query()
                 ->select(
@@ -367,7 +380,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         try {
             $penjualan = Penjualan::query()
             ->select(
-                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
+                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali', 'penjualan.dikirim', 'penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'penjualan.receive', 'penjualan.status', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
             )
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')

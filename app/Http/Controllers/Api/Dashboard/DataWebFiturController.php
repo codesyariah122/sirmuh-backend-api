@@ -1857,7 +1857,7 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->qty = $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
                         $draftItemPembelian->nourut = $barang['nourut'];
-                        $draftItemPembelian->harga = $harga ?? $dataBarang->harga_toko;
+                        $draftItemPembelian->harga = $harga;
                         $draftItemPembelian->subtotal = $harga * $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
 
@@ -1885,11 +1885,17 @@ class DataWebFiturController extends Controller
                     ->where('draft', 1)
                     ->first();
 
+                    if($barang['harga_toko'] !== NULL) {
+                        $harga = $barang['harga_toko'];
+                    } else {
+                        $harga = $barang['harga_partai'];
+                    }
+
                     if ($existingItem) {
                         $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
                         $updateExistingItem->qty = intval($barang['qty']);
-                        $updateExistingItem->harga = intval($barang['harga_toko']);
-                        $updateExistingItem->subtotal = $barang['harga_toko'] * $barang['qty'];
+                        $updateExistingItem->harga = intval($harga);
+                        $updateExistingItem->subtotal = intval($harga) * $barang['qty'];
                         $updateExistingItem->save();
                         $lastItemPembelianId = $updateExistingItem->id;
                     } else {
@@ -1904,8 +1910,8 @@ class DataWebFiturController extends Controller
                         $draftItemPembelian->qty = $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
                         $draftItemPembelian->nourut = $barang['nourut'];
-                        $draftItemPembelian->harga = $dataBarang->harga_toko;
-                        $draftItemPembelian->subtotal = $dataBarang->hpp * $barang['qty'];
+                        $draftItemPembelian->harga = $harga;
+                        $draftItemPembelian->subtotal = $harga * $barang['qty'];
                         $draftItemPembelian->isi = $dataBarang->isi;
 
                         if($barang['diskon']) {
@@ -1982,7 +1988,7 @@ class DataWebFiturController extends Controller
                     'itempenjualan.subtotal',
                     'itempenjualan.expired',
                     'pelanggan.id as id_pelanggan','pelanggan.nama as nama_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.alamat as alamat_pelanggan',
-                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp as harga_beli_barang', 'barang.harga_toko', 'barang.toko', 'barang.supplier', 'supplier.id as id_supplier','supplier.nama as nama_supplier', 'supplier.kode as kode_supplier'
+                    'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp as harga_beli_barang', 'barang.harga_toko', 'barang.harga_partai', 'barang.toko', 'barang.supplier', 'supplier.id as id_supplier','supplier.nama as nama_supplier', 'supplier.kode as kode_supplier'
                 )
                 ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 ->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')

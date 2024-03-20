@@ -264,7 +264,7 @@ class DataPenjualanTokoController extends Controller
                 $newLabaRugi->kode_barang = $itemPenjualanBarang->kode_barang;
                 $newLabaRugi->nama_barang = $itemPenjualanBarang->nama_barang;
                 $newLabaRugi->penjualan = $newPenjualanData->bayar;
-                $newLabaRugi->hpp = $itemPenjualanBarang->hpp;
+                $newLabaRugi->hpp = $itemPenjualanBarang->harga;
                 $newLabaRugi->diskon =  $newPenjualanData->diskon;
                 $newLabaRugi->labarugi = $labarugi;
                 $newLabaRugi->operator = $data['operator'];
