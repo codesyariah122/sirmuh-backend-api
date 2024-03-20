@@ -42,7 +42,7 @@ class DataPenjualanTokoController extends Controller
 
          $query = Penjualan::query()
          ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim','penjualan.status', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar', 'penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim','penjualan.status', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
          ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
          ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
@@ -105,9 +105,8 @@ class DataPenjualanTokoController extends Controller
             $validator = Validator::make($request->all(), [
                 'kode_kas' => 'required',
                 'barangs' => 'required',
-                'ongkir' => 'required'
+                'ongkir' => ['required', 'not_in:0']
             ]);
-
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
@@ -219,14 +218,15 @@ class DataPenjualanTokoController extends Controller
                 // $newPenjualanToko->lunas = $data['pembayaran'] === 'cash' ? "True" : "False";
                 // $newPenjualanToko->visa = $data['pembayaran'] === 'cash' ? 'UANG PAS' : 'HUTANG';
                 // $newPenjualanToko->piutang = $data['piutang'];
+                $newPenjualanToko->dikirim = $data['status_kirim'] !== 'PROSES' ? $data['jumlah'] : 0;
                 $newPenjualanToko->po = 'False';
-                $newPenjualanToko->receive = $data['status_kirim'] ? "True" : "False";
+                $newPenjualanToko->receive = $data['status_kirim'] !== "PROSES" ? "True" : "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
                 $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'DIKIRIM';
             }
 
             $newPenjualanToko->jenis = "PENJUALAN TOKO";
-            $newPenjualanToko->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
+            $newPenjualanToko->keterangan = $data['keterangan'];
             $newPenjualanToko->operator = $data['operator'];
             $newPenjualanToko->biayakirim = $data['ongkir'];
             
@@ -603,6 +603,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             $userRole = Roles::findOrFail($user->role);
 
             $dataPenjualan = Penjualan::findOrFail($id);
+            $dataPenjualan->dikirim = $dataPenjualan->jumlah;
             $dataPenjualan->receive = "True";
             $dataPenjualan->status = $request->status_kirim;
             $dataPenjualan->save();
@@ -619,7 +620,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
 
             return response()->json([
                 'success' => true,
-                'message' => "Penjualan dengan kode, {$dataPenjualan->kode} has move to trash, please check trash"
+                'message' => "Status kirim penjualan dengan kode, {$dataPenjualan->kode} has been updated 😵‍💫"
             ]);
         } catch (\Throwable $th) {
             throw $th;
