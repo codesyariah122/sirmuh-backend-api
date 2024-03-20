@@ -238,20 +238,19 @@ class DataPenjualanPartaiController extends Controller
                 $updateDrafts[$idx]->save();
             }
 
-            $diterima = intval($newPenjualanToko->bayar);
-            $updateKas = Kas::findOrFail($data['kode_kas']);
-            $updatesaldo = intval($kas->saldo) + intval($diterima);
-
-            $updateKas->saldo = $updatesaldo;
-            $updateKas->save();
-
-            $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
-            $updatePenjualanDraft->draft = 0;
-            $updatePenjualanDraft->save();
-
-            $userOnNotif = Auth::user();
-
             if($newPenjualanToko) {
+                $dikirim = intval($newPenjualanToko->bayar);
+                $updateKas = Kas::findOrFail($data['kode_kas']);
+                $updatesaldo = intval($kas->saldo) + intval($dikirim);
+
+                $updateKas->saldo = $updatesaldo;
+                $updateKas->save();
+
+                $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
+                $updatePenjualanDraft->draft = 0;
+                $updatePenjualanDraft->save();
+
+                $userOnNotif = Auth::user();
                 $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
                 $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
                 $hpp = $itemPenjualanBarang->harga * $data['qty'];
@@ -439,9 +438,9 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             }
 
             if(gettype($data['diterima']) === 'string') {
-                $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+                $dikirim = preg_replace("/[^0-9]/", "", $data['diterima']);
             } else {
-                $diterima = intval($data['diterima']);
+                $dikirim = intval($data['diterima']);
             }
 
             $updatePembelian = Penjualan::findOrFail($id);
@@ -499,11 +498,11 @@ public function cetak_nota($type, $kode, $id_perusahaan)
                 $updatePembelian->jumlah = $data['jumlah'] ? $data['jumlah'] : $updatePembelian->jumlah;
                 $updatePembelian->bayar = $data['bayar'] ? $bayar : $updatePembelian->bayar;
 
-                if($diterima  > $updatePembelian->jumlah) {
+                if($dikirim  > $updatePembelian->jumlah) {
                     $updatePembelian->kembali = $data['bayar'] - $updatePembelian->jumlah;
                     $updatePembelian->lunas = "True";
                     $updatePembelian->visa = "LUNAS";
-                } else if($diterima == $updatePembelian->jumlah) {
+                } else if($dikirim == $updatePembelian->jumlah) {
                     $updatePembelian->kembali = $updatePembelian->jumlah - $data['bayar'];
                     $updatePembelian->lunas = "True";
                     $updatePembelian->visa = "UANG PAS";

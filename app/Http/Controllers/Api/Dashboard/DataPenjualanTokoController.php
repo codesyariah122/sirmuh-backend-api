@@ -242,7 +242,6 @@ class DataPenjualanTokoController extends Controller
                 $dikirim = intval($newPenjualanToko->bayar);
                 $updateKas = Kas::findOrFail($data['kode_kas']);
                 $updatesaldo = intval($kas->saldo) + intval($dikirim);
-
                 $updateKas->saldo = $updatesaldo;
                 $updateKas->save();
 
