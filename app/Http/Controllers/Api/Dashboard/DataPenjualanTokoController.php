@@ -611,7 +611,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
             $dataPenjualan->status = $request->status_kirim;
             $dataPenjualan->save();
 
-            $kas = Kas::findOrFail($dataPenjualan['kode_kas']);
+            $kas = Kas::where('kode', $dataPenjualan['kode_kas'])->first();
 
             $updateKas = Kas::findOrFail($kas->id);
             $updateKas->saldo = $kas->saldo - intval($dataPenjualan->biayakirim);
