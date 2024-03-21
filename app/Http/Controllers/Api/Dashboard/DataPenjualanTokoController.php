@@ -267,7 +267,7 @@ class DataPenjualanTokoController extends Controller
                 $newLabaRugi->diskon =  $newPenjualanData->diskon;
                 $newLabaRugi->labarugi = $labarugi;
                 $newLabaRugi->operator = $data['operator'];
-                $newLabaRugi->keterangan = $data['keterangan'];
+                $newLabaRugi->keterangan = "PENJUALAN TOKO";
                 $newLabaRugi->pelanggan = $pelanggan->kode;
                 $newLabaRugi->nama_pelanggan = $pelanggan->nama;
 
@@ -566,18 +566,54 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         try {
            $user = Auth::user();
 
-            $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
-                $delete_penjualan = Penjualan::whereNull('deleted_at')
-                ->findOrFail($id);
-                $delete_penjualan->delete();
+             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+                $deletePenjualan = Penjualan::findOrFail($id);
+
+                $dataPiutang = Piutang::where('kode', $deletePenjualan->kode)->first();
+
+                if($dataPiutang) {
+                    $deletePiutang = Piutang::findOrFail($dataPiutang->id);
+                    $deletePiutang->delete();
+
+                    $hutangItems = ItemPiutang::where('kode', $deletePenjualan->kode)->get();
+                    foreach($piutangItems as $itemPiutang) {                    
+                        $deleteItemPiutang = ItemPiutang::findOrFail($itemPiutang->id);
+                        $deleteItemPiutang->delete();
+                    }
+
+                    $angsuranItems = PembayaranAngsuran::where('kode', $deletePenjualan->kode)->get();
+                    foreach($angsuranItems as $itemAngsuran) {                    
+                        $deleteAngsuran = PembayaranAngsuran::findOrFail($itemAngsuran->id);
+                        $deleteAngsuran->delete();
+                    }
+                }
+
+                $deletePenjualan->delete();
+
+                $penjualanItems = ItemPenjualan::where('kode', $deletePenjualan->kode)->get();
+                foreach($penjualanItems as $itemPenjualan) {                
+                    $deleteItem = ItemPenjualan::findOrFail($itemPenjualan->id);
+                    $deleteItem->delete();
+
+                    $dataBarang = Barang::where('kode', $itemPenjualan->kode_barang)->first();
+                    $updateStokBarang = Barang::findOrFail($dataBarang->id);
+                    $updateStokBarang->toko = $dataBarang->toko - $dataItemPembelian->qty;
+                    $updateStokBarang->last_qty = $dataBarang->toko;
+                    $updateStokBarang->save();
+                }
+
+                $dataKas = Kas::where('kode', $deletePenjualan->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = $dataKas->saldo - $deletePenjualan->jumlah;
+                $updateKas->save();
 
                 $data_event = [
                     'alert' => 'error',
                     'routes' => 'penjualan-toko',
                     'type' => 'removed',
-                    'notif' => "Penjualan dengan kode, {$delete_penjualan->kode}, has move to trash, please check trash!",
+                    'notif' => "Penjualan dengan kode, {$deletePenjualan->kode}, successfully deleted!",
                     'user' => Auth::user()
                 ];
 
@@ -585,7 +621,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
 
                 return response()->json([
                     'success' => true,
-                    'message' => "Penjualan dengan kode, {$delete_penjualan->kode} has move to trash, please check trash"
+                    'message' => "Penjualan dengan kode, {$deletePenjualan->kode} berhasil dihapus 👏"
                 ]);
             } else {
                 return response()->json([

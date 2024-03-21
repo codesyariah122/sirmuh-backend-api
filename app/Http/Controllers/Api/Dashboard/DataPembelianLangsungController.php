@@ -538,20 +538,24 @@ class DataPembelianLangsungController extends Controller
                 
                 $delete_pembelian->delete();
 
-                $dataItemPembelian = ItemPembelian::where('kode', $delete_pembelian->kode)->first();
-                $deleteItem = ItemPembelian::findOrFail($dataItemPembelian->id);
-                $deleteItem->delete();
+                $pembelianItems = ItemPembelian::where('kode', $delete_pembelian->kode)->get();
+                foreach($pembelianItems as $itemPembelian) {                
+                    $deleteItem = ItemPembelian::findOrFail($itemPembelian->id);
+                    $deleteItem->delete();
+
+                    $dataBarangs = Barang::where('kode', $itemPembelian->kode_barang)->get();
+                    foreach($dataBarangs as $barang) {                        
+                        $updateStokBarang = Barang::findOrFail($barang->id);
+                        $updateStokBarang->toko = $barang->toko - $itemPembelian->qty;
+                        $updateStokBarang->last_qty = $barang->toko;
+                        $updateStokBarang->save();
+                    }
+                }
 
                 $dataKas = Kas::where('kode', $delete_pembelian->kode_kas)->first();
                 $updateKas = Kas::findOrFail($dataKas->id);
                 $updateKas->saldo = $dataKas->saldo + $delete_pembelian->jumlah;
                 $updateKas->save();
-
-                $dataBarang = Barang::where('kode', $dataItemPembelian->kode_barang)->first();
-                $updateStokBarang = Barang::findOrFail($dataBarang->id);
-                $updateStokBarang->toko = $dataBarang->toko - $dataItemPembelian->qty;
-                $updateStokBarang->last_qty = $dataBarang->toko;
-                $updateStokBarang->save();
 
                 $data_event = [
                     'alert' => 'error',

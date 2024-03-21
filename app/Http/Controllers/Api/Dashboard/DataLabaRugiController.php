@@ -26,6 +26,12 @@ class DataLabaRugiController extends Controller
     public function index(Request $request)
     {
         try{
+            $keywords = $request->query('keywords');
+            $today = now()->toDateString();
+            $pelanggan = $request->query('pelanggan');
+            $dateTransaction = $request->query('date_transaction');
+            $viewAll = $request->query('view_all');
+            $user = Auth::user();
             $currentMonth = now()->format('m');
             $currentYear = now()->format('Y');
 
@@ -41,6 +47,7 @@ class DataLabaRugiController extends Controller
                 "labarugi.labarugi",
                 "labarugi.operator",
                 "labarugi.pelanggan",
+                "labarugi.keterangan",
                 "labarugi.nama_pelanggan", 
                 'barang.nama as barang_nama',
                 'barang.satuan as satuan_barang',
@@ -57,17 +64,16 @@ class DataLabaRugiController extends Controller
             $startDate = $request->start_date;
             $endDate = $request->end_date;
 
-            if ($keywords) {
-                $query->where(function ($query) use ($keywords) {
-                    $query->where('kode', 'like', '%' . $keywords . '%')
-                    ->orWhere('nama_barang', 'like', '%' . $keywords . '%')
-                    ->orWhere('pelanggan', 'like', '%' . $keywords . '%')
-                    ->orWhere('operator', 'like', '%' . $keywords . '%');
-                });
+            if($viewAll === false || $viewAll === "false") {
+                $query->whereDate('labarugi.tanggal', '=', $today);
             }
 
-            if ($startDate && $endDate) {
-                $query->whereBetween('tanggal', [$startDate, $endDate]);
+            if ($keywords) {
+                $query->where('labarugi.kode', 'like', '%' . $keywords . '%');
+            }
+
+            if ($dateTransaction) {
+                $query->whereDate('labarugi.tanggal', '=', $dateTransaction);
             }
 
             $labarugi = $query->paginate(10);

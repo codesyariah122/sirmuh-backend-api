@@ -490,82 +490,82 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
-            $delete_pembelian = Pembelian::findOrFail($id);
+             if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+                $delete_pembelian = Pembelian::findOrFail($id);
 
-            $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
+                $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
 
-            if($dataHutang) {
-                $delete_hutang = Hutang::findOrFail($dataHutang->id);
-                $delete_hutang->delete();
+                if($dataHutang) {
+                    $delete_hutang = Hutang::findOrFail($dataHutang->id);
+                    $delete_hutang->delete();
 
-                $hutangItems = ItemHutang::where('kode', $delete_pembelian->kode)->get();
-                foreach($hutangItems as $itemHutang) {                    
-                    $deleteItemHutang = ItemHutang::findOrFail($itemHutang->id);
-                    $deleteItemHutang->delete();
+                    $hutangItems = ItemHutang::where('kode', $delete_pembelian->kode)->get();
+                    foreach($hutangItems as $itemHutang) {                    
+                        $deleteItemHutang = ItemHutang::findOrFail($itemHutang->id);
+                        $deleteItemHutang->delete();
+                    }
+
+                    $angsuranItems = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->get();
+                    foreach($angsuranItems as $itemAngsuran) {                    
+                        $deleteAngsuran = PembayaranAngsuran::findOrFail($itemAngsuran->id);
+                        $deleteAngsuran->delete();
+                    }
                 }
 
-                $angsuranItems = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->get();
-                foreach($angsuranItems as $itemAngsuran) {                    
-                    $deleteAngsuran = PembayaranAngsuran::findOrFail($itemAngsuran->id);
-                    $deleteAngsuran->delete();
-                }
-            }
+                $delete_pembelian->delete();
 
-            $delete_pembelian->delete();
-
-            $pembelianItems = ItemPembelian::where('kode', $delete_pembelian->kode)->get();
-            foreach($pembelianItems as $itemPembelian) {                
-                $deleteItem = ItemPembelian::findOrFail($itemPembelian->id);
-                $deleteItem->delete();
-            }
-
-            $dataKas = Kas::where('kode', $delete_pembelian->kode_kas)->first();
-            $updateKas = Kas::findOrFail($dataKas->id);
-            $updateKas->saldo = $dataKas->saldo + $delete_pembelian->jumlah;
-            $updateKas->save();
-
-            $orderItems = PurchaseOrder::where('kode_po', $delete_pembelian->kode)->get();
-            foreach($orderItems as $item) {                    
-                $barangItems = Barang::where('kode', $item->kode_barang)->get();
-                foreach($barangItems as $barang) {                        
-                    $updateStokBarang = Barang::findOrFail($barang->id);
-                    $lastQty = $updateStokBarang->toko;
-                    $updateStokBarang->toko = $updateStokBarang->toko - $item->qty;
-                    $updateStokBarang->last_qty = $lastQty;
-                    $updateStokBarang->save();
+                $pembelianItems = ItemPembelian::where('kode', $delete_pembelian->kode)->get();
+                foreach($pembelianItems as $itemPembelian) {                
+                    $deleteItem = ItemPembelian::findOrFail($itemPembelian->id);
+                    $deleteItem->delete();
                 }
 
-                $deleted_order = PurchaseOrder::findOrFail($item->id);
-                $deleted_order->delete();
+                $dataKas = Kas::where('kode', $delete_pembelian->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = $dataKas->saldo + $delete_pembelian->jumlah;
+                $updateKas->save();
+
+                $orderItems = PurchaseOrder::where('kode_po', $delete_pembelian->kode)->get();
+                foreach($orderItems as $item) {                    
+                    $barangItems = Barang::where('kode', $item->kode_barang)->get();
+                    foreach($barangItems as $barang) {                        
+                        $updateStokBarang = Barang::findOrFail($barang->id);
+                        $lastQty = $updateStokBarang->toko;
+                        $updateStokBarang->toko = $updateStokBarang->toko - $item->qty;
+                        $updateStokBarang->last_qty = $lastQty;
+                        $updateStokBarang->save();
+                    }
+
+                    $deleted_order = PurchaseOrder::findOrFail($item->id);
+                    $deleted_order->delete();
+                }
+
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'purchase-order',
+                    'type' => 'removed',
+                    'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, successfully deleted!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pembelian dengan kode, {$delete_pembelian->kode} berhasil dihapus 👏"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
             }
-
-            $data_event = [
-                'alert' => 'error',
-                'routes' => 'purchase-order',
-                'type' => 'removed',
-                'notif' => "Pembelian dengan kode, {$delete_pembelian->kode}, successfully deleted!",
-                'user' => Auth::user()
-            ];
-
-            event(new EventNotification($data_event));
-
-            return response()->json([
-                'success' => true,
-                'message' => "Pembelian dengan kode, {$delete_pembelian->kode} berhasil dihapus 👏"
-            ]);
-        } else {
-            return response()->json([
-                'error' => true,
-                'message' => "Hak akses tidak di ijinkan 📛"
-            ]);
+        } catch (\Throwable $th) {
+            throw $th;
         }
-    } catch (\Throwable $th) {
-        throw $th;
     }
-}
 }

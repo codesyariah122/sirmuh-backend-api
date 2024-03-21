@@ -267,7 +267,7 @@ class DataPenjualanPartaiController extends Controller
                 $newLabaRugi->diskon =  $newPenjualanData->diskon;
                 $newLabaRugi->labarugi = $labarugi;
                 $newLabaRugi->operator = $data['operator'];
-                $newLabaRugi->keterangan = $data['keterangan'];
+                $newLabaRugi->keterangan = "PENJUALAN PARTAI";
                 $newLabaRugi->pelanggan = $pelanggan->kode;
                 $newLabaRugi->nama_pelanggan = $pelanggan->nama;
 
