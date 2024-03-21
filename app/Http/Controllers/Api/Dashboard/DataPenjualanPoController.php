@@ -376,12 +376,12 @@ class DataPenjualanPoController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'ongkir' => 'required',
+                // 'ongkir' => 'required',
             ]);
 
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
+            // if ($validator->fails()) {
+            //     return response()->json($validator->errors(), 400);
+            // }
 
             $data = $request->all();
             $currentDate = now()->format('ymd');
@@ -521,9 +521,12 @@ class DataPenjualanPoController extends Controller
                     $updateItemPenjualan->save();
                 }
 
-                $updateKas = Kas::findOrFail($kas->id);
-                $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
-                $updateKas->save();
+                if($data['ongkir']) {                    
+                    $updateKas = Kas::findOrFail($kas->id);
+                    $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
+                    $updateKas->save();
+                }
+
 
                 $updatePenjualanSaved =  Penjualan::query()
                 ->select(

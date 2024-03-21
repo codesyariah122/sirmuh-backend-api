@@ -147,6 +147,7 @@ class DataPenjualanTokoController extends Controller
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
             $newPenjualanToko->pelanggan = $pelanggan->kode;
             $newPenjualanToko->kode_kas = $kas->kode;
+            
             if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
                 $newPenjualanToko->jumlah = $data['jumlah'];
             } else {
