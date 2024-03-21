@@ -278,10 +278,6 @@ class DataPenjualanPartaiController extends Controller
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
 
-                $updateKas = Kas::findOrFail($kas->id);
-                $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
-                $updateKas->save();
-
                 $newPenjualanTokoSaved =  Penjualan::query()
                 ->select(
                     'penjualan.*',
