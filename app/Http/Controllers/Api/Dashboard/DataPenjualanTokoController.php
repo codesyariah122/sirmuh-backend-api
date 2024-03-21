@@ -105,7 +105,7 @@ class DataPenjualanTokoController extends Controller
             $validator = Validator::make($request->all(), [
                 'kode_kas' => 'required',
                 'barangs' => 'required',
-                'ongkir' => ['required', 'not_in:0']
+                // 'ongkir' => ['required', 'not_in:0']
             ]);
 
             if ($validator->fails()) {
