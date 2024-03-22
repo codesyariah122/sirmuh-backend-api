@@ -45,4 +45,48 @@ class RajaOngkirController extends Controller
             throw $th;
         }
     }
+
+    public function ekspeditions()
+    {
+        try {
+            $response = Http::withHeaders([
+                'key' => env('RAJAONGKIR_KEY')
+            ])->get('https://api.rajaongkir.com/starter/courier');
+            return response()->json([
+                'success' => true,
+                'message' => 'Lists of ekpeditions',
+                'data'    => $response->json()
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function checkOngkir(Request $request)
+    {
+        try{
+            $response = Http::withHeaders([
+                'key' => env('RAJAONGKIR_KEY')
+            ])->post('https://api.rajaongkir.com/starter/cost', [
+                'origin'            => $request->origin,
+                // 'type_ori'          => $request->type_ori,
+                'destination'       => $request->destination,
+                // 'type_dest'         => $request->destination_type,
+                'weight'            => $request->weight,
+                'courier'           => $request->courier
+            ]);
+
+            $ongkir = $response['rajaongkir']['results'];
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Result Cost Ongkir',
+                'data'    => $ongkir
+            ]);
+        }catch(Exception $e){
+             return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
+    }
 }

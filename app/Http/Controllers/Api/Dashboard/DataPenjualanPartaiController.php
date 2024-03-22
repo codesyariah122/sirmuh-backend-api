@@ -332,8 +332,10 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         'barang.nama as barang_nama',
         'barang.satuan as barang_satuan',
         'barang.harga_toko as harga_toko',
+        'kas.kode', 'kas.nama as nama_kas',
         DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
     )
+    ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
     ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
     ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
     ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
@@ -375,7 +377,7 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         try {
             $penjualan = Penjualan::query()
             ->select(
-                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali', 'penjualan.dikirim', 'penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'penjualan.receive', 'penjualan.status', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
+                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali', 'penjualan.dikirim', 'penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'penjualan.receive', 'penjualan.status','penjualan.biayakirim', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
             )
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')

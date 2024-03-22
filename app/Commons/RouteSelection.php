@@ -124,6 +124,16 @@ class RouteSelection {
             'method' => 'resource',
             'controllers' => DataPelangganController::class
         ],
+        [
+            'endPoint' => '/list-pelanggan-normal',
+            'method' => 'get',
+            'controllers' => [DataPelangganController::class, 'list_normal']
+        ],
+        [
+            'endPoint' => '/list-pelanggan-partai',
+            'method' => 'get',
+            'controllers' => [DataPelangganController::class, 'list_partai']
+        ],
 
         // Data Cabang
         [
@@ -659,6 +669,16 @@ class RouteSelection {
         	'endPoint' => '/citys/{id}',
         	'method' => 'get',
         	'controllers' => [RajaOngkirController::class, 'citys']
+        ],
+        [
+        	'endPoint' => '/ekspedisi-lists',
+        	'method' => 'get',
+        	'controllers' => [RajaOngkirController::class, 'ekspeditions']
+        ],
+        [
+        	'endPoint' => '/check-ongkir',
+        	'method' => 'post',
+        	'controllers' => [RajaOngkirController::class, 'checkOngkir']
         ]
     ];
 

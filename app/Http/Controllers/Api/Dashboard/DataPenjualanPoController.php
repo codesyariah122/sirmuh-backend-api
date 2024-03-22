@@ -273,8 +273,10 @@ class DataPenjualanPoController extends Controller
             'barang.nama as barang_nama',
             'barang.satuan as barang_satuan',
             'barang.harga_toko as harga_toko',
+            'kas.kode', 'kas.nama as nama_kas',
             DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
         )
+        ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
         ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
         ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
