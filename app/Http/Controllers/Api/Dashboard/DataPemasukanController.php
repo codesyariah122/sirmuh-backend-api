@@ -27,10 +27,11 @@ class DataPemasukanController extends Controller
     {
         try {
              $pemasukans = Pemasukan::leftJoin('jenis_pemasukan', 'pemasukan.kd_biaya', '=', 'jenis_pemasukan.kode')
-            ->select('pemasukan.*', 'jenis_pemasukan.nama as jenis_pemasukan_nama')
-            ->whereNull('pemasukan.deleted_at')
-            ->orderBy("pemasukan.tanggal", "DESC")
-            ->paginate(10);
+             ->leftJoin('kas', 'pemasukan.kode_kas', '=', 'kas.kode')
+             ->select('pemasukan.*', 'jenis_pemasukan.nama as jenis_pemasukan_nama', 'kas.kode as kas_kode', 'kas.nama as nama_kas')
+             ->whereNull('pemasukan.deleted_at')
+             ->orderBy("pemasukan.tanggal", "DESC")
+             ->paginate(10);
 
             return new ResponseDataCollect($pemasukans);
         } catch (\Throwable $th) {

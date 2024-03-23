@@ -288,8 +288,16 @@ class DataItemPenjualanController extends Controller
                         'message' => "Oops saldo tidak mencukupi 🤦"
                     ]);
                 }
+
+                $dataBarang = Barang::whereKode($updateItemPenjualan->kode_barang)->first();
                 
                 if($request->qty) {
+                    if($dataBarang->toko < $request->qty) {
+                        return response()->json([
+                            'error_stok' => true,
+                            'message' => 'Out of stok 🙅🏿‍♂️'
+                        ]);
+                    }
                     $updateItemPenjualan->qty = intval($request->qty);
                     $updateItemPenjualan->last_qty = $request->last_qty;
                     $updateItemPenjualan->stop_qty = $request->stop_qty;

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,PurchaseOrder, Supplier};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,PurchaseOrder, Supplier, Pemasukan, SetupPerusahaan};
 use Auth;
 use PDF;
 
@@ -377,9 +377,9 @@ class DataPenjualanPoController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                // 'ongkir' => 'required',
-            ]);
+            // $validator = Validator::make($request->all(), [
+            //     'ongkir' => 'required',
+            // ]);
 
             // if ($validator->fails()) {
             //     return response()->json($validator->errors(), 400);
@@ -461,7 +461,7 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->visa = "DP AWAL";
                 $updatePenjualan->receive = "False";
                 $updatePenjualan->tahan = "False";
-                $updatePenjualan->status = "PROSES PENGIRIMAN";
+                $updatePenjualan->status = $data['status_kirim'] ? $data['status_kirim'] : "PROSES PENGIRIMAN";
                 $updatePenjualan->piutang = 0;
             } else {
                 if($bayar > $data['jumlah_saldo']) {
@@ -477,13 +477,16 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->piutang = 0;
                 $updatePenjualan->receive = "True";
                 $updatePenjualan->tahan = "False";
-                $updatePenjualan->status = "DIKIRIM";
+                $updatePenjualan->status = $data['status_kirim'] ? $data['status_kirim'] : "DIKIRIM";
+                $updatePenjualan->biayakirim = $data['ongkir'];
 
+                $dataPelanggan = Pelanggan::whereKode($updatePenjualan->pelanggan)->first();
+                $pelanggan = Pelanggan::findOrFail($dataPelanggan->id);
                 $itemPenjualanBarang = ItemPenjualan::whereKode($updatePenjualan->kode)->first();
-                $newPenjualanData = Penjualan::findOrFail($updatePenjuala->id);
-                $hpp = $itemPenjualanBarang->hpp * $data['qty'];
-                $diskon = $updatePenjuala->diskon;
-                $labarugi = ($updatePenjuala->bayar - $hpp) - $diskon;
+                $newPenjualanData = Penjualan::findOrFail($updatePenjualan->id);
+                $hpp = $itemPenjualanBarang->hpp * $itemPenjualanBarang->qty;
+                $diskon = $updatePenjualan->diskon;
+                $labarugi = ($updatePenjualan->bayar - $hpp) - $diskon;
                 
                 $newLabaRugi = new LabaRugi;
                 $newLabaRugi->tanggal = now()->toDateString();
@@ -505,6 +508,19 @@ class DataPenjualanPoController extends Controller
                 $simpanFaktur->faktur = $newPenjualanData->kode;
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
+
+                $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+                $pemasukan = new Pemasukan;
+                $pemasukan->kode = $updatePenjualan->kode;
+                $pemasukan->tanggal = $updatePenjualan->tanggal;
+                $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko."-PO";
+                $pemasukan->keterangan = "PENJUALAN P.O";
+                $pemasukan->kode_kas = $updatePenjualan->kode_kas;
+                $pemasukan->jumlah = $updatePenjualan->jumlah;
+                $pemasukan->operator = $updatePenjualan->operator;
+                $pemasukan->kode_pelanggan = $pelanggan->kode;
+                $pemasukan->nama_pelanggan = $pelanggan->nama;
+                $pemasukan->save();
             }
 
             $updatePenjualan->multiple_input = $data["multiple_input"];

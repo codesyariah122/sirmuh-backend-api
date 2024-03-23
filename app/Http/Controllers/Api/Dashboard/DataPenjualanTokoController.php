@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles, Pemasukan};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles, Pemasukan, SetupPerusahaan};
 use Auth;
 use PDF;
 
@@ -143,9 +143,11 @@ class DataPenjualanTokoController extends Controller
 
             $newPenjualanToko = new Penjualan;
             $newPenjualanToko->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
+            $newPenjualanToko->pelanggan = $pelanggan->kode;
+            $newPenjualanToko->nama_pelanggan = $pelanggan->nama;
+            $newPenjualanToko->alamat_pelanggan = $pelanggan->alamat;
             $newPenjualanToko->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
-            $newPenjualanToko->pelanggan = $pelanggan->kode;
             $newPenjualanToko->kode_kas = $kas->kode;
             
             if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
@@ -278,6 +280,19 @@ class DataPenjualanTokoController extends Controller
                 $simpanFaktur->faktur = $newPenjualanData->kode;
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
+
+                $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+                $pemasukan = new Pemasukan;
+                $pemasukan->kode = $newPenjualanToko->kode;
+                $pemasukan->tanggal = $newPenjualanToko->tanggal;
+                $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko;
+                $pemasukan->keterangan = "PENJUALAN TOKO";
+                $pemasukan->kode_kas = $newPenjualanToko->kode_kas;
+                $pemasukan->jumlah = $newPenjualanToko->jumlah;
+                $pemasukan->operator = $newPenjualanToko->operator;
+                $pemasukan->kode_pelanggan = $pelanggan->kode;
+                $pemasukan->nama_pelanggan = $pelanggan->nama;
+                $pemasukan->save();
 
 
                 if($data['status_kirim'] === "DIKIRIM") {                    
@@ -632,44 +647,6 @@ public function cetak_nota($type, $kode, $id_perusahaan)
                     'message' => "Hak akses tidak di ijinkan 📛"
                 ]);
             }
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
-    public function update_status_kirim(Request $request, $id)
-    {
-        try {
-            $user = Auth::user();
-            $userRole = Roles::findOrFail($user->role);
-
-            $dataPenjualan = Penjualan::findOrFail($id);
-            $dataPenjualan->dikirim = $dataPenjualan->jumlah;
-            $dataPenjualan->receive = "True";
-            $dataPenjualan->status = $request->status_kirim;
-            $dataPenjualan->save();
-
-            $kas = Kas::where('kode', $dataPenjualan['kode_kas'])->first();
-
-            $updateKas = Kas::findOrFail($kas->id);
-            $updateKas->saldo = $kas->saldo - intval($dataPenjualan->biayakirim);
-            $updateKas->save();
-
-
-            $data_event = [
-                'alert' => 'success',
-                'routes' => 'penjualan-toko',
-                'type' => 'updated',
-                'notif' => "Status kirim Penjualan dengan kode, {$dataPenjualan->kode}, has been updated!",
-                'user' => Auth::user()
-            ];
-
-            event(new EventNotification($data_event));
-
-            return response()->json([
-                'success' => true,
-                'message' => "Status kirim penjualan dengan kode, {$dataPenjualan->kode} has been updated 😵‍💫"
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

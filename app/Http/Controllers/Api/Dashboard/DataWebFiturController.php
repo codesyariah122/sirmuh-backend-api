@@ -2090,92 +2090,130 @@ class DataWebFiturController extends Controller
                 $updateFakturTerakhir->save();
 
             } else {
-               $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
-               ->first();
-               $updateFakturTerakhir->faktur = $request->faktur;
-               $updateFakturTerakhir->tanggal = $today;
-               $updateFakturTerakhir->save();
+             $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+             ->first();
+             $updateFakturTerakhir->faktur = $request->faktur;
+             $updateFakturTerakhir->tanggal = $today;
+             $updateFakturTerakhir->save();
 
-           }
-           return response()->json([
-            'success' => true,
-            'message' => 'Faktur terakhir terupdate!'
-        ], 200);
-       } catch (\Throwable $th) {
-        throw $th;
+            }
+             return response()->json([
+                'success' => true,
+                'message' => 'Faktur terakhir terupdate!'
+            ], 200);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
-}
 
-public function check_roles_access()
-{
-    try {
-        $user = Auth::user();
+    public function check_roles_access()
+    {
+        try {
+            $user = Auth::user();
 
-        $userRole = Roles::findOrFail($user->role);
+            $userRole = Roles::findOrFail($user->role);
 
-        if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN") { 
-            return response()->json([
-                'error' => true,
-                'message' => 'Hak akses tidak di ijinkan 🚫'
-            ]);
-        } else {
+            if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN") { 
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Hak akses tidak di ijinkan 🚫'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                ], 200);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function check_password_access()
+    {
+        try {
+            $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+
+            if ($userRole->name !== "MASTER") { 
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Hak akses tidak di ijinkan 🚫'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                ], 200);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function checkInternetConnection()
+    {
+        $urlToCheck = 'https://sockjs-ap1.pusher.com';
+        try {
+            $startTime = microtime(true);
+
+            $response = Http::get($urlToCheck);
+
+            $endTime = microtime(true);
+            $elapsedTime = $endTime - $startTime;
+
+            // Bulatkan waktu ke dua desimal
+            $elapsedTimeRounded = round($elapsedTime, 2);
+
+            $speedInKbps = ($response->getBody()->getSize() * 8) / ($elapsedTime * 1024);
+
             return response()->json([
                 'success' => true,
-            ], 200);
-        }
-
-    } catch (\Throwable $th) {
-        throw $th;
-    }
-}
-
-public function check_password_access()
-{
-    try {
-        $user = Auth::user();
-
-        $userRole = Roles::findOrFail($user->role);
-
-        if ($userRole->name !== "MASTER") { 
-            return response()->json([
-                'error' => true,
-                'message' => 'Hak akses tidak di ijinkan 🚫'
+                'time_taken' => $elapsedTimeRounded,
+                'speed' => ceil($speedInKbps),
             ]);
-        } else {
+        } catch (\Exception $e) {
+            return false; // Terjadi kesalahan, misalnya tidak dapat terhubung ke server
+        }
+    }
+
+    public function update_status_kirim(Request $request, $id)
+    {
+        try {
+            $user = Auth::user();
+            $userRole = Roles::findOrFail($user->role);
+
+            $dataPenjualan = Penjualan::findOrFail($id);
+            $dataPenjualan->dikirim = $request->status_kirim === "DIKIRIM" ? $dataPenjualan->jumlah : 0;
+            $dataPenjualan->receive = $request->status_kirim === "DIKIRIM" ? "True" : "False";
+            $dataPenjualan->status = $request->status_kirim;
+            $dataPenjualan->save();
+
+            $kas = Kas::where('kode', $dataPenjualan['kode_kas'])->first();
+
+            $updateKas = Kas::findOrFail($kas->id);
+            $updateKas->saldo = $kas->saldo - intval($dataPenjualan->biayakirim);
+            $updateKas->save();
+
+
+            $data_event = [
+                'alert' => 'success',
+                'routes' => 'penjualan-toko',
+                'type' => 'updated',
+                'notif' => "Status kirim Penjualan dengan kode, {$dataPenjualan->kode}, has been updated!",
+                'user' => Auth::user()
+            ];
+
+            event(new EventNotification($data_event));
+
             return response()->json([
                 'success' => true,
-            ], 200);
+                'message' => "Status kirim penjualan dengan kode, {$dataPenjualan->kode} has been updated 😵‍💫"
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
         }
-
-    } catch (\Throwable $th) {
-        throw $th;
     }
-}
-
-public function checkInternetConnection()
-{
-    $urlToCheck = 'https://sockjs-ap1.pusher.com';
-    try {
-        $startTime = microtime(true);
-
-        $response = Http::get($urlToCheck);
-
-        $endTime = microtime(true);
-        $elapsedTime = $endTime - $startTime;
-
-        // Bulatkan waktu ke dua desimal
-        $elapsedTimeRounded = round($elapsedTime, 2);
-
-        $speedInKbps = ($response->getBody()->getSize() * 8) / ($elapsedTime * 1024);
-
-        return response()->json([
-            'success' => true,
-            'time_taken' => $elapsedTimeRounded,
-            'speed' => ceil($speedInKbps),
-        ]);
-    } catch (\Exception $e) {
-        return false; // Terjadi kesalahan, misalnya tidak dapat terhubung ke server
-    }
-}
 
 }

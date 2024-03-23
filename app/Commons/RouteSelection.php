@@ -282,7 +282,7 @@ class RouteSelection {
         [
             'endPoint' => '/status-kirim/{id}',
             'method' => 'put',
-            'controllers' => [DataPenjualanTokoController::class, 'update_status_kirim']
+            'controllers' => [DataWebFiturController::class, 'update_status_kirim']
         ],
         [
             'endPoint' => '/data-penjualan-po',

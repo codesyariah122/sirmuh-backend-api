@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles,SetupPerusahaan,Pemasukan};
 use Auth;
 use PDF;
 
@@ -143,10 +143,13 @@ class DataPenjualanPartaiController extends Controller
 
             $newPenjualanToko = new Penjualan;
             $newPenjualanToko->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
+            $newPenjualanToko->pelanggan = $pelanggan->kode;
+            $newPenjualanToko->nama_pelanggan = $pelanggan->nama;
+            $newPenjualanToko->alamat_pelanggan = $pelanggan->alamat;
             $newPenjualanToko->kode = $data['ref_code'] ? $data['ref_code'] : $generatedCode;
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
-            $newPenjualanToko->pelanggan = $pelanggan->kode;
             $newPenjualanToko->kode_kas = $kas->kode;
+
             if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
                 $newPenjualanToko->jumlah = $data['jumlah'];
             } else {
@@ -270,13 +273,25 @@ class DataPenjualanPartaiController extends Controller
                 $newLabaRugi->keterangan = "PENJUALAN PARTAI";
                 $newLabaRugi->pelanggan = $pelanggan->kode;
                 $newLabaRugi->nama_pelanggan = $pelanggan->nama;
-
                 $newLabaRugi->save();
 
                 $simpanFaktur = new FakturTerakhir;
                 $simpanFaktur->faktur = $newPenjualanData->kode;
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
+
+                $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+                $pemasukan = new Pemasukan;
+                $pemasukan->kode = $newPenjualanToko->kode;
+                $pemasukan->tanggal = $newPenjualanToko->tanggal;
+                $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko."-PRT";
+                $pemasukan->keterangan = "PENJUALAN TOKO";
+                $pemasukan->kode_kas = $newPenjualanToko->kode_kas;
+                $pemasukan->jumlah = $newPenjualanToko->jumlah;
+                $pemasukan->operator = $newPenjualanToko->operator;
+                $pemasukan->kode_pelanggan = $pelanggan->kode;
+                $pemasukan->nama_pelanggan = $pelanggan->nama;
+                $pemasukan->save();
 
                 $newPenjualanTokoSaved =  Penjualan::query()
                 ->select(
