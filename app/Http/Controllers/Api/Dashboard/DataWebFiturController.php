@@ -2199,7 +2199,7 @@ class DataWebFiturController extends Controller
 
             $data_event = [
                 'alert' => 'success',
-                'routes' => 'penjualan-toko',
+                'routes' => 'penjualan',
                 'type' => 'updated',
                 'notif' => "Status kirim Penjualan dengan kode, {$dataPenjualan->kode}, has been updated!",
                 'user' => Auth::user()

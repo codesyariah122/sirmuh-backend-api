@@ -281,18 +281,18 @@ class DataPenjualanTokoController extends Controller
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
 
-                $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
-                $pemasukan = new Pemasukan;
-                $pemasukan->kode = $newPenjualanToko->kode;
-                $pemasukan->tanggal = $newPenjualanToko->tanggal;
-                $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko;
-                $pemasukan->keterangan = "PENJUALAN TOKO";
-                $pemasukan->kode_kas = $newPenjualanToko->kode_kas;
-                $pemasukan->jumlah = $newPenjualanToko->jumlah;
-                $pemasukan->operator = $newPenjualanToko->operator;
-                $pemasukan->kode_pelanggan = $pelanggan->kode;
-                $pemasukan->nama_pelanggan = $pelanggan->nama;
-                $pemasukan->save();
+                // $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+                // $pemasukan = new Pemasukan;
+                // $pemasukan->kode = $newPenjualanToko->kode;
+                // $pemasukan->tanggal = $newPenjualanToko->tanggal;
+                // $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko;
+                // $pemasukan->keterangan = "PENJUALAN TOKO";
+                // $pemasukan->kode_kas = $newPenjualanToko->kode_kas;
+                // $pemasukan->jumlah = $newPenjualanToko->jumlah;
+                // $pemasukan->operator = $newPenjualanToko->operator;
+                // $pemasukan->kode_pelanggan = $pelanggan->kode;
+                // $pemasukan->nama_pelanggan = $pelanggan->nama;
+                // $pemasukan->save();
 
 
                 if($data['status_kirim'] === "DIKIRIM") {                    

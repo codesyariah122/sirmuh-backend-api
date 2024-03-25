@@ -102,10 +102,6 @@
                 <td colspan="5" class="text-right"><b>Total</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
             </tr>
-            <tr>
-                <td colspan="5" class="text-right"><b>Diskon</b></td>
-                <td class="text-right"><b>{{  $helpers->format_uang($penjualan->diskon) }}%</b></td>
-            </tr>
             @if($penjualan->lunas === "True")
             <tr>
                 <td colspan="5" class="text-right"><b>Total Bayar</b></td>

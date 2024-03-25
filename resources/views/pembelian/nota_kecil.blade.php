@@ -209,6 +209,10 @@
                 </tr>
                 @else
                 <tr>
+                    <td>Dibayar:</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+                <tr>
                     <td>Kembali:</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
                 </tr>

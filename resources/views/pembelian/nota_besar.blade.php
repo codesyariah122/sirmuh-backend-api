@@ -85,7 +85,7 @@
                 <td>{{ $item->kode_barang }}</td>
                 <td>{{ $item->nama_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
-                <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
+                <td class="text-right">{{ $item->qty." ".$item->satuan }}</td>
                 <td class="text-right">{{ $pembelian->po === 'True' ? 'DP Awal' : $item->visa }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
             </tr>
@@ -108,7 +108,7 @@
         <tfoot>
             @if($pembelian->po === 'False')
                 <tr>
-                    <td colspan="6" class="text-right"><b>Total Bayar</b></td>
+                    <td colspan="6" class="text-right"><b>Total</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
                 </tr>
             @endif
@@ -168,8 +168,8 @@
             </tr>
             @else
             <tr>
-                <td colspan="6" class="text-right"><b>Diterima</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
+                <td colspan="6" class="text-right"><b>Dibayar</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>

@@ -478,7 +478,7 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->piutang = 0;
                 $updatePenjualan->receive = "True";
                 $updatePenjualan->tahan = "False";
-                $updatePenjualan->status = $data['status_kirim'] ? $data['status_kirim'] : "DIKIRIM";
+                $updatePenjualan->status = "DIKIRIM";
                 $updatePenjualan->biayakirim = $data['ongkir'];
 
                 $dataPelanggan = Pelanggan::whereKode($updatePenjualan->pelanggan)->first();
@@ -510,18 +510,18 @@ class DataPenjualanPoController extends Controller
                 $simpanFaktur->tanggal = $newPenjualanData->tanggal;
                 $simpanFaktur->save();
 
-                $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
-                $pemasukan = new Pemasukan;
-                $pemasukan->kode = $updatePenjualan->kode;
-                $pemasukan->tanggal = $updatePenjualan->tanggal;
-                $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko."-PO";
-                $pemasukan->keterangan = "PENJUALAN P.O";
-                $pemasukan->kode_kas = $updatePenjualan->kode_kas;
-                $pemasukan->jumlah = $updatePenjualan->jumlah;
-                $pemasukan->operator = $updatePenjualan->operator;
-                $pemasukan->kode_pelanggan = $pelanggan->kode;
-                $pemasukan->nama_pelanggan = $pelanggan->nama;
-                $pemasukan->save();
+                // $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+                // $pemasukan = new Pemasukan;
+                // $pemasukan->kode = $updatePenjualan->kode;
+                // $pemasukan->tanggal = $updatePenjualan->tanggal;
+                // $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko."-PO";
+                // $pemasukan->keterangan = "PENJUALAN P.O";
+                // $pemasukan->kode_kas = $updatePenjualan->kode_kas;
+                // $pemasukan->jumlah = $updatePenjualan->jumlah;
+                // $pemasukan->operator = $updatePenjualan->operator;
+                // $pemasukan->kode_pelanggan = $pelanggan->kode;
+                // $pemasukan->nama_pelanggan = $pelanggan->nama;
+                // $pemasukan->save();
             }
 
             $updatePenjualan->multiple_input = $data["multiple_input"];
