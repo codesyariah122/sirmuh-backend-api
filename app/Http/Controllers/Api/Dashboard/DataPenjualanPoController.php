@@ -41,10 +41,10 @@ class DataPenjualanPoController extends Controller
 
            $query = Penjualan::query()
            ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.piutang','penjualan.receive','penjualan.biayakirim','itempenjualan.stop_qty', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
-           ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.piutang','penjualan.receive','penjualan.biayakirim','kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+           ->addSelect(DB::raw('(SELECT stop_qty FROM itempenjualan WHERE itempenjualan.kode = penjualan.kode ORDER BY id DESC LIMIT 1) as stop_qty'))
            ->orderByDesc('penjualan.id')
            ->limit(10);
 
@@ -463,7 +463,7 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->receive = "True";
                 $updatePenjualan->tahan = "False";
                 $updatePenjualan->piutang = 0;
-                $updatePenjualan->status = $data['status_kirim'] ? $data['status_kirim'] : "DIKIRIM";
+                $updatePenjualan->status = "DIKIRIM";
             } else {
                 if($bayar > $data['jumlah_saldo']) {
                     $updateKas = Kas::findOrFail($kas->id);

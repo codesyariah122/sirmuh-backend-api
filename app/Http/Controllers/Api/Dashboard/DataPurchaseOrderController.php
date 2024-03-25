@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -54,9 +55,8 @@ class DataPurchaseOrderController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'itempembelian.stop_qty', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
             )
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->limit(10);
@@ -84,6 +84,7 @@ class DataPurchaseOrderController extends Controller
                 } 
             })
             ->where('pembelian.po', '=', 'True')
+            ->addSelect(DB::raw('(SELECT stop_qty FROM itempembelian WHERE itempembelian.kode = pembelian.kode ORDER BY id DESC LIMIT 1) as stop_qty'))
             ->orderByDesc('pembelian.id')
             ->paginate(10);
 
