@@ -260,18 +260,18 @@ class DataItemPembelianController extends Controller
                 }
                 
                 if($request->qty) {
-                    $updateItemPembelian->qty = intval($request->qty);
+                    $updateItemPembelian->qty = $request->qty;
                     $updateItemPembelian->last_qty = $request->last_qty;
                     $updateItemPembelian->stop_qty = $request->stop_qty;
                     $totalQty = $request->qty + $request->last_qty;
-                    $updateItemPembelian->subtotal = intval($totalQty) * intval($updateItemPembelian->harga_beli);
+                    $updateItemPembelian->subtotal = $totalQty * intval($updateItemPembelian->harga_beli);
                     $updateItemPembelian->qty_terima = $updateItemPembelian->qty_terima + $request->qty;
                 }
 
                 if($request->harga_beli) {
                     $updateItemPembelian->harga_beli = intval($request->harga_beli);
                     $totalQty = $updateItemPembelian->qty + $updateItemPembelian->last_qty;
-                    $updateItemPembelian->subtotal = intval($totalQty) * intval($request->harga_beli);
+                    $updateItemPembelian->subtotal = $totalQty * intval($request->harga_beli);
                 }
 
                 $updateItemPembelian->save();
@@ -373,12 +373,12 @@ class DataItemPembelianController extends Controller
                 if($request->qty) {
                     $updateItemPembelian->qty = $newQty;
                     $updateItemPembelian->last_qty = $qty;
-                    $updateItemPembelian->subtotal = intval($request->qty) * intval($updateItemPembelian->harga_beli);
+                    $updateItemPembelian->subtotal = $request->qty * intval($updateItemPembelian->harga_beli);
                 }
 
                 if($request->harga_beli) {
                     $updateItemPembelian->harga_beli = intval($request->harga_beli);
-                    $updateItemPembelian->subtotal = intval($updateItemPembelian->qty) * intval($request->harga_beli);
+                    $updateItemPembelian->subtotal = $updateItemPembelian->qty * intval($request->harga_beli);
                 }
 
                 $updateItemPembelian->save();

@@ -1588,8 +1588,8 @@ class DataWebFiturController extends Controller
                     }
 
                     if ($existingItem) {
-                        $existingItem->qty = intval($barang['qty']);
-                        $existingItem->last_qty = intval($barang['last_qty']);
+                        $existingItem->qty = $barang['qty'];
+                        $existingItem->last_qty = $barang['last_qty'];
                         $existingItem->harga_beli = intval($barang['harga_beli']);
                         $existingItem->subtotal = $subTotal;
                         $existingItem->save();
@@ -1657,7 +1657,7 @@ class DataWebFiturController extends Controller
                         $updateExistingItem = ItemPembelian::findOrFail($existingItem->id);
 
                             // Jika sudah ada, update informasi yang diperlukan
-                        $updateExistingItem->qty = intval($barang['qty']);
+                        $updateExistingItem->qty = $barang['qty'];
                         $updateExistingItem->harga_beli = intval($barang['harga_beli']);
                         $updateExistingItem->subtotal = $barang['harga_beli'] * $barang['qty'];
                             // Update atribut lainnya sesuai kebutuhan
