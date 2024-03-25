@@ -298,7 +298,7 @@ class DataItemPenjualanController extends Controller
                             'message' => 'Out of stok 🙅🏿‍♂️'
                         ]);
                     }
-                    $updateItemPenjualan->qty = intval($request->qty);
+                    $updateItemPenjualan->qty = $request->qty;
                     $updateItemPenjualan->last_qty = $request->last_qty;
                     $updateItemPenjualan->stop_qty = $request->stop_qty;
                     $totalQty = $request->qty + $request->last_qty;

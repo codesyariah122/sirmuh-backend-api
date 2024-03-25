@@ -83,7 +83,7 @@
                 <td class="text-center">{{ $item->kode }}</td>
                 <td class="text-center">{{ $item->kode_kas }}</td>
                 <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
-                <td class="text-right">{{ round($item->qty)." ".$item->satuan }}</td>
+                <td class="text-right">{{ $item->qty." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->diskon }}%</td>
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
             </tr>
@@ -104,10 +104,12 @@
                 <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             @endif
+            @if($penjualan->dikirim !== NULL)
             <tr>
-                <td colspan="6" class="text-right"><b>Diterima</b></td>
-                <td class="text-right"><b>{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar) }}</b></td>
+                <td colspan="6" class="text-right"><b>Dikirim</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->dikirim) }}</b></td>
             </tr>
+            @endif
             @if($penjualan->lunas === "True")
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>

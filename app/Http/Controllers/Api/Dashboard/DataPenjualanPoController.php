@@ -322,7 +322,7 @@ class DataPenjualanPoController extends Controller
         try {
             $penjualan = Penjualan::query()
             ->select(
-                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.dikirim', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po','penjualan.receive','penjualan.biayakirim', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
+                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.dikirim', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po','penjualan.receive','penjualan.biayakirim','penjualan.status', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
             )
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
@@ -456,13 +456,14 @@ class DataPenjualanPoController extends Controller
                 // $updateKas->saldo = $kas->saldo - $bindCalc;
                 // $updateKas->save();
             } else if($data['sisa_dp'] > 0) {
+                $updatePenjualan->kembali = $data['sisa_dp'];
                 $updatePenjualan->dikirim = $totalSubtotal;
-                $updatePenjualan->lunas = "False";
-                $updatePenjualan->visa = "DP AWAL";
-                $updatePenjualan->receive = "False";
+                $updatePenjualan->lunas = "True";
+                $updatePenjualan->visa = "LUNAS";
+                $updatePenjualan->receive = "True";
                 $updatePenjualan->tahan = "False";
-                $updatePenjualan->status = $data['status_kirim'] ? $data['status_kirim'] : "PROSES PENGIRIMAN";
                 $updatePenjualan->piutang = 0;
+                $updatePenjualan->status = $data['status_kirim'] ? $data['status_kirim'] : "DIKIRIM";
             } else {
                 if($bayar > $data['jumlah_saldo']) {
                     $updateKas = Kas::findOrFail($kas->id);

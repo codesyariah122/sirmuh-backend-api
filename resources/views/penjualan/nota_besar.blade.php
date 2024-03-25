@@ -87,7 +87,7 @@
                 <td class="text-center">{{ $key+1 }}</td>
                 <td class="text-center">{{$item->nama_kas}} ({{ $item->kode_kas }})</td>
                 <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
-                <td class="text-center">{{ round($item->qty)." ".$item->satuan }}</td>
+                <td class="text-center">{{ $item->qty." ".$item->satuan }}</td>
                 @if(count($barangs) > 0)
                     <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim / count($barangs))}} </td>
                 @else
@@ -115,7 +115,7 @@
             @if($penjualan->dikirim !== NULL)
             <tr>
                 <td colspan="5" class="text-right"><b>Dikirim</b></td>
-                <td class="text-right"><b>{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->dikirim) }}</b></td>
             </tr>
             @endif
             @if($penjualan->lunas === "True")

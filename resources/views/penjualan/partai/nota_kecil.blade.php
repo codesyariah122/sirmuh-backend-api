@@ -84,7 +84,7 @@
                 <td colspan="3">{{ $item->nama_barang }} - ({{$item->kode_barang}}|{{$item->supplier}})</td>
             </tr>
             <tr>
-                <td>{{ round($item->qty) }} x {{ $helpers->format_uang($item->harga_toko) }}</td>
+                <td>{{ $item->qty }} x {{ $helpers->format_uang($item->harga_toko) }}</td>
                 <td></td>
                 <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_toko) }}</td>
             </tr>
@@ -105,10 +105,12 @@
                 <td>Total Bayar:</td>
                 <td class="text-right">{{$item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
+            @if($penjualan->dikirim !== NULL)
             <tr>
-                <td>Diterima : </td>
-                <td class="text-right">{{ $penjualan->diterima ? $helpers->format_uang($penjualan->diterima) : $helpers->format_uang($penjualan->bayar)}}</td>
+                <td><b>Dikirim</b></td>
+                <td class="text-right"><b>{{ $penjualan->dikirim ? $helpers->format_uang($penjualan->dikirim) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
+            @endif
             @else
             <tr>
                 <td>Diterima:</td>
