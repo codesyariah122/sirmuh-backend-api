@@ -1277,9 +1277,6 @@ class DataWebFiturController extends Controller
             case "penjualan-partai":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-PRT'. $currentDate . $randomNumber;
             break;
-            case "penjualan-partai":
-            $generatedCode = $perusahaan->kd_pengeluaran . $currentDate . $randomNumber;
-            break;
             case "bayar-hutang":
             $generatedCode = $perusahaan->kd_bayar_hutang . $currentDate . $randomNumber;
             break;
@@ -1291,6 +1288,9 @@ class DataWebFiturController extends Controller
             break;
             case "pemasukan":
             $generatedCode = "TPK-" . $currentDate . $randomNumber;
+            break;
+            case "pengeluaran":
+            $generatedCode = $perusahaan->kd_pengeluaran . '-' . $currentDate . $randomNumber;
             break;
         }
 

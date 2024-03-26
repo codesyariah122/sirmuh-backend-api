@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pengeluaran};
+use App\Models\{Pengeluaran, SetupPerusahaan, Kas};
 use Auth;
 
 class DataPengeluaranController extends Controller
@@ -25,11 +25,41 @@ class DataPengeluaranController extends Controller
     {
         try {
             $keywords = $request->query('keywords');
+            $biaya = $request->query('biaya');
+            $viewAll = $request->query('view_all');
+            $today = now()->toDateString();
+            $now = now();
+            $startOfMonth = $now->startOfMonth()->toDateString();
+            $endOfMonth = $now->endOfMonth()->toDateString();
+            $dateTransaction = $request->query('date_transaction');
           
-            $pengeluarans = Pengeluaran::whereNull('deleted_at')
-                ->orderByDesc("id")
-                ->paginate(10);
+            $query = Pengeluaran::query()
+            ->select('pengeluaran.*', 'biaya.kode as kode_biaya', 'biaya.nama as biaya_nama', 'kas.kode as kas_kode', 'kas.nama as nama_kas')
+            ->leftJoin('biaya', 'pengeluaran.kd_biaya', '=', 'biaya.kode')
+            ->leftJoin('kas', 'pengeluaran.kode_kas', '=', 'kas.kode')
+            ->whereNull('pengeluaran.deleted_at')
+            ->limit(10);
 
+
+             if ($dateTransaction) {
+                $query->whereDate('pengeluaran.tanggal', '=', $dateTransaction);
+            }
+
+            if ($keywords) {
+                $query->where('pengeluaran.kode', 'like', '%' . $keywords . '%');
+            }
+
+            if ($biaya) {
+                $query->where('biaya.kode', 'like', '%' . $biaya . '%');
+            }
+
+            if($viewAll === false || $viewAll === "false") {
+                // $query->whereDate('pembelian.tanggal', '=', $today);
+                $query->whereBetween('pengeluaran.tanggal', [$startOfMonth, $endOfMonth]);
+            }
+
+            $pengeluarans = $query->orderByDesc("pengeluaran.tanggal")
+                ->paginate(10);
             return new ResponseDataCollect($pengeluarans);
 
         } catch (\Throwable $th) {
@@ -55,7 +85,57 @@ class DataPengeluaranController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+             $validator = Validator::make($request->all(), [
+                'kode' => 'required',
+                'kd_biaya' => 'required',
+                'kode_kas' => 'required',
+                'jumlah' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $newPemasukan = new Pengeluaran;
+            $newPemasukan->kode = $request->kode;
+            $newPemasukan->tanggal = $request->tanggal;
+            $newPemasukan->kd_biaya = $request->kd_biaya;
+            $newPemasukan->keterangan = $request->keterangan;
+            $newPemasukan->kode_kas = $request->kode_kas;
+            $newPemasukan->jumlah = $request->jumlah;
+            $newPemasukan->operator = $request->operator;
+            $newPemasukan->save();
+
+            if($newPemasukan) {
+                $dataKas = Kas::whereKode($request->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) - intval($request->jumlah);
+                $updateKas->save();
+
+                $userOnNotif = Auth::user();
+                $data_event = [
+                    'routes' => 'kas',
+                    'alert' => 'success',
+                    'type' => 'add-data',
+                    'notif' => "Pengeluaran {$newPemasukan->kode}, baru saja ditambahkan 🤙!",
+                    'data' => $newPemasukan->kode,
+                    'user' => $userOnNotif
+                ];
+                event(new EventNotification($data_event));
+
+                $newDataPemasukan= Pengeluaran::findOrFail($newPemasukan->id);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pengeluaran dengan kode {$newPemasukan->kode}, successfully added✨!",
+                    'data' => $newDataPemasukan
+                ]);
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

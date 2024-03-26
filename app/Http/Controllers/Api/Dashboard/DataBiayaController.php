@@ -28,10 +28,10 @@ class DataBiayaController extends Controller
         $sort = $request->query('sort');
         $query = Biaya::whereNull('deleted_at')
             ->select('id', 'kode', 'nama', 'saldo')
-            ->where('nama', 'like', '%'.$keywords.'%');
+            ->orderBy('nama', 'ASC');
 
         if($keywords) {
-            $query->orderBy('nama', 'ASC');
+            $query->where('nama', 'like', '%'.$keywords.'%');
         }
 
         if($kode) {
