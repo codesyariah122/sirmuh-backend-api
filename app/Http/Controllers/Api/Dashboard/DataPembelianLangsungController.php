@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder};
+use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder,SetupPerusahaan};
 use Auth;
 use PDF;
 
@@ -132,13 +132,13 @@ class DataPembelianLangsungController extends Controller
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
+            $randomNumber = sprintf('%05d', mt_rand(0, 99999));
 
             $lastIncrement = Pembelian::max('id') ?? 0;
             $increment = $lastIncrement + 1;
 
             $formattedIncrement = sprintf('%03d', $increment);
 
-            $generatedCode = 'R21-' . $currentDate . $formattedIncrement;
 
             $supplier = Supplier::findOrFail($data['supplier']);
 
@@ -182,8 +182,10 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->jt = $data['jt'];
 
                 // Masuk ke hutang
+                $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_hutang = new Hutang;
-                $masuk_hutang->kode = $data['ref_code'];
+                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang.'-'. $currentDate . $randomNumber;
+                $masuk_hutang->kd_beli = $data['ref_code'];
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $supplier->kode;
                 $masuk_hutang->jumlah = $data['hutang'];
@@ -193,7 +195,8 @@ class DataPembelianLangsungController extends Controller
                 $masuk_hutang->save();
 
                 $item_hutang = new ItemHutang;
-                $item_hutang->kode = $data['ref_code'];
+                $item_hutang->kode = $masuk_hutang->kode;
+                $item_hutang->kd_beli = $data['ref_code'];
                 $item_hutang->kode_hutang = $masuk_hutang->kode;
                 $item_hutang->tgl_hutang = $currentDate;
                 $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;

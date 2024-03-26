@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{PurchaseOrder,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles};
+use App\Models\{PurchaseOrder,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles,SetupPerusahaan};
 use Auth;
 use PDF;
 
@@ -372,8 +372,10 @@ class DataPurchaseOrderController extends Controller
                 $updatePembelian->hutang = $data['hutang'];
 
                 // Masuk ke hutang
+                $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_hutang = new Hutang;
-                $masuk_hutang->kode = $updatePembelian->kode;
+                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang.'-'. $currentDate . $randomNumber;
+                $masuk_hutang->kd_beli = $updatePembelian->kode;
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;
                 $masuk_hutang->jumlah = $data['hutang'];
@@ -384,7 +386,8 @@ class DataPurchaseOrderController extends Controller
                 $masuk_hutang->save();
 
                 $item_hutang = new ItemHutang;
-                $item_hutang->kode = $updatePembelian->kode;
+                $item_hutang->kode = $masuk_hutang->kode;
+                $item_hutang->kd_beli = $updatePembelian->kode;
                 $item_hutang->kode_hutang = $masuk_hutang->kode;
                 $item_hutang->tgl_hutang = $currentDate;
                 $item_hutang->jumlah_hutang = $masuk_hutang->jumlah;

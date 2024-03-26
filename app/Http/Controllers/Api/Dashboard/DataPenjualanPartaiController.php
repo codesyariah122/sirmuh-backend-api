@@ -118,6 +118,7 @@ class DataPenjualanPartaiController extends Controller
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
+            $randomNumber = sprintf('%05d', mt_rand(0, 99999));
 
             $lastIncrement = Penjualan::max('id') ?? 0;
             $increment = $lastIncrement + 1;
@@ -169,17 +170,21 @@ class DataPenjualanPartaiController extends Controller
                 $newPenjualanToko->status = "HOLD";
 
                 // Masuk ke hutang
+                $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_hutang = new Piutang;
-                $masuk_hutang->kode = $data['ref_code'];
+                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_piutang.'-'. $currentDate . $randomNumber;
+                $masuk_hutang->kd_jual = $data['ref_code'];
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->pelanggan = $pelanggan->kode;
+                $masuk_hutang->alamat = $pelanggan->alamat;
                 $masuk_hutang->jumlah = $data['piutang'];
                 $masuk_hutang->kode_kas = $newPenjualanToko->kode_kas;
                 $masuk_hutang->operator = $data['operator'];
                 $masuk_hutang->save();
 
                 $item_piutang = new ItemPiutang;
-                $item_piutang->kode = $data['ref_code'];
+                $item_piutang->kode = $masuk_hutang->kode;
+                $item_piutang->kd_jual = $data['ref_code'];
                 $item_piutang->kode_piutang = $masuk_hutang->kode;
                 $item_piutang->tgl_piutang = $currentDate;
                 $item_piutang->jumlah_piutang = $masuk_hutang->jumlah;

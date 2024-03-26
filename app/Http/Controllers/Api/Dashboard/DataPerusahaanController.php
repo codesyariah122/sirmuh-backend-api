@@ -206,16 +206,15 @@ class DataPerusahaanController extends Controller
     public function show($id)
     {
         try {
-             $tokos = Toko::whereId($id)
-            ->with('users')
-            ->take(2)
-            ->get();
+            $tokos = SetupPerusahaan::select("setup_perusahaan.*", "tokos.logo")
+            ->leftJoin('tokos', 'tokos.id', '=', 'setup_perusahaan.id')
+            ->findOrFail($id);
 
-            $tokos->transform(function ($toko) {
-                $toko->koordinat = DB::select(DB::raw("SELECT ST_AsText(koordinat) as text FROM tokos WHERE id = :id"), ['id' => $toko->id])[0]->text;
-                return $toko;
-            });
-            return new ResponseDataCollect($tokos);
+            return response()->json([
+                'success' => true,
+                'message' => "Detail perusahaan data",
+                'data' => $tokos
+            ]);
         } catch (\Throwable $th) {
             \Log::error($th);
             throw $th;

@@ -1276,6 +1276,15 @@ class DataWebFiturController extends Controller
             case "penjualan-partai":
             $generatedCode = $perusahaan->kd_penjualan_toko .'-PRT'. $currentDate . $randomNumber;
             break;
+            case "penjualan-partai":
+            $generatedCode = $perusahaan->kd_pengeluaran . $currentDate . $randomNumber;
+            break;
+            case "bayar-hutang":
+            $generatedCode = $perusahaan->kd_bayar_hutang . $currentDate . $randomNumber;
+            break;
+            case "bayar-piutang":
+            $generatedCode = $perusahaan->kd_bayar_piutang . $currentDate . $randomNumber;
+            break;
             case "mutasi-kas":
             $generatedCode = $perusahaan->kd_mutasi_kas . '-' . $currentDate . $randomNumber;
             break;
@@ -1730,7 +1739,7 @@ class DataWebFiturController extends Controller
                     'itempembelian.diskon',
                     'itempembelian.subtotal',
                     'barang.id as id_barang', 'barang.kode as barang_kode', 'barang.nama as barang_nama', 'barang.hpp', 'barang.toko','barang.ada_expired_date', 'barang.expired',
-                    'supplier.id as id_supplier'
+                    'supplier.id as id_supplier', 'supplier.nama as supplier_nama'
                 )
                 ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
                 ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')

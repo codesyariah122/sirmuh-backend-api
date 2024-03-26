@@ -145,6 +145,8 @@ class DataPenjualanPoController extends Controller
             $newPenjualan->kode = $data['ref_code'];
             $newPenjualan->draft = 0;
             $newPenjualan->pelanggan = $pelanggan->kode;
+            $newPenjualan->nama_pelanggan = $pelanggan->nama;
+            $newPenjualan->alamat_pelanggan = $pelanggan->alamat;
             $newPenjualan->kode_kas = $kas->kode;
             $newPenjualan->jumlah = $data['jumlah'];
             $newPenjualan->bayar = $data['bayar'];
@@ -387,11 +389,13 @@ class DataPenjualanPoController extends Controller
 
             $data = $request->all();
             $currentDate = now()->format('ymd');
+            $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
             $dikirim = preg_replace("/[^0-9]/", "", $data['dikirim']);
 
             $updatePenjualan = Penjualan::where('po', 'True')
             ->findOrFail($id);
+            $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
             $dataItemPo = PurchaseOrder::where('kode_po', $updatePenjualan->kode)->get();
             $totalSubtotal = $dataItemPo->sum('subtotal');
 
@@ -415,10 +419,13 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->tahan = "True";
                 $updatePenjualan->status = "PENDING";
                 // Masuk ke piutang
+                $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_piutang = new Piutang;
-                $masuk_piutang->kode = $updatePenjualan->kode;
+                $masuk_piutang->kode = $dataPerusahaan->kd_bayar_piutang.'-'. $currentDate . $randomNumber;
+                $masuk_piutang->kd_jual = $updatePenjualan->kode;
                 $masuk_piutang->tanggal = $currentDate;
-                $masuk_piutang->pelanggan = $updatePenjualan->pelanggan;
+                $masuk_piutang->pelanggan = $pelanggan->kode;
+                $masuk_piutang->alamat = $pelanggan->alamat;
                 $masuk_piutang->jumlah = $data['piutang'];
                 // $masuk_piutang->bayar = $totalSubtotal;
                 $masuk_piutang->bayar = $bayar - $data['jumlah_saldo'];
@@ -427,7 +434,8 @@ class DataPenjualanPoController extends Controller
                 $masuk_piutang->save();
 
                 $item_piutang = new ItemPiutang;
-                $item_piutang->kode = $updatePenjualan->kode;
+                $item_piutang->kode = $masuk_piutang->kode;
+                $item_piutang->kd_jual = $updatePenjualan->kode;
                 $item_piutang->kode_piutang = $masuk_piutang->kode;
                 $item_piutang->tgl_piutang = $currentDate;
                 $item_piutang->jumlah_piutang = $masuk_piutang->jumlah;
@@ -527,7 +535,7 @@ class DataPenjualanPoController extends Controller
             $updatePenjualan->multiple_input = $data["multiple_input"];
             $updatePenjualan->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePenjualan->jumlah;
             $updatePenjualan->bayar = $bayar;
-            $updatePenjualan->kembali = $data['piutang'];
+            $updatePenjualan->kembali = $data['masuk_hutang'] ? 0 : $data['piutang'];
             $updatePenjualan->biayakirim = $updatePenjualan->biayakirim + $data['ongkir'];
 
             if($updatePenjualan->save()) {

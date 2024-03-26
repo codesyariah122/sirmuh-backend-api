@@ -12,9 +12,10 @@ class SetupPerusahaan extends Model
     use SoftDeletes;
 
     protected $table = 'setup_perusahaan';
-    
+
     public function tokos()
     {
-        return $this->belongsToMany("App\Models\Toko");
+        return $this->belongsToMany('App\Models\Toko');
     }
+    
 }
