@@ -246,7 +246,7 @@ class DataHutangController extends Controller
 
                 $updateHutang = Hutang::findOrFail($hutang->id);
                 if($bayar >= $jmlHutang) {
-                    $updateHutang->jumlah = 0;
+                    $updateHutang->jumlah = $bayar - $jmlHutang;
                     $updateHutang->bayar = $bayar;
                 } else {
                     $updateHutang->jumlah = $jmlHutang - $bayar;
