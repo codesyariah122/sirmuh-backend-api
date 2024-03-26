@@ -35,6 +35,9 @@ class DataPenjualanPoController extends Controller
         try {
            $keywords = $request->query('keywords');
            $today = now()->toDateString();
+           $now = now();
+           $startOfMonth = $now->startOfMonth()->toDateString();
+           $endOfMonth = $now->endOfMonth()->toDateString();
            $dateTransaction = $request->query('date_transaction');
            $viewAll = $request->query('view_all');
            $user = Auth::user();
@@ -57,7 +60,8 @@ class DataPenjualanPoController extends Controller
         }
 
         if($viewAll === false || $viewAll === "false") {
-            $query->whereDate('penjualan.tanggal', '=', $today);
+            // $query->whereDate('penjualan.tanggal', '=', $today);
+            $query->whereBetween('penjualan.tanggal', [$startOfMonth, $endOfMonth]);
         }
 
         $penjualans = $query

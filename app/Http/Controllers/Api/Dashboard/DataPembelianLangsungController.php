@@ -49,6 +49,9 @@ class DataPembelianLangsungController extends Controller
             $supplier = $request->query('supplier');
             $viewAll = $request->query('view_all');
             $today = now()->toDateString();
+            $now = now();
+            $startOfMonth = $now->startOfMonth()->toDateString();
+            $endOfMonth = $now->endOfMonth()->toDateString();
             $dateTransaction = $request->query('date_transaction');
 
             $user = Auth::user();
@@ -73,7 +76,8 @@ class DataPembelianLangsungController extends Controller
             }
 
             if($viewAll === false || $viewAll === "false") {
-                $query->whereDate('pembelian.tanggal', '=', $today);
+                // $query->whereDate('pembelian.tanggal', '=', $today);
+                $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
             }
 
             $pembelians = $query

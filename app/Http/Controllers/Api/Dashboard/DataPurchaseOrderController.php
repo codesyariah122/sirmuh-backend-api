@@ -50,6 +50,9 @@ class DataPurchaseOrderController extends Controller
             $supplier = $request->query('supplier');
             $dateTransaction = $request->query('date_transaction');
             $today = now()->toDateString();
+            $now = now();
+            $startOfMonth = $now->startOfMonth()->toDateString();
+            $endOfMonth = $now->endOfMonth()->toDateString();
 
             $user = Auth::user();
 
@@ -74,7 +77,8 @@ class DataPurchaseOrderController extends Controller
             }
 
             if($viewAll === false || $viewAll === "false") {
-                $query->whereDate('pembelian.tanggal', '=', $today);
+                // $query->whereDate('pembelian.tanggal', '=', $today);
+                $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
             }
 
             $pembelians = $query
