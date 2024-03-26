@@ -122,10 +122,17 @@
                 <td class="text-right"><b>{{ $helpers->format_uang($angsuran->bayar_angsuran) }}</b></td>
             </tr>
             @endforeach
-            <tr>
-                <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
-            </tr>
+            @if($hutang->lunas === "True")
+                <tr>
+                    <td colspan="6" class="text-right"><b>Kembali:</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
+                </tr>
+            @else
+                <tr>
+                    <td colspan="6" class="text-right"><b>Sisa Hutang:</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($hutang->jml_hutang) }}</b></td>
+                </tr>
+            @endif
         </tfoot>
     </table>
 

@@ -351,6 +351,7 @@ class DataPurchaseOrderController extends Controller
         try {
             $data = $request->all();
             $currentDate = now()->format('ymd');
+            $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
             $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
             $updatePembelian = Pembelian::where('po', 'True')

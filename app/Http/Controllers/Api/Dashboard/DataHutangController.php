@@ -231,7 +231,12 @@ class DataHutangController extends Controller
                 if($bayar >= $dataPembelian->hutang) {
                     $updatePembelian->lunas = "True";
                     $updatePembelian->visa = "LUNAS";
-                    $updatePembelian->hutang = $bayar - intval($dataPembelian->hutang);
+                    $updatePembelian->hutang = 0;
+                     if($dataPembelian->po === "True") {
+                        $updatePembelian->angsuran = $updatePembelian->bayar;
+                        $updatePembelian->receive = "True";
+                        $updatePembelian->kekurangan_sdh_dibayar = "True";
+                    }
                 } else {
                     $updatePembelian->lunas = "False";
                     $updatePembelian->visa = "HUTANG";
@@ -241,7 +246,7 @@ class DataHutangController extends Controller
 
                 $updateHutang = Hutang::findOrFail($hutang->id);
                 if($bayar >= $jmlHutang) {
-                    $updateHutang->jumlah = $bayar - $jmlHutang;
+                    $updateHutang->jumlah = 0;
                     $updateHutang->bayar = $bayar;
                 } else {
                     $updateHutang->jumlah = $jmlHutang - $bayar;
