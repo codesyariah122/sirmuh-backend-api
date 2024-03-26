@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('hutang', function (Blueprint $table) {
+        Schema::table('jenis_pemasukan', function (Blueprint $table) {
             $table->id()->first();
             $table->timestamps();
         });
@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('hutang', function (Blueprint $table) {
+        Schema::table('jenis_pemasukan', function (Blueprint $table) {
             //
         });
     }

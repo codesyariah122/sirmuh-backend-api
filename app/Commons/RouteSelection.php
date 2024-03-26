@@ -45,7 +45,8 @@ use App\Http\Controllers\Api\Dashboard\{
     DataPurchaseOrderController,
     DataLaporanPembelianController,
     DataLaporanPenjualanController,
-    RajaOngkirController
+    RajaOngkirController,
+    DataJenisPemasukanController
 };
 
 class RouteSelection {
@@ -311,8 +312,13 @@ class RouteSelection {
         ],
         [
             'endPoint' => '/data-pemasukan',
-            'method' => 'get',
-            'controllers' => [DataPemasukanController::class, 'index']
+            'method' => 'resource',
+            'controllers' => DataPemasukanController::class, 'index'
+        ],
+        [
+            'endPoint' => '/data-jenis-pemasukan',
+            'method' => 'resource',
+            'controllers' => DataJenisPemasukanController::class
         ],
         [
             'endPoint' => '/data-item-hutang',

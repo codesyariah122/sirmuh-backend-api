@@ -35,7 +35,8 @@ use App\Models\{
     FakturTerakhir,
     Karyawan,
     Biaya,
-    PurchaseOrder
+    PurchaseOrder,
+    JenisPemasukan
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -1288,7 +1289,9 @@ class DataWebFiturController extends Controller
             case "mutasi-kas":
             $generatedCode = $perusahaan->kd_mutasi_kas . '-' . $currentDate . $randomNumber;
             break;
-
+            case "pemasukan":
+            $generatedCode = "TPK-" . $currentDate . $randomNumber;
+            break;
         }
 
         $data = [
