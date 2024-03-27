@@ -196,6 +196,8 @@ class DataPiutangController extends Controller
                     $updatePenjualan->lunas = "True";
                     $updatePenjualan->visa = "LUNAS";
                     $updatePenjualan->piutang = 0;
+                    $updatePenjualan->receive = "True";
+                    $updatePenjualan->status = "DIKIRIM";
                     $updatePenjualan->kembali = $bayar - intval($dataPenjualan->piutang);
                     if($dataPenjualan->po === "True") {
                         $updatePenjualan->angsuran = $updatePenjualan->bayar;
