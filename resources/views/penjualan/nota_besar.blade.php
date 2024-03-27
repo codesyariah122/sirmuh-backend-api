@@ -107,6 +107,11 @@
                 <td colspan="5" class="text-right"><b>Total Bayar</b></td>
                 <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
+            @else
+             <tr>
+                <td colspan="5" class="text-right"><b>Dibayar</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar) }}</b></td>
+            </tr>
             @endif
             @if($penjualan->dikirim !== NULL)
             <tr>

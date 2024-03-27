@@ -357,6 +357,13 @@ class DataItemPenjualanController extends Controller
                
                 $dataPenjualan->save();
 
+                $updateDataPenjualan = Penjualan::findOrFail($dataPenjualan->id);
+                if($updateDataPenjualan->dikirim > $updateDataPenjualan->bayar) {
+                    $updateDataPenjualan->piutang = $updateDataPenjualan->dikirim - $updateDataPenjualan->bayar;
+                    $updateDataPenjualan->tahan = "True";
+                    $updateDataPenjualan->status = "HOLD";
+                    $updateDataPenjualan->save();
+                }
 
                 // $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $dataPenjualan->kode)
                 // ->orderBy('po_ke', 'desc')
@@ -383,7 +390,7 @@ class DataItemPenjualanController extends Controller
                     'routes' => 'purchase-order-edit',
                     'notif' => "Update ItemPenjualan, successfully update!"
                 ];
-            } else {                
+            } else {              
                 $updateItemPenjualan = ItemPenjualan::findOrFail($itemId);
                 $qty = $updateItemPenjualan->qty;
                 $lastQty = $updateItemPenjualan->last_qty;
