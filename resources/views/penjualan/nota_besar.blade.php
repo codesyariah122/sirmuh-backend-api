@@ -37,7 +37,7 @@
                 <b>Kepada</b>
             </td>
             <td rowspan="4" width="40%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100" />
+                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
                 <br>
                 <address>
                     {{ $toko['address'] }}
