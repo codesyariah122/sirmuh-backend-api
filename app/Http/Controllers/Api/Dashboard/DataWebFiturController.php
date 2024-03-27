@@ -1588,6 +1588,7 @@ class DataWebFiturController extends Controller
                     $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
                         // Update Barang
                     $existingItem = ItemPembelian::where('kode_barang', $dataBarang->kode)
+                    ->where('kode', $kode)
                     ->where('draft', 1)
                     ->first();
 
@@ -1654,6 +1655,7 @@ class DataWebFiturController extends Controller
                         // Update Barang
 
                     $existingItem = ItemPembelian::where('kode_barang', $dataBarang->kode)
+                    ->where('kode', $kode)
                     ->where('draft', 1)
                     ->first();
 
