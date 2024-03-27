@@ -26,8 +26,8 @@ class UsersMasterTableSeeder extends Seeder
     {
         $administrator = new User;
         $administrator->name = "Vicky Andriani";
-        $administrator->email = "owner@sirojulmuhtadin.com";
-        $administrator->password = Hash::make("Bismillah_123654");
+        $administrator->email = "vicky@sirmuh.com";
+        $administrator->password = Hash::make("17agustus1997");
         $administrator->is_login = 0;
         $initial = $this->initials($administrator->name);
         $path = public_path().'/thumbnail_images/users/';
