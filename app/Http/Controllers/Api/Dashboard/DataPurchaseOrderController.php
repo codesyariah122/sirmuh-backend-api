@@ -427,8 +427,8 @@ class DataPurchaseOrderController extends Controller
             } else {
                 if($bayar > $data['jumlah_saldo']) {
                     $updateKas = Kas::findOrFail($kas->id);
-                    $bindCalc = $bayar - $data['jumlah_saldo'];
-                    $updateKas->saldo = $kas->saldo - $bindCalc;
+                    $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
+                    $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
                     $updateKas->save();
                 }
                 $updatePembelian->lunas = "True";
