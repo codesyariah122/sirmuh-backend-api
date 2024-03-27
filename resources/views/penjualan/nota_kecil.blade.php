@@ -84,9 +84,9 @@
                 <td colspan="3">{{ $item->nama_barang }} - ({{$item->kode_barang}}|{{$item->supplier}})</td>
             </tr>
             <tr>
-                <td>{{ $item->qty }} x {{ $helpers->format_uang($item->harga_toko) }}</td>
+                <td>{{ $item->qty }} x {{ $helpers->format_uang($item->harga) }}</td>
                 <td></td>
-                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga_toko) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($item->qty * $item->harga) }}</td>
             </tr>
         @endforeach
     </table>

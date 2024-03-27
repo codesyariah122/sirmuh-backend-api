@@ -86,9 +86,9 @@
                 <td colspan="3">{{ $piutang->nama_barang }} - {{$piutang->kode_barang}}</td>
             </tr>
             <tr>
-                <td>{{ round($piutang->qty) }} x {{ $helpers->format_uang($piutang->harga_beli) }}</td>
+                <td>{{ round($piutang->qty) }} x {{ $helpers->format_uang($piutang->harga) }}</td>
                 <td></td>
-                <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_pembelian) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($piutang->jumlah_penjualan) }}</td>
             </tr>
         </table>
         <p class="text-center">-----------------------------------</p>
