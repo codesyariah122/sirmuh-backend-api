@@ -89,7 +89,7 @@
                 <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
                 <td class="text-center">{{ $item->qty." ".$item->satuan }}</td>
                 @if(count($barangs) > 0)
-                    <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim / count($barangs))}} </td>
+                    <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
                 @else
                     <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
                 @endif

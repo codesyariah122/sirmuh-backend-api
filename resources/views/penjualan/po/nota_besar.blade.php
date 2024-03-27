@@ -167,7 +167,11 @@
                     <b>Sisa DP</b>
                     @endif
                 </td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar - $penjualan->dikirim) }}</b></td>
+                @if($penjualan->visa === "LUNAS")
+                    <td class="text-right"><b>{{ $helpers->format_uang($penjualan->kembali) }}</b></td>
+                @else
+                    <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar - $penjualan->dikirim) }}</b></td>
+                @endif
             </tr>
             @else
             <tr>
