@@ -233,7 +233,7 @@ class DataHutangController extends Controller
                     $updatePembelian->visa = "LUNAS";
                     $updatePembelian->hutang = 0;
                      if($dataPembelian->po === "True") {
-                        $updatePembelian->angsuran = $updatePembelian->bayar;
+                        // $updatePembelian->angsuran = $updatePembelian->bayar;
                         $updatePembelian->receive = "True";
                         $updatePembelian->kekurangan_sdh_dibayar = "True";
                     }
