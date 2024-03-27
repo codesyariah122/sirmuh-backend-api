@@ -491,7 +491,7 @@ class DataPenjualanPoController extends Controller
                 $updatePenjualan->receive = "True";
                 $updatePenjualan->tahan = "False";
                 $updatePenjualan->status = "DIKIRIM";
-                $updatePenjualan->biayakirim = $data['ongkir'];
+                $updatePenjualan->biayakirim = intval($data['ongkir']);
 
                 $dataPelanggan = Pelanggan::whereKode($updatePenjualan->pelanggan)->first();
                 $pelanggan = Pelanggan::findOrFail($dataPelanggan->id);
@@ -540,7 +540,7 @@ class DataPenjualanPoController extends Controller
             $updatePenjualan->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePenjualan->jumlah;
             $updatePenjualan->bayar = $bayar;
             $updatePenjualan->kembali = $data['masuk_hutang'] ? 0 : $data['piutang'];
-            $updatePenjualan->biayakirim = $updatePenjualan->biayakirim + $data['ongkir'];
+            // $updatePenjualan->biayakirim = $updatePenjualan->biayakirim + $data['ongkir'];
 
             if($updatePenjualan->save()) {
                 $userOnNotif = Auth::user();
