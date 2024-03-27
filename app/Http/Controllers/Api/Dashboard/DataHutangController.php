@@ -226,7 +226,7 @@ class DataHutangController extends Controller
                 $dataPembelian = Pembelian::whereKode($hutang->kd_beli)->first();
                 $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
                 $updatePembelian->bayar = intval($dataPembelian->bayar) + $bayar;
-                $updatePembelian->diterima = intval($dataPembelian->diterima) + $bayar;
+                // $updatePembelian->diterima = intval($dataPembelian->diterima) + $bayar;
 
                 if($bayar >= $dataPembelian->hutang) {
                     $updatePembelian->lunas = "True";
