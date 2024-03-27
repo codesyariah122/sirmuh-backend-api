@@ -2125,7 +2125,7 @@ class DataWebFiturController extends Controller
 
             $userRole = Roles::findOrFail($user->role);
 
-            if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN") { 
+            if ($userRole->name !== "MASTER" && $userRole->name !== "ADMIN" $userRole !== "KASIR" && $userRole !== "GUDANG") { 
                 return response()->json([
                     'error' => true,
                     'message' => 'Hak akses tidak di ijinkan 🚫'
