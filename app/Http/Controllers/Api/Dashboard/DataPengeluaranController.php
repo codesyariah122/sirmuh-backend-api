@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pengeluaran, SetupPerusahaan, Kas};
+use App\Models\{Pengeluaran, SetupPerusahaan, Kas, Roles};
 use Auth;
 
 class DataPengeluaranController extends Controller
@@ -180,6 +180,38 @@ class DataPengeluaranController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+                $pengeluaran = Pengeluaran::whereNull('deleted_at')
+                ->findOrFail($id);
+                $pengeluaran->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'pengeluaran',
+                    'type' => 'removed',
+                    'notif' => "Pengeluaran with kode {$pengeluaran->kode}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pengeluaran with kode {$pengeluaran->kode} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+            
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

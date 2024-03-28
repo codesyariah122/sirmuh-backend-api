@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pemasukan, SetupPerusahaan, Kas};
+use App\Models\{Pemasukan, SetupPerusahaan, Kas, User, Roles};
 use Auth;
 
 
@@ -184,7 +184,39 @@ class DataPemasukanController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $user = Auth::user();
+
+            $userRole = Roles::findOrFail($user->role);
+
+            if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+                $pemasukan = Pemasukan::whereNull('deleted_at')
+                ->findOrFail($id);
+                $pemasukan->delete();
+                $data_event = [
+                    'alert' => 'error',
+                    'routes' => 'pemasukan',
+                    'type' => 'removed',
+                    'notif' => "Pemasukan with kode {$pemasukan->kode}, has move to trash, please check trash!",
+                    'user' => Auth::user()
+                ];
+
+                event(new EventNotification($data_event));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Pemasukan with kode {$pemasukan->kode} has move to trash, please check trash"
+                ]);
+            } else {
+                return response()->json([
+                    'error' => true,
+                    'message' => "Hak akses tidak di ijinkan 📛"
+                ]);
+            }
+            
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
 }

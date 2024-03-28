@@ -36,7 +36,9 @@ use App\Models\{
     Karyawan,
     Biaya,
     PurchaseOrder,
-    JenisPemasukan
+    JenisPemasukan,
+    Pemasukan,
+    Pengeluaran
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -161,6 +163,18 @@ class DataWebFiturController extends Controller
                 $deleted = Pembelian::onlyTrashed()
                 ->select('id', 'kode', 'tanggal', 'kode_kas', 'supplier', 'jumlah','bayar')
                 ->where('po', 'True')
+                ->paginate(10);
+                break;
+
+                case 'DATA_PEMASUKAN':
+                $deleted = Pemasukan::onlyTrashed()
+                ->select('id', 'kode', 'tanggal', 'kd_biaya', 'keterangan', 'kode_kas','jumlah', 'operator', 'deleted_at')
+                ->paginate(10);
+                break;
+
+                case 'DATA_PENGELUARAN':
+                $deleted = Pengeluaran::onlyTrashed()
+                ->select('id', 'kode', 'tanggal', 'kd_biaya', 'keterangan', 'kode_kas','jumlah', 'operator', 'deleted_at')
                 ->paginate(10);
                 break;
 
@@ -402,6 +416,38 @@ class DataWebFiturController extends Controller
                     'type' => 'restored',
                     'routes' => 'purchase-order',
                     'notif' => "Pembelian, {$name} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_PEMASUKAN':
+                $restored_pemasukan = Pemasukan::onlyTrashed()
+                ->findOrFail($id);
+                $restored_pemasukan->restore();
+                $restored = Pemasukan::findOrFail($id);
+                $kode = $restored->kode;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'pemasukan',
+                    'notif' => "Pemasukan, {$kode} has been restored!",
+                    'data' => $restored->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_PENGELUARAN':
+                $restored_pengeluaran = Pengeluaran::onlyTrashed()
+                ->findOrFail($id);
+                $restored_pengeluaran->restore();
+                $restored = Pengeluaran::findOrFail($id);
+                $kode = $restored->kode;
+                $data_event = [
+                    'alert' => 'info',
+                    'type' => 'restored',
+                    'routes' => 'pengeluaran',
+                    'notif' => "Pengeluaran, {$kode} has been restored!",
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
@@ -677,6 +723,39 @@ class DataWebFiturController extends Controller
                 ];
                 break;
 
+                case 'DATA_PEMASUKAN':
+                $deleted = Pemasukan::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data pemasukan, {$deleted->kode} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'pemasukan',
+                    'notif' => "Pemasukan, {$deleted->kode} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
+
+                case 'DATA_PENGELUARAN':
+                $deleted = Pengeluaran::onlyTrashed()
+                ->findOrFail($id);
+
+                $deleted->forceDelete();
+
+                $message = "Data pengeluaran, {$deleted->kode} has permanently deleted !";
+                $data_event = [
+                    'alert' => 'error',
+                    'type' => 'destroyed',
+                    'routes' => 'pengeluaran',
+                    'notif' => "Pengeluaran, {$deleted->kode} has permanently deleted!",
+                    'data' => $deleted->deleted_at,
+                    'user' => Auth::user()
+                ];
+                break;
 
                 default:
                 $deleted = [];
@@ -747,6 +826,16 @@ class DataWebFiturController extends Controller
                 case 'PURCHASE_ORDER':
                 $countTrash = Pembelian::onlyTrashed()
                 ->where('po', 'True')
+                ->get();
+                break;
+
+                case 'DATA_PEMASUKAN':
+                $countTrash = Pemasukan::onlyTrashed()
+                ->get();
+                break;
+
+                case 'DATA_PENGELUARAN':
+                $countTrash = Pengeluaran::onlyTrashed()
                 ->get();
                 break;
 
