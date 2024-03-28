@@ -435,6 +435,10 @@ class DataWebFiturController extends Controller
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
+                $dataKas = Kas::whereKode($restored->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) + intval($restored->jumlah);
+                $updateKas->save();
                 break;
 
                 case 'DATA_PENGELUARAN':
@@ -451,6 +455,10 @@ class DataWebFiturController extends Controller
                     'data' => $restored->deleted_at,
                     'user' => Auth::user()
                 ];
+                $dataKas = Kas::whereKode($restored->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) - intval($restored->jumlah);
+                $updateKas->save();
                 break;
 
                 default:

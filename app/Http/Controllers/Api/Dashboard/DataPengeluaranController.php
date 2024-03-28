@@ -189,6 +189,12 @@ class DataPengeluaranController extends Controller
                 $pengeluaran = Pengeluaran::whereNull('deleted_at')
                 ->findOrFail($id);
                 $pengeluaran->delete();
+
+                $dataKas = Kas::whereKode($pengeluaran->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) + intval($pengeluaran->jumlah);
+                $updateKas->save();
+
                 $data_event = [
                     'alert' => 'error',
                     'routes' => 'pengeluaran',

@@ -193,6 +193,12 @@ class DataPemasukanController extends Controller
                 $pemasukan = Pemasukan::whereNull('deleted_at')
                 ->findOrFail($id);
                 $pemasukan->delete();
+
+                $dataKas = Kas::whereKode($pemasukan->kode_kas)->first();
+                $updateKas = Kas::findOrFail($dataKas->id);
+                $updateKas->saldo = intval($dataKas->saldo) - intval($pemasukan->jumlah);
+                $updateKas->save();
+
                 $data_event = [
                     'alert' => 'error',
                     'routes' => 'pemasukan',
