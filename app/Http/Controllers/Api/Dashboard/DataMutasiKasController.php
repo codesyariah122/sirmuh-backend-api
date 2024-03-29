@@ -22,11 +22,36 @@ class DataMutasiKasController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $mutasikas = MutasiKas::whereNull('deleted_at')
-            ->orderByDesc('id')
+            $keywords = $request->query('keywords');
+            $jenis = $request->query('jenis');
+            $viewAll = $request->query('view_all');
+            $today = now()->toDateString();
+            $now = now();
+            $startOfMonth = $now->startOfMonth()->toDateString();
+            $endOfMonth = $now->endOfMonth()->toDateString();
+            $dateTransaction = $request->query('date_transaction');
+
+            $query = MutasiKas::query()
+            ->select('mutasikas.*')
+            ->whereNull('deleted_at');
+            
+            if ($dateTransaction) {
+                $query->whereDate('mutasikas.tanggal', '=', $dateTransaction);
+            }
+
+            if ($keywords) {
+                $query->where('mutasikas.kode', 'like', '%' . $keywords . '%');
+            }
+
+            if($viewAll === false || $viewAll === "false") {
+                // $query->whereDate('pembelian.tanggal', '=', $today);
+                $query->whereBetween('mutasikas.tanggal', [$startOfMonth, $endOfMonth]);
+            }
+
+            $mutasikas = $query->orderByDesc('id')
             ->paginate(10);
 
             return new ResponseDataCollect($mutasikas);
