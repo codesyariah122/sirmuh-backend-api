@@ -35,7 +35,7 @@
             <td style="vertical-align: top;">
                 <b>Kepada</b>
             </td>
-            <td rowspan="4" width="40%" style="vertical-align: top;">
+            <td rowspan="4" width="50%" style="vertical-align: top;">
                 <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
                 <br>
                 <address>
@@ -108,8 +108,17 @@
         <tfoot>
             @if($pembelian->po === 'False')
                 <tr>
-                    <td colspan="6" class="text-right"><b>Total</b></td>
+                    <td colspan="6" class="text-right"><b>SubTotal</b></td>
                     <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
+                </tr>
+                <tr>
+                    <td colspan="6" class="text-right"><b>Biaya Bongkar</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->biayabongkar) }}</b></td>
+                </tr>
+
+                <tr>
+                    <td colspan="6" class="text-right"><b>Grand Total Bayar</b></td>
+                    <td class="text-right"><b>{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->jumlah + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->jumlah) }}</b></td>
                 </tr>
             @endif
             
@@ -152,8 +161,12 @@
             </tr>
             @if($pembelian->lunas === "True")
                 <tr>
-                    <td colspan="6" class="text-right"><b>Dibayar</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
+                    <td colspan="6" class="text-right"><b>Biaya Bongkar</b></td>
+                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->biayabongkar) }}</b></td>
+                </tr>
+                <tr>
+                    <td colspan="6" class="text-right"><b>Grand Total Bayar</b></td>
+                    <td class="text-right"><b>{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</b></td>
                 </tr>
             @endif
             <tr>
@@ -169,7 +182,7 @@
             @else
             <tr>
                 <td colspan="6" class="text-right"><b>Dibayar</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar) }}</b></td>
+                <td class="text-right"><b>{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</b></td>
             </tr>
             <tr>
                 <td colspan="6" class="text-right"><b>Kembali</b></td>

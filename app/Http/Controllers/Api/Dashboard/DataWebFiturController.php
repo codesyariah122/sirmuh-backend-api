@@ -1585,12 +1585,14 @@ class DataWebFiturController extends Controller
                 // } else {
                 //     $newStok = $updateBarang->toko;
                 // }
-                $newStok = $updateBarang->toko + $barang['qty'];
                 if($barang['last_qty'] !== NULL && $barang['last_qty'] >= 0) {
                     $lastQty = $barang['last_qty'];
                 } else {
                     $lastQty = $updateBarang->toko;
                 }
+
+                // $newStok = $updateBarang->toko + $barang['qty'];
+                $newStok = $barang['qty'] + max(0, $updateBarang->toko);
                 $updateBarang->toko = $newStok;
                 $updateBarang->last_qty = $lastQty;
                 $updateBarang->save();
@@ -1601,10 +1603,14 @@ class DataWebFiturController extends Controller
                     $stok = Barang::findOrFail($barang['id']);
                     $updateBarang = Barang::findOrFail($barang['id']);
                     $qtyBarang = $barang['qty'];
-                    $lastQty = $stok->last_qty;
+                    if($barang['last_qty'] !== NULL && $barang['last_qty'] >= 0) {
+                        $lastQty = $barang['last_qty'];
+                    } else {
+                        $lastQty = $updateBarang->toko;
+                    }
                     $stokBarang = intval($stok->toko);
                     $updateBarang->toko = $stokBarang - $qtyBarang;
-                    $updateBarang->last_qty = $barang['qty'];
+                    $updateBarang->last_qty = $lastQty;
                     $updateBarang->save();
                 }
                 break;

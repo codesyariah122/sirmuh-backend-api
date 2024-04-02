@@ -176,6 +176,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->hutang = $data['hutang'];
             $newPembelian->po = 'True';
             $newPembelian->receive = "False";
+            $newPembelian->biayabongkar = $data['biayabongkar'] ?? NULL;
             $newPembelian->jt = $data['jt'];
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
@@ -441,6 +442,7 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $bayar;
             $updatePembelian->diterima = $totalSubtotal;
+            $updatePembelian->biayabongkar = $data['biayabongkar'] ?? NULL;
 
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();

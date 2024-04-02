@@ -188,7 +188,7 @@ class DataPembelianLangsungController extends Controller
                 // Masuk ke hutang
                 $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_hutang = new Hutang;
-                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang.'-'. $currentDate . $randomNumber;
+                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang. '-'. $currentDate . $randomNumber;
                 $masuk_hutang->kd_beli = $data['ref_code'];
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $supplier->kode;
@@ -235,6 +235,7 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->jt = $data['jt'];
             }
 
+            $newPembelian->biayabongkar =  $data['biayabongkar'] ?? NULL;
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];
 
@@ -360,9 +361,10 @@ class DataPembelianLangsungController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
+            ->leftJoin('return_pembelian', 'pembelian.kode', '=', 'return_pembelian.no_faktur')
             ->where('pembelian.id', $id)
             ->where('pembelian.po', 'False')
             ->first();

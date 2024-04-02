@@ -193,20 +193,33 @@
                 @endif
             @else
             @if($pembelian->po == 'True')
-                @if($pembelian->lunas == "True")
+                <!-- @if($pembelian->lunas == "True")
                     <tr>
                         <td>Dibayar:</td>
                         <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
                     </tr>
-                @endif
-                <tr>
-                    <td>Dp Awal:</td>
-                    <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
-                </tr>
-                <tr>
-                    <td>Sisa DP:</td>
-                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</td>
-                </tr>
+                @endif -->
+                    <tr>
+                        <td>Dp Awal:</td>
+                        <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Dibayar:</td>
+                        <td class="text-right">{{ $helpers->format_uang($pembelian->bayar) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Biaya Bongkar:</td>
+                        <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Grand Total:</td>
+                        <td class="text-right">{{ $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Sisa DP:</td>
+                        <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</td>
+                    </tr>
                 @else
                 <tr>
                     <td>Dibayar:</td>

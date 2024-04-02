@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('barang', function (Blueprint $table) {
-            $table->unsignedBigInteger('last_qty')->after('toko')->nullable();
+            $table->decimal('last_qty', 15,2)->after('toko')->default(0.0)->nullable();
         });
     }
 

@@ -109,7 +109,7 @@ class DataBarangController extends Controller
             // ->orderBy('barang.nama', 'ASC');
 
             $query = Barang::join('supplier', 'barang.supplier', '=', 'supplier.kode')
-           ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp','barang.harga_toko','barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'barang.kode_barcode', 'barang.ada_expired_date', 'barang.expired','barang.tgl_terakhir','supplier.kode as kode_supplier','supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat')
+           ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko', 'barang.last_qty', 'barang.hpp','barang.harga_toko','barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'barang.kode_barcode', 'barang.ada_expired_date', 'barang.expired','barang.tgl_terakhir','supplier.kode as kode_supplier','supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat')
            ->when($keywords, function ($query) use ($keywords) {
                 return $query->where(function ($query) use ($keywords) {
                     $query->where('barang.nama', 'like', '%' . $keywords . '%')

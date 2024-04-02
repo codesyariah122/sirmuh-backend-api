@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('itempenjualan', function (Blueprint $table) {
-            $table->integer('last_qty')->after('qty')->nullable();
+            $table->decimal('last_qty', 15,2)->after('qty')->default(0.0)->nullable();
         });
     }
 

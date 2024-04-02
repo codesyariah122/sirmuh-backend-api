@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('itempembelian', function (Blueprint $table) {
-            $table->decimal('last_qty', 15,2)->after('qty')->default(0.0)->nullable();
+        Schema::table('itempenjualan', function (Blueprint $table) {
+            $table->string('return')->after('stop_qty')->nullable();
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('itempembelian', function (Blueprint $table) {
-            $table->dropColumn('last_qty');
+        Schema::table('itempenjualan', function (Blueprint $table) {
+            $table->dropColumn('return');
         });
     }
 };

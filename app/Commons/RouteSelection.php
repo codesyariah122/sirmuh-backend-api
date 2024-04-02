@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Dashboard\{
     DataExpiredBarangController,
     DataItemPenjualanController,
     DataReturnPenjualanController,
+    DataReturnPembelianController,
     DataPemasukanController,
     DataItemHutangController,
     DataHutangController,
@@ -295,11 +296,22 @@ class RouteSelection {
             'method' => 'resource',
             'controllers' => DataPenjualanPartaiController::class
         ],
+
+        // Return
         [
             'endPoint' => '/data-return-penjualan',
             'method' => 'get',
             'controllers' => [DataReturnPenjualanController::class, 'index']
         ],
+
+        [
+            'endPoint' => '/data-return-pembelian',
+            'method' => 'resource',
+            'controllers' => DataReturnPembelianController::class
+        ],
+       
+        // End return
+
         [
             'endPoint' => '/laba-rugi/{jml_month}',
             'method' => 'get',

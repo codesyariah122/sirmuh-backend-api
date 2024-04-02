@@ -88,7 +88,7 @@ class ItemPenjualan extends Model
 		$tanggalAkhir = now()->addMonth();
 
 		$barangTerlaris = DB::table('itempenjualan')
-		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
+		->select('kode_barang',  DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
 		// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
@@ -103,8 +103,9 @@ class ItemPenjualan extends Model
         	$totalPenjualan = $barang->total_penjualan;
 
         	$barangDetail = DB::table('barang')
-        	->select('kode', 'nama', 'satuan', 'satuanbeli', 'toko', 'supplier')
-        	->where('kode', $kodeBarang)
+        	->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'supplier.nama as nama_supplier')
+        	->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
+        	->where('barang.kode', $kodeBarang)
         	->first();
 
         	$listBarangTerlaris[] = [
@@ -113,7 +114,7 @@ class ItemPenjualan extends Model
         		'satuan' => $barangDetail->satuan,
         		'satuanbeli' => $barangDetail->satuanbeli,
         		'toko' => $barangDetail->toko,
-        		'supplier' => $barangDetail->supplier,
+        		'supplier' => $barangDetail->nama_supplier,
         		'total_qty' => $totalQty,
         		'total_penjualan' => $totalPenjualan,
         	];

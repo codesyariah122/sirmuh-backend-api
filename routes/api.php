@@ -8,12 +8,6 @@ Route::middleware(['auth:api', 'cors', 'json.response', 'session.expired'])->pre
     RoutingMiddleware::insideAuth();
 });
 
-Route::get('/test', function() {
-    return response()->json([
-        'message' => 'Hallo World'
-    ]);
-});
-
 Route::middleware('cors')->prefix('v1')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
     Route::get('/detail', [PublicFeatureController::class, 'detail_data']);
