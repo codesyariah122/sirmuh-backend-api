@@ -9,7 +9,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataPenjualanPartaiController,
     DataPenjualanPoController,
 	DataHutangController,
-	DataPiutangController
+	DataPiutangController,
+    DataReturnPembelianController
 };
 use App\Http\Controllers\Web\{DataLaporanView};
 
@@ -26,10 +27,6 @@ use App\Http\Controllers\Web\{DataLaporanView};
 
 Route::get('/', function () {
     return view('welcome');
-});
-
-Route::get('/test', function() {
-	return "Hallo World";
 });
 
 Route::get('/config-clear', function() {
@@ -64,6 +61,7 @@ Route::get('/laporan/pembelian/laporan-pembelian-periode/{id_perusahaan}/{start_
 Route::get('/laporan/hutang/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_hutang']);
 Route::get('/transaksi/bayar-hutang/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataHutangController::class, 'cetak_nota']);
 Route::get('/transaksi/terima-piutang/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPiutangController::class, 'cetak_nota']);
+Route::get('/transaksi/return-pembelian/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataReturnPembelianController::class, 'cetak_nota']);
 Route::get('/laporan/penjualan/laporan-penjualan-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_penjualan_periode']);
 
 

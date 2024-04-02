@@ -24,6 +24,13 @@ class DataReturnPembelianController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -40,10 +47,11 @@ class DataReturnPembelianController extends Controller
 
             $query = ReturnPembelian::query()
             ->select(
-                'return_pembelian.*','pembelian.id','pembelian.tanggal','pembelian.kode as kode_pembelian','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'supplier.nama as nama_supplier', 'pembelian.return'
+                'return_pembelian.*','pembelian.id as id_pembelian','pembelian.tanggal as tanggal_pembelian','pembelian.kode as kode_pembelian','pembelian.jumlah as jumlah_pembelian','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'supplier.nama as nama_supplier', 'pembelian.return', 'kas.id as kas_id', 'kas.nama as nama_kas'
             )
             ->leftJoin('pembelian', 'return_pembelian.no_faktur', '=', 'pembelian.kode')
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('kas', 'return_pembelian.kode_kas', '=', 'kas.kode')
             ->limit(10);
 
             if ($dateTransaction) {
@@ -293,5 +301,52 @@ class DataReturnPembelianController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+
+    public function cetak_nota($type, $kode, $id_perusahaan)
+    {
+        $ref_code = $kode;
+        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+        $helpers = $this->helpers;
+        $today = now()->toDateString();
+        $toko = Toko::whereId($id_perusahaan)
+        ->select("name","logo","address","kota","provinsi")
+        ->first();
+
+        $query = ReturnPembelian::query()
+        ->select(
+            'return_pembelian.*',
+            'itempembelian.kode as kode_item', 'itempembelian.qty as qty_item', 'itempembelian.harga_beli as harga_beli', 'itempembelian.subtotal',
+            'supplier.kode as kode_supplier',
+            'supplier.nama as nama_supplier',
+            'supplier.alamat as alamat_supplier',
+            'barang.nama as nama_barang',
+            'barang.satuan as satuan_barang'
+        )
+        ->leftJoin('itempembelian', 'return_pembelian.no_faktur', '=', 'itempembelian.kode')
+        ->leftJoin('supplier', 'return_pembelian.supplier', '=', 'supplier.kode')
+        ->leftJoin('barang', 'return_pembelian.kode_barang', '=', 'barang.kode')
+        ->orderByDesc('return_pembelian.id')
+            // ->whereDate('pembelian.tanggal', '=', $today)
+        ->where('return_pembelian.kode', $kode);
+
+        $pembelian = $query->first();
+
+        // echo "<pre>";
+        // var_dump($orders);
+        // echo "</pre>";
+        // die;
+
+        switch($type) {
+            case "nota-kecil":
+            return view('return-pembelian.nota_kecil', compact('pembelian', 'kode', 'toko', 'nota_type', 'helpers'));
+            break;
+            case "nota-besar":
+            $pdf = PDF::loadView('return-pembelian.nota_besar', compact('pembelian','kode', 'toko', 'nota_type', 'helpers'));
+            $pdf->setPaper(0,0,609,440, 'potrait');
+            return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
+            break;
+        }
     }
 }
