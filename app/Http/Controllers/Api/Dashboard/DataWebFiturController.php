@@ -2271,7 +2271,8 @@ class DataWebFiturController extends Controller
 
     public function checkInternetConnection()
     {
-        $urlToCheck = 'https://sockjs-ap1.pusher.com';
+        // $urlToCheck = 'https://sockjs-ap1.pusher.com';
+        $urlToCheck = "https://youtube.com";
         try {
             $startTime = microtime(true);
 
@@ -2288,7 +2289,7 @@ class DataWebFiturController extends Controller
             return response()->json([
                 'success' => true,
                 'time_taken' => $elapsedTimeRounded,
-                'speed' => ceil($speedInKbps),
+                'speed' => intval($speedInKbps),
             ]);
         } catch (\Exception $e) {
             return false; // Terjadi kesalahan, misalnya tidak dapat terhubung ke server

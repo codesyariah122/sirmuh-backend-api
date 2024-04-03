@@ -317,13 +317,14 @@ class DataReturnPembelianController extends Controller
         $query = ReturnPembelian::query()
         ->select(
             'return_pembelian.*',
-            'itempembelian.kode as kode_item', 'itempembelian.qty as qty_item', 'itempembelian.harga_beli as harga_beli', 'itempembelian.subtotal',
+            'pembelian.tanggal as tanggal_pembelian', 'itempembelian.kode as kode_item', 'itempembelian.qty as qty_item', 'itempembelian.last_qty', 'itempembelian.harga_beli as harga_beli', 'itempembelian.subtotal',
             'supplier.kode as kode_supplier',
             'supplier.nama as nama_supplier',
             'supplier.alamat as alamat_supplier',
             'barang.nama as nama_barang',
             'barang.satuan as satuan_barang'
         )
+        ->leftJoin('pembelian', 'return_pembelian.no_faktur', '=', 'pembelian.kode')
         ->leftJoin('itempembelian', 'return_pembelian.no_faktur', '=', 'itempembelian.kode')
         ->leftJoin('supplier', 'return_pembelian.supplier', '=', 'supplier.kode')
         ->leftJoin('barang', 'return_pembelian.kode_barang', '=', 'barang.kode')

@@ -37,31 +37,32 @@ class DataKasController extends Controller
 
         if($keywords) {
             $kas = Kas::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'saldo')
-            ->where('nama', 'like', '%'.$keywords.'%')
-            // ->orderByDesc('id', 'DESC')
-            ->orderBy('saldo', 'DESC')
+            ->select('kas.id', 'kas.kode', 'kas.nama', 'kas.saldo as saldo_kas', 'kas_awal.saldo as saldo_awal')
+            ->leftJoin('kas_awal', 'kas.kode', '=', 'kas_awal.kode_kas')
+            ->where('kas.nama', 'like', '%'.$keywords.'%')
+            ->orderBy('kas.saldo', 'DESC')
             ->limit(10)
             ->paginate(10);
         } else if($kode) {
             $kas = Kas::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'saldo')
+            ->select('kas.id', 'kas.kode', 'kas.nama', 'kas.saldo as saldo_kas', 'kas_awal.saldo as saldo_awal')
+            ->leftJoin('kas_awal', 'kas.kode', '=', 'kas_awal.kode_kas')
             ->whereKode($kode)
             ->limit(10)
-            // ->orderByDesc('id', 'DESC')
             ->get();
         } else {
             if($sortName && $sortType) {
                 $kas =  Kas::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'saldo')
+                ->select('kas.id', 'kas.kode', 'kas.nama', 'kas.saldo as saldo_kas', 'kas_awal.saldo as saldo_awal')
+                ->leftJoin('kas_awal', 'kas.kode', '=', 'kas_awal.kode_kas')
                 ->orderBy($sortName, $sortType)
                 ->limit(10)
                 ->paginate(10);
             }else{                
                 $kas =  Kas::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'saldo')
-            // ->orderByDesc('id', 'DESC')
-                ->orderBy('saldo', 'DESC')
+                ->select('kas.id', 'kas.kode', 'kas.nama', 'kas.saldo as saldo_kas', 'kas_awal.saldo as saldo_awal')
+                ->leftJoin('kas_awal', 'kas.kode', '=', 'kas_awal.kode_kas')
+                ->orderBy('kas.saldo', 'DESC')
                 ->limit(10)
                 ->paginate(10);
             }

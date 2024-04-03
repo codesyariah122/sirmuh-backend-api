@@ -93,7 +93,7 @@
             </tr>
             <tr>
                 <td colspan="5" class="text-right"><b>Qty Pembelian</b></td>
-                <td class="text-right"><b>{{ intval($pembelian->qty_item) }}{{$pembelian->satuan}}</b></td>
+                <td class="text-right"><b>{{ intval($pembelian->last_qty) }}{{$pembelian->satuan}}</b></td>
             </tr>
             <tr>
                 <td colspan="5" class="text-right"><b>Subtotal</b></td>
