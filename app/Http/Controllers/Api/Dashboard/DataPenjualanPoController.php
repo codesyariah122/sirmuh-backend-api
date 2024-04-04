@@ -399,7 +399,8 @@ class DataPenjualanPoController extends Controller
 
             $updatePenjualan = Penjualan::where('po', 'True')
             ->findOrFail($id);
-            $pelanggan = Pelanggan::findOrFail($data['pelanggan']);
+            $dataPelanggan = Pelanggan::whereKode($data['pelanggan'])->first();
+            $pelanggan = Pelanggan::findOrFail($dataPelanggan->id);
             $dataItemPo = PurchaseOrder::where('kode_po', $updatePenjualan->kode)->get();
             $totalSubtotal = $dataItemPo->sum('subtotal');
 

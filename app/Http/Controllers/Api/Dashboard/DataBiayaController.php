@@ -26,19 +26,31 @@ class DataBiayaController extends Controller
         $keywords = $request->query('keywords');
         $kode = $request->query('kode');
         $sort = $request->query('sort');
-        $query = Biaya::whereNull('deleted_at')
-            ->select('id', 'kode', 'nama', 'saldo')
-            ->orderBy('nama', 'ASC');
 
         if($keywords) {
-            $query->where('nama', 'like', '%'.$keywords.'%');
+            $biaya = Biaya::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'saldo')
+            ->where(function($query) use ($keywords) {
+                $query->where('nama', 'like', '%' . $keywords . '%')
+                ->orWhere('kode', 'like', '%' . $keywords . '%');
+            })
+            ->limit(10)
+            ->orderBy('id', 'ASC')
+            ->paginate(10);
+        } else if($kode) {
+            $biaya = Biaya::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'saldo')
+            ->where('kode', 'like', '%' . $kode . '%')
+            ->limit(10)
+            ->orderBy('id', 'ASC')
+            ->paginate(10);
+        } else {
+           $biaya =  Biaya::whereNull('deleted_at')
+           ->select('id', 'kode', 'nama', 'saldo')
+           ->orderBy('id', 'ASC')
+           ->limit(10)
+           ->paginate(10);
         }
-
-        if($kode) {
-            $query->where('kode', $kode);
-        }
-
-        $biaya = $query->paginate(10);
 
         return new ResponseDataCollect($biaya);
     }
@@ -215,7 +227,7 @@ class DataBiayaController extends Controller
             $user = Auth::user();
 
             $userRole = Roles::findOrFail($user->role);
-                
+
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "KASIR") { 
                 $biaya = Biaya::whereNull('deleted_at')
                 ->findOrFail($id);

@@ -150,12 +150,6 @@ class RouteSelection {
             'method' => 'get',
             'controllers' => [DataBankController::class, 'index']
         ],
-
-        [
-            'endPoint' => '/data-biaya',
-            'method' => 'get',
-            'controllers' => [DataBiayaController::class, 'index']
-        ],
         [
             'endPoint' => '/data-biaya',
             'method' => 'resource',
