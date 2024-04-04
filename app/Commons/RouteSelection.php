@@ -300,8 +300,8 @@ class RouteSelection {
         // Return
         [
             'endPoint' => '/data-return-penjualan',
-            'method' => 'get',
-            'controllers' => [DataReturnPenjualanController::class, 'index']
+            'method' => 'resource',
+            'controllers' => DataReturnPenjualanController::class
         ],
 
         [

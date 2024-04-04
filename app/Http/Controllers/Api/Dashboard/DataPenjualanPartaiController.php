@@ -236,7 +236,7 @@ class DataPenjualanPartaiController extends Controller
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
                 $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'DIKIRIM';
             }
-
+            $newPenjualanToko->return = "False";
             $newPenjualanToko->jenis = "PENJUALAN PARTAI";
             $newPenjualanToko->keterangan = $data['keterangan'];
             $newPenjualanToko->operator = $data['operator'];

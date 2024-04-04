@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Dashboard;
 
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -42,18 +43,20 @@ class DataPerusahaanController extends Controller
     public function index()
     {
         try {
-            $tokos = Toko::whereNull('deleted_at')
-            ->with(['users:id,name,email,phone,role'])
-            ->take(2)
-            ->get();
-
-            $tokos->transform(function ($toko) {
-                $toko->koordinat = DB::select(DB::raw("SELECT ST_AsText(koordinat) as text FROM tokos WHERE id = :id"), ['id' => $toko->id])[0]->text;
-                return $toko;
+            $cacheKey = 'tokos_index_data';
+            $tokos = Cache::remember($cacheKey, now()->addMinutes(10), function () {
+                return Toko::whereNull('deleted_at')
+                ->with(['users:id,name,email,phone,role'])
+                ->take(2)
+                ->get()
+                ->transform(function ($toko) {
+                    $toko->koordinat = DB::select(DB::raw("SELECT ST_AsText(koordinat) as text FROM tokos WHERE id = :id"), ['id' => $toko->id])[0]->text;
+                    return $toko;
+                });
             });
 
             return new ResponseDataCollect($tokos);
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             \Log::error($th);
             return response()->json(['error' => true, 'message' => 'Terjadi kesalahan saat memproses data.'], 500);
         }
@@ -78,13 +81,13 @@ class DataPerusahaanController extends Controller
     public function store(Request $request)
     {
         try{
-           $validator = Validator::make($request->all(), [
+         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'logo' => 'image|mimes:jpg,png,jpeg|max:2048',
         ]);
 
 
-           if ($validator->fails()) {
+         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 

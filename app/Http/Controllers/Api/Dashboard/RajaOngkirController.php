@@ -78,10 +78,22 @@ class RajaOngkirController extends Controller
 
             $ongkir = $response['rajaongkir']['results'];
 
+            foreach ($ongkir as $layanan) {
+                foreach ($layanan['costs'] as $cost) {
+
+                    $biaya = intval($cost['cost'][0]['value']);
+
+                    $biaya_per_berat = $biaya * $request->weight;
+
+                    $cost['cost'][0]['biaya_per_berat'] = $biaya_per_berat;
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Result Cost Ongkir',
-                'data'    => $ongkir
+                'data'    => $ongkir,
+                'biaya_per_berat' => $biaya_per_berat
             ]);
         }catch(Exception $e){
              return response()->json([

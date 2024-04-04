@@ -58,7 +58,7 @@ class DataPurchaseOrderController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'pembelian.return', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
             )
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
@@ -176,6 +176,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->hutang = $data['hutang'];
             $newPembelian->po = 'True';
             $newPembelian->receive = "False";
+            $newPembelian->return = "False";
             $newPembelian->biayabongkar = $data['biayabongkar'] ?? NULL;
             $newPembelian->jt = $data['jt'];
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
@@ -450,7 +451,7 @@ class DataPurchaseOrderController extends Controller
                 $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
                 foreach($dataItems as $item) {
                     $updateItemPembelian = ItemPembelian::findOrFail($item->id);
-                    $updateItemPembelian->stop_qty = "False";
+                    // $updateItemPembelian->stop_qty = "False";
                     $updateItemPembelian->save();
                 }
 

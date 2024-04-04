@@ -236,7 +236,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
                 $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'DIKIRIM';
             }
-
+            $newPenjualanToko->return = "False";
             $newPenjualanToko->jenis = "PENJUALAN TOKO";
             $newPenjualanToko->keterangan = $data['keterangan'];
             $newPenjualanToko->operator = $data['operator'];
@@ -401,9 +401,10 @@ public function cetak_nota($type, $kode, $id_perusahaan)
         try {
             $penjualan = Penjualan::query()
             ->select(
-                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar','penjualan.dikirim', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.receive',  'penjualan.status','penjualan.biayakirim', 'penjualan.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
+                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar','penjualan.dikirim', 'penjualan.kembali','penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.receive',  'penjualan.status','penjualan.biayakirim', 'penjualan.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat', 'return_penjualan.tanggal as tanggal_return','return_penjualan.qty','return_penjualan.satuan','return_penjualan.nama_barang','return_penjualan.harga','return_penjualan.jumlah as jumlah_return', 'return_penjualan.alasan'
             )
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
+            ->leftJoin('return_penjualan', 'penjualan.kode', '=', 'return_penjualan.no_faktur')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
             ->where('penjualan.id', $id)
             ->where('penjualan.po', 'False')

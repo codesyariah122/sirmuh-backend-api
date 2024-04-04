@@ -58,7 +58,7 @@ class DataPembelianLangsungController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'supplier.nama as nama_supplier'
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'pembelian.return', 'supplier.nama as nama_supplier'
             )
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->limit(10);
@@ -234,7 +234,7 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
             }
-
+            $newPembelian->return = "False";
             $newPembelian->biayabongkar =  $data['biayabongkar'] ?? NULL;
             $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
             $newPembelian->operator = $data['operator'];

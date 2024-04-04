@@ -2271,28 +2271,24 @@ class DataWebFiturController extends Controller
 
     public function checkInternetConnection()
     {
-        // $urlToCheck = 'https://sockjs-ap1.pusher.com';
-        $urlToCheck = "https://youtube.com";
+        $urlToCheck = 'https://sockjs-ap1.pusher.com';
         try {
             $startTime = microtime(true);
 
+            $fileSize = 1024 * 1024;
             $response = Http::get($urlToCheck);
+            $fileDownloadTime = microtime(true) - $startTime;
 
-            $endTime = microtime(true);
-            $elapsedTime = $endTime - $startTime;
-
-            // Bulatkan waktu ke dua desimal
-            $elapsedTimeRounded = round($elapsedTime, 2);
-
-            $speedInKbps = ($response->getBody()->getSize() * 8) / ($elapsedTime * 1024);
+            $speedInKbps = ($fileSize * 8) / ($fileDownloadTime * 1024);
+            $speedInMbps = $speedInKbps / 1000;
 
             return response()->json([
                 'success' => true,
-                'time_taken' => $elapsedTimeRounded,
-                'speed' => intval($speedInKbps),
+                'time_taken' => round($fileDownloadTime, 2),
+                'speed' => intval($speedInMbps),
             ]);
         } catch (\Exception $e) {
-            return false; // Terjadi kesalahan, misalnya tidak dapat terhubung ke server
+            return false;
         }
     }
 

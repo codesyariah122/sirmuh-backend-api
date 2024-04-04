@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Return Pembelian - {{$kode}}</title>
+    <title>Nota Return Penjualan - {{$kode}}</title>
 
     <style>
         table td {
@@ -42,25 +42,25 @@
                     {{ $toko['address'] }}
                 </address>
                 <br>
-                {{$helpers->format_tanggal($pembelian['tanggal'])}}
+                {{$helpers->format_tanggal($penjualan['tanggal'])}}
                 <br>
                 <b>Kode Return : </b>
-                <b>{{$pembelian->kode}}</b>
+                <b>{{$penjualan->kode}}</b>
             </td>
         </tr>
         <tr>
             <td>
-                {{$pembelian->nama_supplier}}({{$pembelian->supplier}})
+                {{$penjualan->nama_pelanggan}}({{$penjualan->pelanggan}})
             </td>
         </tr>
         <tr>
             <td></td>
         </tr>
         <tr>
-            <td>Kasir:  {{ strtoupper($pembelian->operator) }}</td>
+            <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
         </tr>
         <tr>
-            <td>Type: Return Pembelian</td>
+            <td>Type: Return Penjualan</td>
         </tr>
     </table>
 
@@ -68,8 +68,8 @@
     <table class="data" width="100%">
         <thead>
             <tr>
-                <th>Kode Barang</th>
-                <th>Nama Barang</th>
+                <th>Barang</th>
+                <th>Supplier</th>
                 <th>Harga Satuan</th>
                 <th>Qty Return</th>
                 <th>Status</th>
@@ -78,26 +78,26 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $pembelian->kode_barang }}</td>
-                <td>{{ $pembelian->nama_barang }}</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->harga) }}</td>
-                <td class="text-left">{{ $pembelian->qty." ".$pembelian->satuan }}</td>
-                <td class="text-center">{{ $pembelian->kembali !== 'True' ? "Belum Diterima" : "Sudah Diterima" }}</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
+                <td class="text-center">{{ $penjualan->nama_barang }} ({{$penjualan->kode_barang}})</td>
+                <td class="text-center">{{ $penjualan->nama_supplier }} ({{$penjualan->supplier}})</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->harga) }}</td>
+                <td class="text-left">{{ $penjualan->qty." ".$penjualan->satuan }}</td>
+                <td class="text-center">{{ $penjualan->kembali !== 'True' ? "Belum Diterima" : "Sudah Diterima" }}</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
                 <td colspan="5" class="text-right"><b>No Faktur</b></td>
-                <td class="text-left"> <b>{{$pembelian->kode_item}}</b> </td>
+                <td class="text-left"> <b> {{$penjualan->kode_item}}</b> </td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Qty Pembelian</b></td>
-                <td class="text-right"><b>{{ intval($pembelian->last_qty) }}{{$pembelian->satuan}}</b></td>
+                <td colspan="5" class="text-right"><b>Qty Penjualan</b></td>
+                <td class="text-right"><b>{{ intval($penjualan->last_qty) }}{{$penjualan->satuan}}</b></td>
             </tr>
             <tr>
                 <td colspan="5" class="text-right"><b>Subtotal</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->subtotal) }}</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->subtotal) }}</b></td>
             </tr>
         </tfoot>
     </table>
