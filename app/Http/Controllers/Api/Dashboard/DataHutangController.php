@@ -87,28 +87,26 @@ class DataHutangController extends Controller
             // ->where('pembelian.jt', '>', 0);
 
             if ($viewAll === true || $viewAll === "true") {
-                $query->whereBetween('hutang.tanggal', [$startOfMonth, $endOfMonth])->paginate(10);    
+                $query->whereBetween('hutang.tanggal', [$startOfMonth, $endOfMonth]);    
             }  else {
-                $query
-                ->where('pembelian.jt', '>', 0)
-                ->paginate(10);
+                $query->where('pembelian.jt', '>', 0);
             }
 
             if ($keywords) {
-                $query->where('hutang.supplier', 'like', '%' . $keywords . '%')->paginate(10);
+                $query->where('hutang.supplier', 'like', '%' . $keywords . '%');
             }
 
             if ($supplier) {
-                $query->where('hutang.supplier', 'like', '%' . $supplier . '%')->paginate(10);
+                $query->where('hutang.supplier', 'like', '%' . $supplier . '%');
             }
 
             if ($dateTransaction) {
-                $query->whereDate('hutang.tanggal', '=', $dateTransaction)->paginate(10);
+                $query->whereDate('hutang.tanggal', '=', $dateTransaction);
             }
 
             $query->orderByDesc('hutang.id');
 
-            $hutangs = $query->get();
+            $hutangs = $query->paginate(10);
 
             return new ResponseDataCollect($hutangs);
 
