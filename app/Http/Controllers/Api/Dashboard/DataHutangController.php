@@ -89,7 +89,7 @@ class DataHutangController extends Controller
             if ($viewAll === true || $viewAll === "true") {
                 $query->whereBetween('hutang.tanggal', [$startOfMonth, $endOfMonth]);    
             }  else {
-                $query->limit(10);
+                $query->paginate(10);
             }
 
             if ($keywords) {
