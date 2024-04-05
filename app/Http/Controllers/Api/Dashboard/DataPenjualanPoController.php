@@ -179,77 +179,74 @@ class DataPenjualanPoController extends Controller
 
             $userOnNotif = Auth::user();
 
-            if($newPenjualan) {
+            $items = ItemPenjualan::whereKode($newPenjualan->kode)->get();
 
-                $items = ItemPenjualan::whereKode($newPenjualan->kode)->get();
+            $poTerakhir = PurchaseOrder::where('kode_po', $newPenjualan->kode)
+            ->orderBy('po_ke', 'desc')
+            ->first();
 
-                $poTerakhir = PurchaseOrder::where('kode_po', $newPenjualan->kode)
-                ->orderBy('po_ke', 'desc')
-                ->first();
+            $poKeBaru = ($poTerakhir) ? $poTerakhir->po_ke + 1 : 0;
+            
+            $pelanggan = Pelanggan::whereKode($newPenjualan->pelanggan)->first();
 
-                $poKeBaru = ($poTerakhir) ? $poTerakhir->po_ke + 1 : 0;
-                
-                $pelanggan = Pelanggan::whereKode($newPenjualan->pelanggan)->first();
-
-                if(count($items) > 0) {
-                    foreach($items as $item) {
-                        $newPurchaseOrder = new PurchaseOrder;
-                        $newPurchaseOrder->kode_po = $newPenjualan->kode;
-                        $newPurchaseOrder->dp_awal = $newPenjualan->jumlah;
-                        $newPurchaseOrder->po_ke = $poKeBaru;
-                        $newPurchaseOrder->qty = $item->qty;
-                        $newPurchaseOrder->nama_barang = $item->nama_barang;
-                        $newPurchaseOrder->kode_barang = $item->kode_barang;
-                        // $newPurchaseOrder->pelanggan = "{$pelanggan->nama}({$item->supplier})";
-                        $newPurchaseOrder->supplier = "{$dataSupplier->kode}({$dataItemPenjualan->supplier})";
-                        $newPurchaseOrder->harga_satuan = $item->harga_beli;
-                        $newPurchaseOrder->subtotal = $item->qty * $item->harga_beli;
-                        $newPurchaseOrder->sisa_dp = $newPenjualan->jumlah - ($item->qty * $item->harga_beli);
-                        $newPurchaseOrder->type = "penjualan";
-                        $newPurchaseOrder->save();
-                    }
-                } else {
+            if(count($items) > 0) {
+                foreach($items as $item) {
                     $newPurchaseOrder = new PurchaseOrder;
                     $newPurchaseOrder->kode_po = $newPenjualan->kode;
                     $newPurchaseOrder->dp_awal = $newPenjualan->jumlah;
                     $newPurchaseOrder->po_ke = $poKeBaru;
-                    $newPurchaseOrder->qty = $dataItemPenjualan->qty;
-                    $newPurchaseOrder->nama_barang = $dataItemPenjualan->nama_barang;
-                    $newPurchaseOrder->kode_barang = $dataItemPenjualan->kode_barang;
-                    // $newPurchaseOrder->pelanggan = "{$pelanggan->kode}({$newPenjualan->pelanggan})";
+                    $newPurchaseOrder->qty = $item->qty;
+                    $newPurchaseOrder->nama_barang = $item->nama_barang;
+                    $newPurchaseOrder->kode_barang = $item->kode_barang;
+                        // $newPurchaseOrder->pelanggan = "{$pelanggan->nama}({$item->supplier})";
                     $newPurchaseOrder->supplier = "{$dataSupplier->kode}({$dataItemPenjualan->supplier})";
-                    $newPurchaseOrder->harga_satuan = $dataItemPenjualan->harga_beli;
-                    $newPurchaseOrder->subtotal = $dataItemPenjualan->qty * $dataItemPenjualan->harga_beli;
-                    $newPurchaseOrder->sisa_dp = $newPenjualan->jumlah - ($dataItemPenjualan->qty * $dataItemPenjualan->harga_beli);
+                    $newPurchaseOrder->harga_satuan = $item->harga_beli;
+                    $newPurchaseOrder->subtotal = $item->qty * $item->harga_beli;
+                    $newPurchaseOrder->sisa_dp = $newPenjualan->jumlah - ($item->qty * $item->harga_beli);
                     $newPurchaseOrder->type = "penjualan";
                     $newPurchaseOrder->save();
                 }
-
-                $newPenjualanSaved =  Penjualan::query()
-                ->select(
-                    'penjualan.*',
-                    'itempenjualan.*',
-                    'pelanggan.nama as nama_pelanggan',
-                    'pelanggan.alamat as alamat_pelanggan'
-                )
-                ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-                ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-                ->where('penjualan.id', $newPenjualan->id)
-                ->get();
-
-                $data_event = [
-                    'routes' => 'penjualan-po',
-                    'alert' => 'success',
-                    'type' => 'add-data',
-                    'notif' => "Penjualan dengan kode {$newPenjualan->kode}, baru saja ditambahkan 🤙!",
-                    'data' => $newPenjualan->kode,
-                    'user' => $userOnNotif
-                ];
-
-                event(new EventNotification($data_event));
-
-                return new RequestDataCollect($newPenjualanSaved);
+            } else {
+                $newPurchaseOrder = new PurchaseOrder;
+                $newPurchaseOrder->kode_po = $newPenjualan->kode;
+                $newPurchaseOrder->dp_awal = $newPenjualan->jumlah;
+                $newPurchaseOrder->po_ke = $poKeBaru;
+                $newPurchaseOrder->qty = $dataItemPenjualan->qty;
+                $newPurchaseOrder->nama_barang = $dataItemPenjualan->nama_barang;
+                $newPurchaseOrder->kode_barang = $dataItemPenjualan->kode_barang;
+                    // $newPurchaseOrder->pelanggan = "{$pelanggan->kode}({$newPenjualan->pelanggan})";
+                $newPurchaseOrder->supplier = "{$dataSupplier->kode}({$dataItemPenjualan->supplier})";
+                $newPurchaseOrder->harga_satuan = $dataItemPenjualan->harga_beli;
+                $newPurchaseOrder->subtotal = $dataItemPenjualan->qty * $dataItemPenjualan->harga_beli;
+                $newPurchaseOrder->sisa_dp = $newPenjualan->jumlah - ($dataItemPenjualan->qty * $dataItemPenjualan->harga_beli);
+                $newPurchaseOrder->type = "penjualan";
+                $newPurchaseOrder->save();
             }
+
+            $newPenjualanSaved =  Penjualan::query()
+            ->select(
+                'penjualan.*',
+                'itempenjualan.*',
+                'pelanggan.nama as nama_pelanggan',
+                'pelanggan.alamat as alamat_pelanggan'
+            )
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->where('penjualan.id', $newPenjualan->id)
+            ->get();
+
+            $data_event = [
+                'routes' => 'penjualan-po',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "Penjualan dengan kode {$newPenjualan->kode}, baru saja ditambahkan 🤙!",
+                'data' => $newPenjualan->kode,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+
+            return new RequestDataCollect($newPenjualanSaved);
         } catch (\Throwable $th) {
             throw $th;
         }
