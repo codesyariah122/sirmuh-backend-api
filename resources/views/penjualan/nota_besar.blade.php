@@ -99,34 +99,34 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="text-right"><b>Total</b></td>
+                <td colspan="6" class="text-right"><b>Total</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
             </tr>
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="5" class="text-right"><b>Total Bayar</b></td>
+                <td colspan="6" class="text-right"><b>Total Bayar</b></td>
                 <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             @else
              <tr>
-                <td colspan="5" class="text-right"><b>Dibayar</b></td>
+                <td colspan="6" class="text-right"><b>Dibayar</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar) }}</b></td>
             </tr>
             @endif
             @if($penjualan->dikirim !== NULL)
             <tr>
-                <td colspan="5" class="text-right"><b>Dikirim</b></td>
+                <td colspan="6" class="text-right"><b>Dikirim</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->dikirim) }}</b></td>
             </tr>
             @endif
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="5" class="text-right"><b>Kembali</b></td>
+                <td colspan="6" class="text-right"><b>Kembali</b></td>
                 <td class="text-right"><b>{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</b></td>
             </tr>
             @else
             <tr>
-                <td colspan="5" class="text-right"><b>Masuk Piutang</b></td>
+                <td colspan="6" class="text-right"><b>Masuk Piutang</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($penjualan->piutang) }}</b></td>
             </tr>
             @endif
