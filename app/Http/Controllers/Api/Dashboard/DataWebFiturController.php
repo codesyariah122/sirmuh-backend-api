@@ -2304,6 +2304,11 @@ class DataWebFiturController extends Controller
             $dataPenjualan->status = $request->status_kirim;
             $dataPenjualan->save();
 
+            $dataItemPenjualan = ItemPenjualan::whereKode($dataPenjualan->kode)->first();
+            $updateItem = ItemPenjualan::findOrFail($dataItemPenjualan->id);
+            $updateItem->qty_terima = $dataItemPenjualan->qty;
+            $updateItem->save();
+
             $kas = Kas::where('kode', $dataPenjualan['kode_kas'])->first();
 
             $updateKas = Kas::findOrFail($kas->id);
