@@ -304,7 +304,11 @@ class DataPenjualanTokoController extends Controller
                 // $pemasukan->save();
 
 
-            if($data['status_kirim'] === "DIKIRIM") {                    
+            if($data['status_kirim'] === "DIKIRIM") {     
+                $dataItemPenjualan = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
+                $updateItem = ItemPenjualan::findOrFail($dataItemPenjualan->id);
+                $updateItem->qty_terima = $dataItemPenjualan->qty;
+                $updateItem->save();              
                 $updateKas = Kas::findOrFail($kas->id);
                 $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
                 $updateKas->save();
