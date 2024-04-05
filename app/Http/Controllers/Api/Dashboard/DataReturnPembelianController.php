@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder,SetupPerusahaan, ReturnPembelian};
+use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder,SetupPerusahaan, ReturnPembelian, Pemasukan};
 use Auth;
 use PDF;
 
@@ -157,28 +157,39 @@ class DataReturnPembelianController extends Controller
             $returnPembelian->operator = $pembelian->operator;
             $returnPembelian->kembali = "False";
             $returnPembelian->lokasistok = $pembelian->lokasistok !== NULL ? $pembelian->lokasistok : NULL;
+            $returnPembelian->save();
             
-            if($returnPembelian->save()) {
-                $itemPembelian->return = "True";
-                $itemPembelian->save();
+            $itemPembelian->return = "True";
+            $itemPembelian->save();
 
-                $data_event = [
-                    'routes' => 'return-pembelian',
-                    'alert' => 'success',
-                    'type' => 'return-data',
-                    'notif' => "Item pembelian dengan kode {$pembelian->kode}, berhasil di return 🤙!",
-                    'data' => $pembelian->kode,
-                    'user' => $userOnNotif
-                ];
-
-                event(new EventNotification($data_event));
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "Item pembelian dengan kode : {$itemPembelian->kode}, berhasil di return",
-                    'data' => $returnPembelian->kode
-                ]);
+            if($returnPembelian->po === "True") {
+                $newPemasukan = new Pemasukan;
+                $newPemasukan->kode = "TPK"."-".$currentDate.$randomNumber;
+                $newPemasukan->tanggal = $returnPembelian->tanggal;
+                $newPemasukan->kd_biaya = "0003";
+                $newPemasukan->keterangan = $returnPembelian->keterangan;
+                $newPemasukan->kode_kas = $returnPembelian->kode_kas;
+                $newPemasukan->jumlah = $returnPembelian->jumlah;
+                $newPemasukan->operator = $returnPembelian->operator;
+                $newPemasukan->save();
             }
+
+            $data_event = [
+                'routes' => 'return-pembelian',
+                'alert' => 'success',
+                'type' => 'return-data',
+                'notif' => "Item pembelian dengan kode {$pembelian->kode}, berhasil di return 🤙!",
+                'data' => $pembelian->kode,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Item pembelian dengan kode : {$itemPembelian->kode}, berhasil di return",
+                'data' => $returnPembelian->kode
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

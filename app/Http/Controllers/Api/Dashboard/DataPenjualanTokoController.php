@@ -172,6 +172,7 @@ class DataPenjualanTokoController extends Controller
                 $newPenjualanToko->receive = "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 7;
                 $newPenjualanToko->status = "HOLD";
+                $newPenjualanToko->keterangan = $data['keterangan'];
 
                 // Masuk ke hutang
                 $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);

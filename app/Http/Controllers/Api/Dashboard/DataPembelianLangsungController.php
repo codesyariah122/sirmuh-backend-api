@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder,SetupPerusahaan};
+use App\Models\{Roles,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,PurchaseOrder,SetupPerusahaan, Pengeluaran};
 use Auth;
 use PDF;
 
@@ -171,7 +171,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = $data['diterima'];
-
+            $newPembelian->kembali = intval($data['bayar']) >= intval($data['jumlah']) ? intval($data['bayar']) - intval($data['jumlah']) : intval($data['jumlah']) - intval($data['bayar']);
             // echo "<pre>";
             // var_dump($data['masuk_hutang']); 
             // echo "</pre>";
@@ -184,6 +184,8 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->po = 'False';
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
+                $newPembelian->keterangan = $data['keterangan'];
+
 
                 // Masuk ke hutang
                 $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
@@ -234,9 +236,10 @@ class DataPembelianLangsungController extends Controller
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
             }
+
             $newPembelian->return = "False";
             $newPembelian->biayabongkar =  $data['biayabongkar'] ?? NULL;
-            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
+            $newPembelian->keterangan = $data['keterangan'];
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
@@ -361,7 +364,7 @@ class DataPembelianLangsungController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->leftJoin('return_pembelian', 'pembelian.kode', '=', 'return_pembelian.no_faktur')

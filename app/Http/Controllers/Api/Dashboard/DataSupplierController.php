@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -76,49 +77,56 @@ class DataSupplierController extends Controller
     public function list_suppliers(Request $request)
     {
         try {
-            $keywords = $request->query('keywords');
-            $kode = $request->query('kode');
-            $sortName = $request->query('sort_name');
-            $sortType = $request->query('sort_type');
+            $cacheKey = 'suppliers_' . md5(serialize($request->all()));
 
-            if($keywords) {
-                $suppliers = Supplier::whereNull('deleted_at')
-                ->select('id', 'nama', 'kode')
-                ->where(function($query) use ($keywords) {
-                    $query->where('nama', 'like', '%' . $keywords . '%')
-                    ->orWhere('kode', 'like', '%' . $keywords . '%');
-                })
-                ->orderBy('id', 'ASC')
-                ->limit(10)
-                ->paginate(10);
-            } else if($kode) {
-                $suppliers = Supplier::whereNull('deleted_at')
-                ->select('id', 'nama', 'kode')
-                ->where('kode', 'like', '%' . $kode . '%')
-                ->orderBy('id', 'ASC')
-                ->limit(10)
-                ->paginate(10);
+            if (Cache::has($cacheKey)) {
+                $suppliers = Cache::get($cacheKey);
             } else {
-                if($sortName && $sortType) {
-                    $suppliers =  Supplier::whereNull('deleted_at')
-                    ->select('id', 'nama', 'kode')
-                    ->orderBy($sortName, $sortType)
-                    ->limit(10)
-                    ->paginate(10);
-                } else {
-                    $suppliers =  Supplier::whereNull('deleted_at')
-                    ->select('id', 'nama', 'kode')
-                    ->orderBy('id', 'ASC')
-                    ->limit(10)
-                    ->paginate(10);
-                }
+                    $keywords = $request->query('keywords');
+                    $kode = $request->query('kode');
+                    $sortName = $request->query('sort_name');
+                    $sortType = $request->query('sort_type');
+
+                    if ($keywords) {
+                        $suppliers = Supplier::whereNull('deleted_at')
+                        ->select('id', 'nama', 'kode')
+                        ->where(function ($query) use ($keywords) {
+                            $query->where('nama', 'like', '%' . $keywords . '%')
+                            ->orWhere('kode', 'like', '%' . $keywords . '%');
+                        })
+                        ->orderBy('id', 'ASC')
+                        ->limit(10)
+                        ->paginate(10);
+                    } elseif ($kode) {
+                        $suppliers = Supplier::whereNull('deleted_at')
+                        ->select('id', 'nama', 'kode')
+                        ->where('kode', 'like', '%' . $kode . '%')
+                        ->orderBy('id', 'ASC')
+                        ->limit(10)
+                        ->paginate(10);
+                    } else {
+                        if ($sortName && $sortType) {
+                            $suppliers = Supplier::whereNull('deleted_at')
+                            ->select('id', 'nama', 'kode')
+                            ->orderBy($sortName, $sortType)
+                            ->limit(10)
+                            ->paginate(10);
+                        } else {
+                            $suppliers = Supplier::whereNull('deleted_at')
+                            ->select('id', 'nama', 'kode')
+                            ->orderBy('id', 'ASC')
+                            ->limit(10)
+                            ->paginate(10);
+                        }
+                    }
+
+                Cache::put($cacheKey, $suppliers, now()->addMinutes(60)); // Cache for 60 minutes
             }
 
             return new ResponseDataCollect($suppliers);
         } catch (\Throwable $th) {
             throw $th;
         }
-
     }
 
     public function index(Request $request)

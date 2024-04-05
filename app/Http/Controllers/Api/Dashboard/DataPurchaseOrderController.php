@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{PurchaseOrder,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles,SetupPerusahaan};
+use App\Models\{PurchaseOrder,Pembelian,ItemPembelian,Supplier,Barang,Kas,Toko,Hutang,ItemHutang,PembayaranAngsuran,Roles,SetupPerusahaan, Pengeluaran};
 use Auth;
 use PDF;
 
@@ -122,6 +122,7 @@ class DataPurchaseOrderController extends Controller
             $validator = Validator::make($request->all(), [
                 'kode_kas' => 'required',
                 'barangs' => 'required',
+                'bayar' => 'required'
             ]);
 
 
@@ -139,6 +140,7 @@ class DataPurchaseOrderController extends Controller
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
+            $randomNumber = sprintf('%05d', mt_rand(0, 99999));
 
             $lastIncrement = Pembelian::max('id') ?? 0;
             $increment = $lastIncrement + 1;
@@ -179,7 +181,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->return = "False";
             $newPembelian->biayabongkar = $data['biayabongkar'] ?? NULL;
             $newPembelian->jt = $data['jt'];
-            $newPembelian->keterangan = $data['keterangan'] ? $data['keterangan'] : NULL;
+            $newPembelian->keterangan = $data['keterangan'];
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
@@ -197,6 +199,17 @@ class DataPurchaseOrderController extends Controller
             $userOnNotif = Auth::user();
 
             if($newPembelian) {
+
+                $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+                $newPengeluaran = new Pengeluaran;
+                $newPengeluaran->kode = $perusahaan->kd_pengeluaran."-".$currentDate.$randomNumber;
+                $newPengeluaran->tanggal = $newPembelian->tanggal;
+                $newPengeluaran->kd_biaya = "DP";
+                $newPengeluaran->keterangan = $newPembelian->keterangan;
+                $newPengeluaran->kode_kas = $newPembelian->kode_kas;
+                $newPengeluaran->jumlah = $newPembelian->jumlah;
+                $newPengeluaran->operator = $newPembelian->operator;
+                $newPengeluaran->save();
 
                 $items = ItemPembelian::whereKode($newPembelian->kode)->get();
 
@@ -281,15 +294,16 @@ class DataPurchaseOrderController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.multiple_input', 'pembelian.hutang', 'pembelian.po', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
+            ->leftJoin('return_pembelian', 'pembelian.kode', '=', 'return_pembelian.no_faktur')
             ->where('pembelian.id', $id)
             ->where('pembelian.po', 'True')
             ->first();
 
             $items = ItemPembelian::query()
-            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang','barang.toko as stok_barang','barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
+            ->select('itempembelian.*','barang.id as id_barang','barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.hpp as harga_beli_barang', 'barang.toko as stok_barang','barang.expired as expired_barang', 'barang.ada_expired_date','supplier.id as id_supplier','supplier.kode as kode_supplier','supplier.nama as nama_supplier','supplier.alamat as alamat_supplier')
             ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
             ->where('itempembelian.kode', $pembelian->kode)
@@ -422,9 +436,10 @@ class DataPurchaseOrderController extends Controller
                 // $bindCalc = $updatePembelian->diterima - $updatePembelian->jumlah;
                 // $updateKas->saldo = $kas->saldo - $bindCalc;
                 // $updateKas->save();
-            } else if($data['sisa_dp'] > 0) {
-                $updatePembelian->lunas = "False";
-                $updatePembelian->visa = "DP AWAL";
+            } else if($data['sisa_dp'] <= 1000) {
+                $updatePembelian->kembali = $data['sisa_dp'];
+                $updatePembelian->lunas = "True";
+                $updatePembelian->visa = "LUNAS";
                 $updatePembelian->hutang = 0;
             } else {
                 if($bayar > $data['jumlah_saldo']) {

@@ -96,7 +96,15 @@
                 <td class="text-right"><b>{{ intval($pembelian->last_qty) }}{{$pembelian->satuan}}</b></td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Subtotal</b></td>
+                <td colspan="5" class="text-right"><b>Subtotal Pembelian</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->subtotal) }}</b></td>
+            </tr>
+            <tr>
+                <td colspan="5" class="text-right"><b>Total Qty Diterima</b></td>
+                <td class="text-right"><b>{{ intval($pembelian->last_qty) - intval($pembelian->qty) }}{{$pembelian->satuan}}</b></td>
+            </tr>
+            <tr>
+                <td colspan="5" class="text-right"><b>Total Diterima</b></td>
                 <td class="text-right"><b>{{ $helpers->format_uang($pembelian->subtotal) }}</b></td>
             </tr>
         </tfoot>
