@@ -251,45 +251,44 @@ class DataPenjualanTokoController extends Controller
                 $updateDrafts[$idx]->save();
             }
 
-            if($newPenjualanToko) {
-                $dikirim = intval($newPenjualanToko->bayar);
-                $updateKas = Kas::findOrFail($data['kode_kas']);
-                $updatesaldo = intval($kas->saldo) + intval($dikirim);
-                $updateKas->saldo = $updatesaldo;
-                $updateKas->save();
+            $dikirim = intval($newPenjualanToko->bayar);
+            $updateKas = Kas::findOrFail($data['kode_kas']);
+            $updatesaldo = intval($kas->saldo) + intval($dikirim);
+            $updateKas->saldo = $updatesaldo;
+            $updateKas->save();
 
-                $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
-                $updatePenjualanDraft->draft = 0;
-                $updatePenjualanDraft->save();
+            $updatePenjualanDraft = Penjualan::findOrFail($newPenjualanToko->id);
+            $updatePenjualanDraft->draft = 0;
+            $updatePenjualanDraft->save();
 
-                $userOnNotif = Auth::user();
+            $userOnNotif = Auth::user();
 
-                $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
-                $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
-                $hpp = $itemPenjualanBarang->hpp * $data['qty'];
-                $diskon = $newPenjualanToko->diskon;
-                $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
+            $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
+            $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
+            $hpp = $itemPenjualanBarang->hpp * $data['qty'];
+            $diskon = $newPenjualanToko->diskon;
+            $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
 
-                $newLabaRugi = new LabaRugi;
-                $newLabaRugi->tanggal = now()->toDateString();
-                $newLabaRugi->kode = $newPenjualanData->kode;
-                $newLabaRugi->kode_barang = $itemPenjualanBarang->kode_barang;
-                $newLabaRugi->nama_barang = $itemPenjualanBarang->nama_barang;
-                $newLabaRugi->penjualan = $newPenjualanData->bayar;
-                $newLabaRugi->hpp = $itemPenjualanBarang->harga;
-                $newLabaRugi->diskon =  $newPenjualanData->diskon;
-                $newLabaRugi->labarugi = $labarugi;
-                $newLabaRugi->operator = $data['operator'];
-                $newLabaRugi->keterangan = "PENJUALAN TOKO";
-                $newLabaRugi->pelanggan = $pelanggan->kode;
-                $newLabaRugi->nama_pelanggan = $pelanggan->nama;
+            $newLabaRugi = new LabaRugi;
+            $newLabaRugi->tanggal = now()->toDateString();
+            $newLabaRugi->kode = $newPenjualanData->kode;
+            $newLabaRugi->kode_barang = $itemPenjualanBarang->kode_barang;
+            $newLabaRugi->nama_barang = $itemPenjualanBarang->nama_barang;
+            $newLabaRugi->penjualan = $newPenjualanData->bayar;
+            $newLabaRugi->hpp = $itemPenjualanBarang->harga;
+            $newLabaRugi->diskon =  $newPenjualanData->diskon;
+            $newLabaRugi->labarugi = $labarugi;
+            $newLabaRugi->operator = $data['operator'];
+            $newLabaRugi->keterangan = "PENJUALAN TOKO";
+            $newLabaRugi->pelanggan = $pelanggan->kode;
+            $newLabaRugi->nama_pelanggan = $pelanggan->nama;
 
-                $newLabaRugi->save();
+            $newLabaRugi->save();
 
-                $simpanFaktur = new FakturTerakhir;
-                $simpanFaktur->faktur = $newPenjualanData->kode;
-                $simpanFaktur->tanggal = $newPenjualanData->tanggal;
-                $simpanFaktur->save();
+            $simpanFaktur = new FakturTerakhir;
+            $simpanFaktur->faktur = $newPenjualanData->kode;
+            $simpanFaktur->tanggal = $newPenjualanData->tanggal;
+            $simpanFaktur->save();
 
                 // $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 // $pemasukan = new Pemasukan;
@@ -305,37 +304,36 @@ class DataPenjualanTokoController extends Controller
                 // $pemasukan->save();
 
 
-                if($data['status_kirim'] === "DIKIRIM") {                    
-                    $updateKas = Kas::findOrFail($kas->id);
-                    $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
-                    $updateKas->save();
-                } 
-
-                $newPenjualanTokoSaved =  Penjualan::query()
-                ->select(
-                    'penjualan.*',
-                    'itempenjualan.*',
-                    'pelanggan.nama as nama_pelanggan',
-                    'pelanggan.alamat as alamat_pelanggan'
-                )
-                ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-                ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-                ->where('penjualan.id', $newPenjualanToko->id)
-                ->get();
-
-                $data_event = [
-                    'routes' => 'penjualan-toko',
-                    'alert' => 'success',
-                    'type' => 'add-data',
-                    'notif' => "Penjualan dengan kode {$newPenjualanToko->kode}, baru saja ditambahkan 🤙!",
-                    'data' => $newPenjualanToko->kode,
-                    'user' => $userOnNotif
-                ];
-
-                event(new EventNotification($data_event));
-
-                return new RequestDataCollect($newPenjualanTokoSaved);
+            if($data['status_kirim'] === "DIKIRIM") {                    
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
+                $updateKas->save();
             }
+
+            $newPenjualanTokoSaved =  Penjualan::query()
+            ->select(
+                'penjualan.*',
+                'itempenjualan.*',
+                'pelanggan.nama as nama_pelanggan',
+                'pelanggan.alamat as alamat_pelanggan'
+            )
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->where('penjualan.id', $newPenjualanToko->id)
+            ->get();
+
+            $data_event = [
+                'routes' => 'penjualan-toko',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "Penjualan dengan kode {$newPenjualanToko->kode}, baru saja ditambahkan 🤙!",
+                'data' => $newPenjualanToko->kode,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+
+            return new RequestDataCollect($newPenjualanTokoSaved);
         } catch (\Throwable $th) {
             throw $th;
         }
