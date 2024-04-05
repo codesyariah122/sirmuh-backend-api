@@ -72,6 +72,7 @@
                 <th>Kode Kas</th>
                 <th>Barang / Harga Satuan</th>
                 <th>Jumlah</th>
+                <th>Biaya Kirim</th>
                 <th>Subtotal</th>
             </tr>
         </thead>
@@ -83,6 +84,7 @@
                 <td class="text-center">{{ $item->kode_kas }}</td>
                 <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
                 <td class="text-right">{{ $item->qty." ".$item->satuan }}</td>
+                <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
             </tr>
             @endforeach
