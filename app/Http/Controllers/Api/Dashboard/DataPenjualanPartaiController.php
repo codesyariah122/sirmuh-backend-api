@@ -301,6 +301,16 @@ class DataPenjualanPartaiController extends Controller
             // $pemasukan->nama_pelanggan = $pelanggan->nama;
             // $pemasukan->save();
 
+            if($data['status_kirim'] === "DIKIRIM") {     
+                $dataItemPenjualan = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
+                $updateItem = ItemPenjualan::findOrFail($dataItemPenjualan->id);
+                $updateItem->qty_terima = $dataItemPenjualan->qty;
+                $updateItem->save();              
+                $updateKas = Kas::findOrFail($kas->id);
+                $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
+                $updateKas->save();
+            }
+
             $newPenjualanTokoSaved =  Penjualan::query()
             ->select(
                 'penjualan.*',
