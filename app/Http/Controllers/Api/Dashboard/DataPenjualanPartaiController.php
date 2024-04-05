@@ -267,7 +267,6 @@ class DataPenjualanPartaiController extends Controller
             $hpp = $itemPenjualanBarang->harga * $data['qty'];
             $diskon = $newPenjualanToko->diskon;
             $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
-
             $newLabaRugi = new LabaRugi;
             $newLabaRugi->tanggal = now()->toDateString();
             $newLabaRugi->kode = $newPenjualanData->kode;

@@ -72,6 +72,10 @@ class DataLabaRugiController extends Controller
                 $query->where('labarugi.kode', 'like', '%' . $keywords . '%');
             }
 
+            if ($pelanggan) {
+                $query->where('labarugi.pelanggan', $pelanggan);
+            }
+
             if ($dateTransaction) {
                 $query->whereDate('labarugi.tanggal', '=', $dateTransaction);
             }
