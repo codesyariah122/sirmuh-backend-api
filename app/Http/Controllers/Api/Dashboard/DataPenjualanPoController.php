@@ -413,7 +413,7 @@ class DataPenjualanPoController extends Controller
             $updatePenjualan->draft = 0;
             $updatePenjualan->kode_kas = $kas->kode;
  
-            if($dikirim > $bayar) {
+            if(intval($dikirim) > intval($bayar)) {
                 $updatePenjualan->lunas = "False";
                 $updatePenjualan->visa = "PIUTANG";
                 $updatePenjualan->piutang = $data['piutang'];
