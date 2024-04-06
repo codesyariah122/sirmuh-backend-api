@@ -8,3 +8,5 @@ https://app.getpostman.com/join-team?invite_code=4a59950433bb02d3691d0864cb1b1ca
 
 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
 sirmuh-token = glpat-WtU-Ke1oDvPskAqkxzzp
+
+firefox = uji_Bismillah123654
