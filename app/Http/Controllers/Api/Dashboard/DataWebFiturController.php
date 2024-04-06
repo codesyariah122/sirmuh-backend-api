@@ -1948,7 +1948,7 @@ class DataWebFiturController extends Controller
                     $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
                     ->where('draft', 1)
                     ->first();
-
+                    
                     if($barang['harga_toko'] !== NULL) {
                         $harga = $barang['harga_toko'];
                     } else {

@@ -391,8 +391,8 @@ class DataPenjualanPoController extends Controller
             $data = $request->all();
             $currentDate = now()->format('ymd');
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
-            $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
-            $dikirim = preg_replace("/[^0-9]/", "", $data['dikirim']);
+            $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
+            $dikirim = intval(preg_replace("/[^0-9]/", "", $data['dikirim']));
 
             $updatePenjualan = Penjualan::where('po', 'True')
             ->findOrFail($id);

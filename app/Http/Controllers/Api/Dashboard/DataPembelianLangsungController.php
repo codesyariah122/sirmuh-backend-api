@@ -415,13 +415,13 @@ class DataPembelianLangsungController extends Controller
             $data = $request->all();
 
             if(gettype($data['bayar']) === 'string') {
-                $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
+                $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
             } else {
                 $bayar = intval($data['bayar']);
             }
 
             if(gettype($data['diterima']) === 'string') {
-                $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+                $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
             } else {
                 $diterima = intval($data['diterima']);
             }

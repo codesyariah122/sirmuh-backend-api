@@ -368,8 +368,8 @@ class DataPurchaseOrderController extends Controller
             $data = $request->all();
             $currentDate = now()->format('ymd');
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
-            $bayar = preg_replace("/[^0-9]/", "", $data['bayar']);
-            $diterima = preg_replace("/[^0-9]/", "", $data['diterima']);
+            $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
+            $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
             $updatePembelian = Pembelian::where('po', 'True')
             ->findOrFail($id);
             $dataItemPo = PurchaseOrder::where('kode_po', $updatePembelian->kode)->get();
