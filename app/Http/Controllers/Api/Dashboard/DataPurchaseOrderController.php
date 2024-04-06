@@ -386,7 +386,8 @@ class DataPurchaseOrderController extends Controller
 
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
- 
+        
+
             if($diterima > $bayar) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
@@ -458,6 +459,7 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
             $updatePembelian->bayar = $bayar;
             $updatePembelian->diterima = $totalSubtotal;
+            $updatePembelian->return = "False";
             $updatePembelian->biayabongkar = $data['biayabongkar'] ?? NULL;
 
             if($updatePembelian->save()) {

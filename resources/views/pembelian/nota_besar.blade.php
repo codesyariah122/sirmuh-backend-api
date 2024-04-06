@@ -8,9 +8,9 @@
 
     <style>
         table td {
-            /* font-family: Arial, Helvetica, sans-serif; */
-            font-family: 'Courier New', monospace,
+            font-family: 'Courier New', monospace;
             font-size: 13px;
+            font-weight: bold;
         }
         table.data td,
         table.data th {

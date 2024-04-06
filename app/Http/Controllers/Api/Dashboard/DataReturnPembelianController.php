@@ -125,14 +125,14 @@ class DataReturnPembelianController extends Controller
             if(intval($data['item_qty']) > intval($itemPembelian->qty)) {
                 return response()->json([
                     'error' => true,
-                    'message' => $data['item_qty'] . " melebihi batas maximal !!"
+                    'message' => $data['item_qty'] . " melebihi batas maximal 🫣"
                 ]);
             }
 
-            if(intval($data['item_qty']) == 0) {
+            if(intval($data['item_qty']) === 0) {
                 return response()->json([
                     'error' => true,
-                    'message' => "Quantity tidak boleh 0 !!"
+                    'message' => "Return quantity tidak boleh menghasilkan nilai 0 🫣"
                 ]);
             }
 

@@ -8,9 +8,9 @@
 
     <style>
         table td {
-            /* font-family: Arial, Helvetica, sans-serif; */
-            font-family: 'Courier New', monospace,
+            font-family: 'Courier New', monospace;
             font-size: 13px;
+            font-weight: bold;
         }
         table.data td,
         table.data th {
@@ -128,16 +128,11 @@
         </tfoot>
     </table>
 
-  {{--   <table width="100%">
-        <tr>
-            <td><b>Terimakasih telah berbelanja dan sampai jumpa</b></td>
-            <td class="text-center">
-                Kasir
-                <br>
-                <br>
-                {{ strtoupper($piutang->operator) }}
-            </td>
-        </tr>
-    </table> --}}
+    <p style="text-align: center; font-size:10px;">
+        <p class="text-center">Semoga Lancar</p>
+        <p class="text-center">&</p>
+        <p class="text-center">Tetap Menjadi Langganan</p>
+        <p class="text-center">*** TERIMA KASIH ****</p>
+    </p>
 </body>
 </html>

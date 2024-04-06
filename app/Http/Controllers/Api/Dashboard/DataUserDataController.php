@@ -33,30 +33,40 @@ class DataUserDataController extends Controller
     {
         try {
             $user = $request->user();
-            $user_login = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
-            ->whereEmail($user->email)
-            ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
-            ->first();
+            $minutes = 60;
+            
+            $user_login = Cache::remember('user:' . $user->email, $minutes, function () use ($user) {
+                return User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
+                ->whereEmail($user->email)
+                ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
+                ->first();
+            });
 
-            $menus = Menu::whereJsonContains('roles', $user_login->role)
-            ->with([
-                'sub_menus' => function ($query) use ($user_login) {
-                    $query->whereJsonContains('roles', $user_login->role)
-                    ->with(['child_sub_menus' => function ($query) use ($user_login) {
-                        $query->whereJsonContains('roles', $user_login->role);
-                    }]);
-                }
-            ])
-            ->get();
-            $karyawans = Karyawan::withTrashed()->whereNama($user->name)->get();
+            $menus = Cache::remember('menus:' . $user_login->role, $minutes, function () use ($user_login) {
+                return Menu::whereJsonContains('roles', $user_login->role)
+                ->with([
+                    'sub_menus' => function ($query) use ($user_login) {
+                        $query->whereJsonContains('roles', $user_login->role)
+                        ->with(['child_sub_menus' => function ($query) use ($user_login) {
+                            $query->whereJsonContains('roles', $user_login->role);
+                        }]);
+                    }
+                ])
+                ->get();
+            });
+
+            $karyawans = Cache::remember('karyawans:' . $user->name, $minutes, function () use ($user) {
+                return Karyawan::withTrashed()->whereNama($user->name)->get();
+            });
 
             if (count($user_login->logins) === 0) {
                 return response()->json([
                     'success' => false,
                     'not_login' => true,
-                    'message' => 'Anauthenticated'
+                    'message' => 'Unauthenticated'
                 ]);
             }
+
             return response()->json([
                 'success' => true,
                 'message' => 'User is login 🧑🏻‍💻',
