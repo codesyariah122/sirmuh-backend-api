@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Kas, User, Roles};
+use App\Models\{Kas, KasAwal, User, Roles};
 use Auth;
 
 class DataKasController extends Controller
@@ -144,8 +144,11 @@ class DataKasController extends Controller
     public function show($id)
     {
         try {
-            $kas = Kas::whereNull('deleted_at')
-            ->whereId($id)
+            $kas = Kas::query()
+            ->whereNull('kas.deleted_at')
+            ->select('kas.*', 'kas_awal.kode_kas', 'kas_awal.saldo as saldo_awal')
+            ->leftJoin('kas_awal', 'kas.kode', '=' ,'kas_awal.kode_kas')
+            ->where('kas.id', $id)
             ->get();
             return new ResponseDataCollect($kas);
         } catch (\Throwable $th) {
@@ -187,6 +190,11 @@ class DataKasController extends Controller
                 $kas = Kas::whereNull('deleted_at')
                 ->whereId($id)
                 ->get();
+
+                $dataKasAwal = KasAwal::where('kode_kas', $updateKas->kode)->first();
+                $updateKasAwal = KasAwal::findOrFail($dataKasAwal->id);
+                $updateKasAwal->saldo = $request->saldo_awal;
+                $updateKasAwal->save();
 
                 $userOnNotif = Auth::user();
                 $data_event = [
