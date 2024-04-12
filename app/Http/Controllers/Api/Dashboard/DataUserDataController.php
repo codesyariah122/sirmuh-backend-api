@@ -38,7 +38,7 @@ class DataUserDataController extends Controller
             $user_login = Cache::remember('user:' . $user->email, $minutes, function () use ($user) {
                 return User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
                 ->whereEmail($user->email)
-                ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
+                ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level,alamat'])
                 ->first();
             });
 
