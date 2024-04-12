@@ -123,7 +123,7 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_SUPPLIER':
                 $deleted = Supplier::onlyTrashed()
-                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_piutang')
+                ->select('id', 'nama', 'kode', 'alamat', 'kota', 'telp', 'fax', 'email', 'saldo_hutang')
                 ->paginate(10);
                 break;
 
@@ -1478,8 +1478,8 @@ class DataWebFiturController extends Controller
             $type = $request->type;
 
             switch($type) {
-             case "pembelian":
-             foreach ($barangs as $barang) {
+               case "pembelian":
+               foreach ($barangs as $barang) {
                 $updateBarang = Barang::findOrFail($barang['id']);
                 if($barang['qty'] > $updateBarang->last_qty){
                     $bindStok = $barang['qty'] + $updateBarang->last_qty;
@@ -1578,8 +1578,8 @@ public function update_stok_barang_all(Request $request)
         $type = $request->type;
 
         switch($type) {
-         case "pembelian":
-         foreach ($barangs as $barang) {
+           case "pembelian":
+           foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
                 // if($barang['qty'] > $updateBarang->last_qty){
                 //     $newStok = $updateBarang->toko + $barang['qty'];
@@ -2208,18 +2208,18 @@ public function update_faktur_terakhir(Request $request)
             $updateFakturTerakhir->save();
 
         } else {
-         $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
-         ->first();
-         $updateFakturTerakhir->faktur = $request->faktur;
-         $updateFakturTerakhir->tanggal = $today;
-         $updateFakturTerakhir->save();
+           $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+           ->first();
+           $updateFakturTerakhir->faktur = $request->faktur;
+           $updateFakturTerakhir->tanggal = $today;
+           $updateFakturTerakhir->save();
 
-     }
-     return response()->json([
+       }
+       return response()->json([
         'success' => true,
         'message' => 'Faktur terakhir terupdate!'
     ], 200);
- } catch (\Throwable $th) {
+   } catch (\Throwable $th) {
     throw $th;
 }
 }
