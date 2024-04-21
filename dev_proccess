@@ -1,0 +1,34 @@
+Doc penggantian database baru
+
+# Backup database sebelumnya
+# Download database baru
+# ubah nama table di database baru
+# import database baru
+
+# Drop dulu Primary Key tiap table
+- barang
+- pelanggan
+- supplier
+- hutang
+- piutang
+- pembelian
+- penjualan
+- koreksi
+dll ...
+
+# migrasi table
+- php artisan migrate
+
+# seeder table
+- table ApiKeySeeder
+
+# insert data
+- table users
+- table roles
+- relasi ketable roles_user
+- table setup_perusahaan
+- table tokos
+- relasi ke table setup_perusahaan_toko
+
+# Edit table barang kategori
+
