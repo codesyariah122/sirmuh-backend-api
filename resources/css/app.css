@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Dot Matrix';
+    src: url('/fonts/Dot-Matrix.ttf.woff') format('woff'),
+    url('/fonts/Dot-Matrix.ttf.svg#Dot-Matrix') format('svg'),
+    url('/fonts/Dot-Matrix.ttf.eot'),
+    url('/fonts/Dot-Matrix.ttf.eot?#iefix') format('embedded-opentype');
+    font-weight: normal;
+    font-style: normal;
+}

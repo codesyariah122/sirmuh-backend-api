@@ -16,11 +16,13 @@ Doc penggantian database baru
 - koreksi
 dll ...
 
+* Jangan lupa update field expired di table itempenjualan, biar gak error : SQLSTATE[42000]: Syntax error or access violation: 1067 Invalid default value for 'expired' (SQL: alter table `itempenjualan` add `deleted_at` timestamp null after `master_elektrik`)
+
+
 # migrasi table
 - php artisan migrate
 
-# seeder table
-- table ApiKeySeeder
+* Edit remember_token di table users terlebih dahulu, ganti ke longText
 
 # insert data
 - table users
@@ -29,6 +31,11 @@ dll ...
 - table setup_perusahaan
 - table tokos
 - relasi ke table setup_perusahaan_toko
+
+
+# seeder table
+- table ApiKeySeeder
+
 
 # Edit table barang kategori
 

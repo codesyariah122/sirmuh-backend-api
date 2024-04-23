@@ -8,8 +8,8 @@ use App\Http\Controllers\Api\Dashboard\{
 	DataPenjualanTokoController,
 	DataPenjualanPartaiController,
     DataPenjualanPoController,
-	DataHutangController,
-	DataPiutangController,
+    DataHutangController,
+    DataPiutangController,
     DataReturnPembelianController,
     DataReturnPenjualanController
 };
@@ -66,5 +66,7 @@ Route::get('/transaksi/return-pembelian/cetak-nota/{type}/{kode}/{id_perusahaan}
 Route::get('/transaksi/return-penjualan/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataReturnPenjualanController::class, 'cetak_nota']);
 Route::get('/laporan/penjualan/laporan-penjualan-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_penjualan_periode']);
 
-
+Route::get('/test', function () {
+    return view('test');
+});
 Route::get('/detail/{barcode}', [DetailProductController::class, 'index']);

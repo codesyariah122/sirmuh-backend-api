@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Nota Pembelian - {{$kode}}</title>
-
+    @vite(['resources/css/app.css'])
     <style>
+        body {
+            font-family: 'Dot Matrix', sans-serif;
+        }
         table td {
-            font-family: 'Courier New', monospace;
             font-size: 13px;
-            font-weight: bold;
         }
         table.data td,
         table.data th {
@@ -33,10 +34,10 @@
     <table width="100%" style="border-collapse: collapse;">
         <tr>
             <td style="vertical-align: top;">
-                <b>Kepada</b>
+                Kepada
             </td>
             <td rowspan="4" width="50%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
+                {{ $toko['name'] }} <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
                 <br>
                 <address>
                     {{ $toko['address'] }}
@@ -44,8 +45,8 @@
                 <br>
                 {{$helpers->format_tanggal($pembelian['tanggal'])}}
                 <br>
-                <b>NO INVOICE : </b>
-                <b>{{$pembelian->kode}}</b>
+                NO INVOICE :
+                {{$pembelian->kode}}
             </td>
         </tr>
         <tr>
@@ -104,98 +105,98 @@
                 <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
             </tr>
             @endforeach
-        @endif
-        <tfoot>
-            @if($pembelian->po === 'False')
+            @endif
+            <tfoot>
+                @if($pembelian->po === 'False')
                 <tr>
-                    <td colspan="6" class="text-right"><b>SubTotal</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
+                    <td colspan="6" class="text-right">SubTotal</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right"><b>Biaya Bongkar</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->biayabongkar) }}</b></td>
+                    <td colspan="6" class="text-right">Biaya Bongkar</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
                 </tr>
 
                 <tr>
-                    <td colspan="6" class="text-right"><b>Grand Total Bayar</b></td>
-                    <td class="text-right"><b>{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->jumlah + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->jumlah) }}</b></td>
+                    <td colspan="6" class="text-right">Grand Total Bayar</td>
+                    <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->jumlah + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->jumlah) }}</td>
                 </tr>
-            @endif
-            
-            
-            @if($pembelian->visa === 'HUTANG')
+                @endif
+
+
+                @if($pembelian->visa === 'HUTANG')
                 <tr>
-                    <td colspan="6" class="text-right"><b>
+                    <td colspan="6" class="text-right">
                         {{$pembelian->visa === "DP AWAL" ? "DP Awal" : "Total DP"}}
-                    </b></td>
-                    <td class="text-right"><b>{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</b></td>
+                    </td>
+                    <td class="text-right">{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</td>
                 </tr>
                 @if($pembelian->po === "True")
-                    @if($pembelian->lunas == "True")
-                        <tr>
-                            <td colspan="6" class="text-right"><b>Sisa DP</b></td>
-                            <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
-                        </tr>
-                    @else
-                        <tr>
-                            <td colspan="6" class="text-right"><b>Masuk Hutang</b></td>
-                            <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
-                        </tr>
-                    @endif
+                @if($pembelian->lunas == "True")
+                <tr>
+                    <td colspan="6" class="text-right">Sisa DP</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                </tr>
                 @else
-                    <tr>
-                        <td colspan="6" class="text-right"><b>Hutang</b></td>
-                        <td class="text-right"><b>{{ $helpers->format_uang($pembelian->hutang) }}</b></td>
-                    </tr>
+                <tr>
+                    <td colspan="6" class="text-right">Masuk Hutang</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                </tr>
                 @endif
-            @else
-            
-            @if($pembelian->po === 'True')
-            <tr>
-                <td colspan="6" class="text-right"><b>DP Awal</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
-            </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Diterima</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima) }}</b></td>
-            </tr>
-            @if($pembelian->lunas === "True")
+                @else
                 <tr>
-                    <td colspan="6" class="text-right"><b>Biaya Bongkar</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->biayabongkar) }}</b></td>
+                    <td colspan="6" class="text-right">Hutang</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
+                </tr>
+                @endif
+                @else
+
+                @if($pembelian->po === 'True')
+                <tr>
+                    <td colspan="6" class="text-right">DP Awal</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right"><b>Grand Total Bayar</b></td>
-                    <td class="text-right"><b>{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</b></td>
+                    <td colspan="6" class="text-right">Diterima</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->diterima) }}</td>
                 </tr>
-            @endif
-            <tr>
-                <td colspan="6" class="text-right">
-                    @if($pembelian->visa === "LUNAS")
-                    <b>Kembali</b> 
-                    @else
-                    <b>Sisa DP</b>
-                    @endif
-                </td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</b></td>
-            </tr>
-            @else
-            <tr>
-                <td colspan="6" class="text-right"><b>Dibayar</b></td>
-                <td class="text-right"><b>{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</b></td>
-            </tr>
-            <tr>
-                <td colspan="6" class="text-right"><b>Kembali</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</b></td>
-            </tr>
-            @endif
-            @endif
-        </tfoot>
-    </table>
+                @if($pembelian->lunas === "True")
+                <tr>
+                    <td colspan="6" class="text-right">Biaya Bongkar</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="6" class="text-right">Grand Total Bayar</td>
+                    <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td colspan="6" class="text-right">
+                        @if($pembelian->visa === "LUNAS")
+                        Kembali 
+                        @else
+                        Sisa DP
+                        @endif
+                    </td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</td>
+                </tr>
+                @else
+                <tr>
+                    <td colspan="6" class="text-right">Dibayar</td>
+                    <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="6" class="text-right">Kembali</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
+                </tr>
+                @endif
+                @endif
+            </tfoot>
+        </table>
 
   {{--   <table width="100%">
         <tr>
-            <td><b>Terimakasih telah berbelanja dan sampai jumpa</b></td>
+            <td>Terimakasih telah berbelanja dan sampai jumpa</td>
             <td class="text-center">
                 Kasir
                 <br>

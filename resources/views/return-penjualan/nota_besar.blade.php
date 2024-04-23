@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Nota Return Penjualan - {{$kode}}</title>
-
+    @vite(['resources/css/app.css'])
     <style>
+        body {
+            font-family: 'Dot Matrix', sans-serif;
+        }
         table td {
-            font-family: 'Courier New', monospace;
             font-size: 13px;
-            font-weight: bold;
         }
         table.data td,
         table.data th {
@@ -33,10 +34,10 @@
     <table width="100%" style="border-collapse: collapse;">
         <tr>
             <td style="vertical-align: top;">
-                <b>Kepada</b>
+                Kepada
             </td>
             <td rowspan="4" width="50%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
+                {{ $toko['name'] }} <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
                 <br>
                 <address>
                     {{ $toko['address'] }}
@@ -44,8 +45,8 @@
                 <br>
                 {{$helpers->format_tanggal($penjualan['tanggal'])}}
                 <br>
-                <b>Kode Return : </b>
-                <b>{{$penjualan->kode}}</b>
+                Kode Return : 
+                {{$penjualan->kode}}
             </td>
         </tr>
         <tr>
@@ -88,16 +89,16 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="text-right"><b>No Faktur</b></td>
-                <td class="text-left"> <b> {{$penjualan->kode_item}}</b> </td>
+                <td colspan="5" class="text-right">No Faktur</td>
+                <td class="text-left">  {{$penjualan->kode_item}} </td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Qty Penjualan</b></td>
-                <td class="text-right"><b>{{ intval($penjualan->last_qty) }}{{$penjualan->satuan}}</b></td>
+                <td colspan="5" class="text-right">Qty Penjualan</td>
+                <td class="text-right">{{ intval($penjualan->last_qty) }}{{$penjualan->satuan}}</td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Subtotal</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->subtotal) }}</b></td>
+                <td colspan="5" class="text-right">Subtotal</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->subtotal) }}</td>
             </tr>
         </tfoot>
     </table>

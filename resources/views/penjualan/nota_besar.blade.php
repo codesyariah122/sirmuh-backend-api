@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
-
+    @vite(['resources/css/app.css'])
     <style>
+        body {
+            font-family: 'Dot Matrix', sans-serif;
+        }
         table td {
-            font-family: 'Courier New', monospace;
             font-size: 13px;
-            font-weight: bold;
         }
         table.data td,
         table.data th {
@@ -34,10 +35,10 @@
     <table width="100%" style="border-collapse: collapse;">
         <tr>
             <td style="vertical-align: top;">
-                <b>Kepada</b>
+                Kepada
             </td>
             <td rowspan="4" width="40%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
+                {{ $toko['name'] }} <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
                 <br>
                 <address>
                     {{ $toko['address'] }}
@@ -45,8 +46,8 @@
                 <br>
                 {{$helpers->format_tanggal($penjualan['tanggal'])}}
                 <br>
-                <b>NO INVOICE : </b>
-                <b>{{$penjualan->kode}}</b>
+                NO INVOICE : 
+                {{$penjualan->kode}}
             </td>
         </tr>
         <tr>
@@ -89,9 +90,9 @@
                 <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
                 <td class="text-center">{{ $item->qty." ".$item->satuan }}</td>
                 @if(count($barangs) > 0)
-                    <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
+                <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
                 @else
-                    <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
+                <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
                 @endif
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
             </tr>
@@ -99,46 +100,46 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="text-right"><b>Total</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
+                <td colspan="5" class="text-right">Total</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
             </tr>
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="5" class="text-right"><b>Total Bayar</b></td>
-                <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
+                <td colspan="5" class="text-right">Total Bayar</td>
+                <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
             @else
-             <tr>
-                <td colspan="5" class="text-right"><b>Dibayar</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->bayar) }}</b></td>
+            <tr>
+                <td colspan="5" class="text-right">Dibayar</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
             @endif
             @if($penjualan->dikirim !== NULL)
             <tr>
-                <td colspan="5" class="text-right"><b>Dikirim</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->dikirim) }}</b></td>
+                <td colspan="5" class="text-right">Dikirim</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->dikirim) }}</td>
             </tr>
             @endif
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="5" class="text-right"><b>Kembali</b></td>
-                <td class="text-right"><b>{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</b></td>
+                <td colspan="5" class="text-right">Kembali</td>
+                <td class="text-right">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
             </tr>
             @else
             <tr>
-                <td colspan="5" class="text-right"><b>Masuk Piutang</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->piutang) }}</b></td>
+                <td colspan="5" class="text-right">Masuk Piutang</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->piutang) }}</td>
             </tr>
             @endif
         </tfoot>
     </table>
 
-      <table width="100%" style="margin-top: 1rem;">
+    <table width="100%" style="margin-top: 1rem;">
         <tr>
             <td class="text-right">
                 <h2>Kasir</h2>
                 <br>
-                <b>{{ strtoupper($penjualan->operator) }}</b>
+                {{ strtoupper($penjualan->operator) }}
             </td>
         </tr>
     </table>

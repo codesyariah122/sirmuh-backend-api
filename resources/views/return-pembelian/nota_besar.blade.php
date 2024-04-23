@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Nota Return Pembelian - {{$kode}}</title>
-
+    @vite(['resources/css/app.css'])
     <style>
+        body {
+            font-family: 'Dot Matrix', sans-serif;
+        }
         table td {
-            font-family: 'Courier New', monospace;
             font-size: 13px;
-            font-weight: bold;
         }
         table.data td,
         table.data th {
@@ -33,10 +34,10 @@
     <table width="100%" style="border-collapse: collapse;">
         <tr>
             <td style="vertical-align: top;">
-                <b>Kepada</b>
+                Kepada
             </td>
             <td rowspan="4" width="50%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
+                {{ $toko['name'] }} <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
                 <br>
                 <address>
                     {{ $toko['address'] }}
@@ -44,8 +45,8 @@
                 <br>
                 {{$helpers->format_tanggal($pembelian['tanggal'])}}
                 <br>
-                <b>Kode Return : </b>
-                <b>{{$pembelian->kode}}</b>
+                Kode Return : 
+                {{$pembelian->kode}}
             </td>
         </tr>
         <tr>
@@ -88,24 +89,24 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="text-right"><b>No Faktur</b></td>
-                <td class="text-left"> <b>{{$pembelian->kode_item}}</b> </td>
+                <td colspan="5" class="text-right">No Faktur</td>
+                <td class="text-left"> {{$pembelian->kode_item}} </td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Qty Pembelian</b></td>
-                <td class="text-right"><b>{{ intval($pembelian->last_qty) }}{{$pembelian->satuan}}</b></td>
+                <td colspan="5" class="text-right">Qty Pembelian</td>
+                <td class="text-right">{{ intval($pembelian->last_qty) }}{{$pembelian->satuan}}</td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Subtotal Pembelian</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->subtotal) }}</b></td>
+                <td colspan="5" class="text-right">Subtotal Pembelian</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->subtotal) }}</td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Total Qty Diterima</b></td>
-                <td class="text-right"><b>{{ intval($pembelian->last_qty) - intval($pembelian->qty) }}{{$pembelian->satuan}}</b></td>
+                <td colspan="5" class="text-right">Total Qty Diterima</td>
+                <td class="text-right">{{ intval($pembelian->last_qty) - intval($pembelian->qty) }}{{$pembelian->satuan}}</td>
             </tr>
             <tr>
-                <td colspan="5" class="text-right"><b>Total Diterima</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->subtotal) }}</b></td>
+                <td colspan="5" class="text-right">Total Diterima</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->subtotal) }}</td>
             </tr>
         </tfoot>
     </table>

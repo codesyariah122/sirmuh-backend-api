@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Nota Pembelian - {{$kode}}</title>
-
+    @vite(['resources/css/app.css'])
     <style>
+        body {
+            font-family: 'Dot Matrix', sans-serif;
+        }
         table td {
-            font-family: 'Courier New', monospace;
             font-size: 13px;
-            font-weight: bold;
         }
         table.data td,
         table.data th {
@@ -92,14 +93,14 @@
         </tbody>
         <tfoot>
             @if($pembelian->po === 'False')
-                <tr>
-                    <td colspan="6" class="text-right"><b>Diskon</b></td>
-                    <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
-                </tr>
-                <tr>
-                    <td colspan="6" class="text-right"><b>Total Bayar</b></td>
-                    <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
-                </tr>
+            <tr>
+                <td colspan="6" class="text-right"><b>Diskon</b></td>
+                <td class="text-right"><b>{{  $helpers->format_uang($pembelian->diskon) }}</b></td>
+            </tr>
+            <tr>
+                <td colspan="6" class="text-right"><b>Total Bayar</b></td>
+                <td class="text-right"><b>{{ $helpers->format_uang($pembelian->jumlah) }}</b></td>
+            </tr>
             @endif
             
             
