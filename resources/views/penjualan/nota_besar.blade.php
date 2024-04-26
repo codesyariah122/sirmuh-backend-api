@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
     @vite(['resources/css/app.css'])
     <style>
-        body {
-            font-family: 'Dot Matrix', sans-serif;
+        * {
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: .1rem;
+            letter-spacing: 1px;
         }
+
         table td {
             font-size: 13px;
         }
         table.data td,
         table.data th {
             border: 1px solid #ccc;
-            padding: 5px;
+            padding: 2px;
             font-size: 10px;
         }
         table.data {
@@ -28,21 +32,38 @@
         .text-right {
             text-align: right;
         }
+        .page-break {
+            page-break-after: always;
+        }
     </style>
 </head>
 <body>
     <h4>INVOICE</h4>
-    <table width="100%" style="border-collapse: collapse;">
+    <table width="100%" style="border-collapse: collapse; margin-top: -1rem;">
         <tr>
             <td style="vertical-align: top;">
                 Kepada
             </td>
-            <td rowspan="4" width="40%" style="vertical-align: top;">
-                {{ $toko['name'] }} <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
+            <td rowspan="6" width="30%" style="vertical-align: top;">
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
+                <br>
+
+                {{ $toko['name'] }}                 
                 <br>
                 <address>
                     {{ $toko['address'] }}
                 </address>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
+            </td>
+        </tr>
+
+        <tr>
+            <td>
                 <br>
                 {{$helpers->format_tanggal($penjualan['tanggal'])}}
                 <br>
@@ -52,26 +73,12 @@
         </tr>
         <tr>
             <td>
-                {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
-            </td>
-        </tr>
-       <!--  <tr>
-            <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
-        </tr> -->
-        <tr>
-            <td>
                 Jenis : {{$penjualan->jenis}}
-            </td>
-        </tr>
-
-        <tr>
-            <td>
-                Status : {{$penjualan->status}}
             </td>
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top:15px;">
+    <table class="data" width="100%" style="margin-top:-1.5rem;">
         <thead>
             <tr>
                 <th>No</th>
@@ -134,12 +141,12 @@
         </tfoot>
     </table>
 
-    <table width="100%" style="margin-top: 1rem;">
+    <table width="100%" style="margin-top: -.1rem;">
         <tr>
             <td class="text-right">
-                <h2>Kasir</h2>
+                <h4>Kasir</h4>
                 <br>
-                {{ strtoupper($penjualan->operator) }}
+                <span style="margin-top:-.2rem;">{{ strtoupper($penjualan->operator) }}</span>
             </td>
         </tr>
     </table>

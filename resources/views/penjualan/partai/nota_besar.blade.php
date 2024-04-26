@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
-
+    @vite(['resources/css/app.css'])
     <style>
+        * {
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: .1rem;
+            letter-spacing: 1px;
+        }
+
         table td {
-            font-family: 'Courier New', monospace;
             font-size: 13px;
-            font-weight: bold;
         }
         table.data td,
         table.data th {
             border: 1px solid #ccc;
-            padding: 5px;
+            padding: 2px;
             font-size: 10px;
         }
         table.data {
@@ -27,48 +32,56 @@
         .text-right {
             text-align: right;
         }
+        .page-break {
+            page-break-after: always;
+        }
     </style>
 </head>
 <body>
     <h4>INVOICE</h4>
-    <table width="100%" style="border-collapse: collapse;">
+    <table width="100%" style="border-collapse: collapse; margin-top: -1rem;">
         <tr>
             <td style="vertical-align: top;">
-                <b>Kepada</b>
+                Kepada
             </td>
-            <td rowspan="4" width="40%" style="vertical-align: top;">
-                <b>{{ $toko['name'] }}</b> <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
+            <td rowspan="6" width="30%" style="vertical-align: top;">
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
+                <br>
+
+                {{ $toko['name'] }}                 
                 <br>
                 <address>
                     {{ $toko['address'] }}
                 </address>
-                <br>
-                {{$helpers->format_tanggal($penjualan['tanggal'])}}
-                <br>
-                <b>NO INVOICE : </b>
-                <b>{{$penjualan->kode}}</b>
             </td>
         </tr>
+
         <tr>
             <td>
                 {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
             </td>
         </tr>
+
         <tr>
-            <td>Kasir:  {{ strtoupper($penjualan->operator) }}</td>
+            <td>
+                <br>
+                {{$helpers->format_tanggal($penjualan['tanggal'])}}
+                <br>
+                NO INVOICE : 
+                {{$penjualan->kode}}
+            </td>
         </tr>
-         <tr>
+        <tr>
             <td>
                 Jenis : {{$penjualan->jenis}}
             </td>
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top:15px;">
+    <table class="data" width="100%" style="margin-top:-1.5rem;">
         <thead>
             <tr>
                 <th>No</th>
-                <th>Kode</th>
                 <th>Kode Kas</th>
                 <th>Barang / Harga Satuan</th>
                 <th>Jumlah</th>
@@ -80,58 +93,65 @@
             @foreach ($barangs as $key => $item)
             <tr>
                 <td class="text-center">{{ $key+1 }}</td>
-                <td class="text-center">{{ $item->kode }}</td>
-                <td class="text-center">{{ $item->kode_kas }}</td>
-                <td class="text-center">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
-                <td class="text-right">{{ $item->qty." ".$item->satuan }}</td>
+                <td class="text-center">{{$item->nama_kas}} ({{ $item->kode_kas }})</td>
+                <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
+                <td class="text-center">{{ $item->qty." ".$item->satuan }}</td>
+                @if(count($barangs) > 0)
                 <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
+                @else
+                <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
+                @endif
                 <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
             </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" class="text-right"><b>Total</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->jumlah) }}</b></td>
+                <td colspan="5" class="text-right">Total</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
             </tr>
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="6" class="text-right"><b>Total Bayar</b></td>
-                <td class="text-right"><b>{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</b></td>
+                <td colspan="5" class="text-right">Total Bayar</td>
+                <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
+            </tr>
+            @else
+            <tr>
+                <td colspan="5" class="text-right">Dibayar</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
             @endif
             @if($penjualan->dikirim !== NULL)
             <tr>
-                <td colspan="6" class="text-right"><b>Dikirim</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->dikirim) }}</b></td>
+                <td colspan="5" class="text-right">Dikirim</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->dikirim) }}</td>
             </tr>
             @endif
             @if($penjualan->lunas === "True")
             <tr>
-                <td colspan="6" class="text-right"><b>Kembali</b></td>
-                <td class="text-right"><b>{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</b></td>
+                <td colspan="5" class="text-right">Kembali</td>
+                <td class="text-right">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
             </tr>
             @else
             <tr>
-                <td colspan="6" class="text-right"><b>Masuk Piutang</b></td>
-                <td class="text-right"><b>{{ $helpers->format_uang($penjualan->piutang) }}</b></td>
+                <td colspan="5" class="text-right">Masuk Piutang</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->piutang) }}</td>
             </tr>
             @endif
         </tfoot>
     </table>
 
-      <table width="100%" style="margin-top: 2rem;">
+    <table width="100%" style="margin-top: -.1rem;">
         <tr>
             <td class="text-right">
-                <h2>Kasir</h2>
+                <h4>Kasir</h4>
                 <br>
-                <br>
-                <b>{{ strtoupper($penjualan->operator) }}</b>
+                <span style="margin-top:-.2rem;">{{ strtoupper($penjualan->operator) }}</span>
             </td>
         </tr>
     </table>
 
-    <p style="text-align: center; margin-top: 20px;font-size:10px;">
+    <p style="text-align: center; font-size:10px;">
         <p class="text-center">Semoga Lancar</p>
         <p class="text-center">&</p>
         <p class="text-center">Tetap Menjadi Langganan</p>

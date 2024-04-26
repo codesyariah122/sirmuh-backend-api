@@ -45,7 +45,7 @@ class DataPiutangController extends Controller
             $endOfMonth = $now->endOfMonth()->toDateString();
             $dateTransaction = $request->query('date_transaction');
 
-            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'penjualan.visa', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
             ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('penjualan', 'piutang.kd_jual', 'penjualan.kode');
@@ -185,7 +185,7 @@ class DataPiutangController extends Controller
             $dataKas = Kas::findOrFail($piutang->kas_id);
 
             $checkAngsuran = PembayaranAngsuran::where('kode', $piutang->kode)
-                   ->get();
+            ->get();
 
             if(count($checkAngsuran) > 0) {
                 $dataPenjualan = Penjualan::whereKode($piutang->kd_jual)->first();
