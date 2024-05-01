@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class LoginEvent implements ShouldBroadcast
+class TestingEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -19,12 +19,18 @@ class LoginEvent implements ShouldBroadcast
      *
      * @return void
      */
-    protected $data;
+    public $data;
     
-    public function __construct($param)
+    public function __construct($data)
     {
-        logger('LoginEvent constructed with:', $param);
-        $this->data = $param;
+        $this->data = $data;
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            $this->data
+        ];
     }
 
     /**
@@ -34,13 +40,7 @@ class LoginEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        // return new PrivateChannel('channel-name');
-        // return new Channel(env('PUSHER_APP_CHANNEL'));
-        return new PrivateChannel('sirmuh-ui-dev');
-    }
-
-    public function broadcastWith()
-    {
-        return [$this->data];
+        return new Channel('sirmuh-ui-dev');
+        // return new PrivateChannel('mychannel');
     }
 }

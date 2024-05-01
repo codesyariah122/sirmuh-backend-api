@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\Dashboard\{
     DataReturnPenjualanController
 };
 use App\Http\Controllers\Web\{DataLaporanView};
+// use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
+
+// WebSocketsRouter::dashboard('/laravel-websockets');
 
 /*
 |--------------------------------------------------------------------------
