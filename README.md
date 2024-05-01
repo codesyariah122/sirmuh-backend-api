@@ -1,3 +1,7 @@
+### With new websockets development : 
+![Screenshot_20240501_202155](https://github.com/codesyariah122/sirmuh-pos-api/assets/13291805/e39374bb-69fc-4dbf-bec5-8172f287c73d)
+
+
 ### Development Process
 ```
 composer update
@@ -15,9 +19,9 @@ php artisan db:seed
 BROADCAST_DRIVER=pusher
 
 
-PUSHER_APP_ID=1595884
-PUSHER_APP_KEY=7a54d3bea70e636f64fa
-PUSHER_APP_SECRET=70b42427b18040eece39
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
 PUSHER_SCHEME=https
 PUSHER_APP_CLUSTER=mt1
 ```
