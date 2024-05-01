@@ -6,7 +6,6 @@
     {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
-    @vite(['resources/css/app.css'])
     <style>
         * {
             font-family: 'Courier New', Courier, monospace;
@@ -45,7 +44,11 @@
                 Kepada
             </td>
             <td rowspan="6" width="30%" style="vertical-align: top;">
-                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80" />
+                @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+                @else
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100" />
+                @endif
                 <br>
 
                 {{ $toko['name'] }}                 

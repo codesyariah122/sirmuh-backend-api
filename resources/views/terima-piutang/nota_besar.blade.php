@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Nota Pembayaran Hutang -  {{$kode}}</title>
-    @vite(['resources/css/app.css'])
+    <title>Nota Pembayaran Piutang -  {{$kode}}</title>
     <style>
-        body {
-            font-family: 'Dot Matrix', sans-serif;
+        * {
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: .1rem;
+            letter-spacing: 1px;
         }
+
         table td {
             font-size: 13px;
         }
         table.data td,
         table.data th {
             border: 1px solid #ccc;
-            padding: 5px;
+            padding: 2px;
+            font-size: 10px;
         }
         table.data {
             border-collapse: collapse;
@@ -27,42 +30,55 @@
         .text-right {
             text-align: right;
         }
+        .page-break {
+            page-break-after: always;
+        }
     </style>
 </head>
 <body>
-    <table width="100%" style="border-collapse: collapse;">
+    <table width="100%" style="border-collapse: collapse; margin-top: -1rem;">
         <tr>
             <td style="vertical-align: top;">
                 Kepada
             </td>
-            <td rowspan="4" width="40%" style="vertical-align: top;">
-                {{ $toko['name'] }} <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="80">
+            <td rowspan="6" width="30%" style="vertical-align: top;">
+                @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+                @else
+                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100" />
+                @endif
+                <br>
+
+                {{ $toko['name'] }}                 
                 <br>
                 <address>
                     {{ $toko['address'] }}
                 </address>
-                <br>
-                {{$helpers->format_tanggal($piutang->tanggal_penjualan)}}
-                <br>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                {{$piutang->nama_supplier}}({{$piutang->supplier}})
+            </td>
+        </tr>
+
+        <tr>
+            <td>
                 NO INVOICE : 
-                {{ $piutang->kode }}
+                {{$piutang->kode}}
+                <br>
+                {{$helpers->format_tanggal($piutang['tanggal'])}}
             </td>
         </tr>
         <tr>
-            <td>{{ $piutang->nama_pelanggan }} ({{$piutang->pelanggan}})</td>
-        </tr>
-        <tr>
-            <td>Kasir:  {{ strtoupper($piutang->operator) }}</td>
-        </tr>
-        <tr>
-            <td></td>
-        </tr>
-        <tr>
-            <td>Type: {{$piutang->po === 'True' ? "Penjualan P.O" : $piutang->jenis_penjualan}}</td>
+            <td>
+                Jenis : {{$piutang->po == 'True' ? 'Pembelian P.O' : 'Pembelian Langsung'}}
+            </td>
         </tr>
     </table>
     
-    <table class="data" width="100%">
+    <table class="data" width="100%" style="margin-top: -1rem;">
         <thead>
             <tr>
                 <th>Nama Barang</th>
@@ -129,11 +145,14 @@
         </tfoot>
     </table>
 
-    <p style="text-align: center; font-size:10px;">
-        <p class="text-center">Semoga Lancar</p>
-        <p class="text-center">&</p>
-        <p class="text-center">Tetap Menjadi Langganan</p>
-        <p class="text-center">*** TERIMA KASIH ****</p>
-    </p>
+    <table width="100%" style="margin-top: -.1rem;">
+        <tr>
+            <td class="text-right">
+                <h4>Kasir</h4>
+                <br>
+                <span style="margin-top:-.2rem;">{{ strtoupper($piutang->operator) }}</span>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
