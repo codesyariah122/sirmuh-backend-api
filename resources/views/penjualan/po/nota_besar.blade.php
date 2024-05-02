@@ -78,8 +78,7 @@
         </tr>
     </table>
 
-    <br/>
-    <table class="data" width="100%">
+    <table class="data" width="100%"  style="margin-top: -1.5rem;">
         <thead>
             <tr>
                 <th>No</th>
