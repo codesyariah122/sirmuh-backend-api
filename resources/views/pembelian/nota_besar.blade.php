@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <h4>INVOICE</h4>
+    <h4 style="margin-top: .3rem;">INVOICE</h4>
     <table width="100%" style="border-collapse: collapse; margin-top: .5rem;">
         <tr>
             <td style="vertical-align: top;">
