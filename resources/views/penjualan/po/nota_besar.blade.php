@@ -8,16 +8,18 @@
 
     <style>
         * {
-            font-family: 'Courier New', Courier, monospace;
+            /* font-family: 'Courier New', Courier, monospace; */
+            font-family: 'Draft Condensed', sans-serif;
             margin-top: .1rem;
-            letter-spacing: 1px;
-            font-size: 11px;
+            letter-spacing: 1.5px;
+            font-size: 12px;
         }
+        
         table.data td,
         table.data th {
             border: 1px solid #ccc;
-            padding: 2px;
-            font-size: 10px;
+            padding: 3px;
+            font-size: 13px;
         }
         table.data {
             border-collapse: collapse;
@@ -32,6 +34,7 @@
             page-break-after: always;
         }
     </style>
+
 </head>
 <body>
     <h4 style="margin-top: 1rem;">INVOICE</h4>
