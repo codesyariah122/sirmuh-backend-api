@@ -12,7 +12,7 @@
             margin-top: .1rem;
             letter-spacing: 1px;
             font-size: 11px;
-            line-height: 12px;
+            line-height: 13px;
         }
 
         table.data td,
@@ -78,7 +78,7 @@
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top: -.5rem;">
+    <table class="data" width="100%" style="margin-top: -1.5rem;">
         <thead>
             <tr>
                 <th>No</th>
