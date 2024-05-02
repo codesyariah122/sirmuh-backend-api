@@ -142,7 +142,7 @@
         </tfoot>
     </table>
 
-    <table width="100%" style="margin-top: -.1rem;">
+    <table width="100%" style="margin-top: .5rem;">
         <tr>
             <td class="text-right">
                 <h4>Kasir</h4>
