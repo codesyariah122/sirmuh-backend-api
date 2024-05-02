@@ -10,10 +10,7 @@
             font-family: 'Courier New', Courier, monospace;
             margin-top: .1rem;
             letter-spacing: 1px;
-        }
-
-        table td {
-            font-size: 13px;
+            font-size: 11px;
         }
         table.data td,
         table.data th {
