@@ -11,6 +11,7 @@
             margin-top: .1rem;
             letter-spacing: 1px;
             font-size: 11px;
+            line-height: 5px;
         }
         table.data td,
         table.data th {
@@ -75,7 +76,7 @@
         </tr>
     </table>
     
-    <table class="data" width="100%" style="margin-top: -1rem;">
+    <table class="data" width="100%" style="margin-top: -.3rem;">
         <thead>
             <tr>
                 <th>Nama Barang</th>
