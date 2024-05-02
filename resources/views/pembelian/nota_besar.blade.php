@@ -12,7 +12,6 @@
             margin-top: .1rem;
             letter-spacing: 1px;
             font-size: 11px;
-            line-height: 13px;
         }
 
         table.data td,
