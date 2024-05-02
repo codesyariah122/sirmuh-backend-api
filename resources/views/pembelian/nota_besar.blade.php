@@ -12,6 +12,7 @@
             margin-top: .1rem;
             letter-spacing: 1px;
             font-size: 11px;
+            line-height: 5px;
         }
 
         table.data td,
@@ -77,7 +78,7 @@
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top: -1rem;">
+    <table class="data" width="100%" style="margin-top: -.5rem;">
         <thead>
             <tr>
                 <th>No</th>
@@ -204,7 +205,7 @@
                 @endif
             </tfoot>
         </table>
-        <table width="100%" style="margin-top: -.1rem;">
+        <table width="100%" style="margin-top: .5rem;">
             <tr>
                 <td class="text-right">
                     <h4>Kasir</h4>
