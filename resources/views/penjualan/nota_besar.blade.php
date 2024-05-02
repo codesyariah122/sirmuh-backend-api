@@ -11,7 +11,7 @@
             /* font-family: 'Courier New', Courier, monospace; */
             font-family: sans-serif;
             margin-top: .1rem;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             font-size: 12px;
         }
         
@@ -81,7 +81,7 @@
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top:-1rem;">
+    <table class="data" width="100%" style="margin-top:-1.5rem;">
         <thead>
             <tr>
                 <th>No</th>
