@@ -8,10 +8,11 @@
     <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} -  {{$kode}}</title>
     <style>
         * {
-            font-family: 'Courier New', Courier, monospace;
+            /* font-family: 'Courier New', Courier, monospace; */
+            font-family: sans-serif;
             margin-top: .1rem;
             letter-spacing: 1px;
-            font-size: 12px;
+            font-size: 13px;
         }
         
         table.data td,
