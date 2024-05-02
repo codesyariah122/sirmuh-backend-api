@@ -37,7 +37,7 @@
 </head>
 <body>
     <h4 style="margin-top: 2rem;">INVOICE</h4>
-    <table width="100%" style="border-collapse: collapse; margin-top: -1rem;">
+    <table width="100%" style="border-collapse: collapse; margin-top: -.5rem;">
 
         <tr>
             <td style="vertical-align: top;">
@@ -81,7 +81,7 @@
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top:1rem;">
+    <table class="data" width="100%" style="margin-top:-1rem;">
         <thead>
             <tr>
                 <th>No</th>
