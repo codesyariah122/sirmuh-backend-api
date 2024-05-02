@@ -11,11 +11,9 @@
             font-family: 'Courier New', Courier, monospace;
             margin-top: .1rem;
             letter-spacing: 1px;
+            font-size: 11px;
         }
-
-        table td {
-            font-size: 13px;
-        }
+        
         table.data td,
         table.data th {
             border: 1px solid #ccc;
