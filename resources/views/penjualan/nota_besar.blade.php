@@ -18,7 +18,7 @@
         table.data td,
         table.data th {
             border: 1px solid #ccc;
-            padding: 4px;
+            padding: 3px;
             font-size: 13px;
         }
         table.data {
