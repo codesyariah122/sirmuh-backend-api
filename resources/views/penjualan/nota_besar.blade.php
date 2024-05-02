@@ -81,7 +81,7 @@
         </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top:-1.5rem;">
+    <table class="data" width="100%" style="margin-top:1rem;">
         <thead>
             <tr>
                 <th>No</th>
