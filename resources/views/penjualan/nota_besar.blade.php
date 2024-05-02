@@ -19,7 +19,7 @@
         table.data th {
             border: 1px solid #ccc;
             padding: 2px;
-            font-size: 10px;
+            font-size: 13px;
         }
         table.data {
             border-collapse: collapse;
