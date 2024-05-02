@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <table width="100%" style="border-collapse: collapse; margin-top: -1rem;">
+    <table width="100%" style="border-collapse: collapse; margin-top: -.5rem;">
         <tr>
             <td style="vertical-align: top;">
                 Kepada
