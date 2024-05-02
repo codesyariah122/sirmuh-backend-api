@@ -9,7 +9,7 @@
     <style>
         * {
             /* font-family: 'Courier New', Courier, monospace; */
-            font-family: sans-serif;
+            font-family: 'Draft Condensed', sans-serif;
             margin-top: .1rem;
             letter-spacing: 1.5px;
             font-size: 12px;
