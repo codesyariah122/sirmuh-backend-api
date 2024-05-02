@@ -170,17 +170,23 @@ class DataPembelianLangsungController extends Controller
 
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
-            $newPembelian->diterima = $data['diterima'];
+            $newPembelian->diterima = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
             $newPembelian->kembali = intval($data['bayar']) >= intval($data['jumlah']) ? intval($data['bayar']) - intval($data['jumlah']) : intval($data['jumlah']) - intval($data['bayar']);
-            // echo "<pre>";
-            // var_dump($data['masuk_hutang']); 
-            // echo "</pre>";
-            // die;
+
+            // $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
+            // $updateSaldoSupplier->saldo_hutang = intval($data['bayar']) !== 0 ? $supplier->saldo_hutang + $data['hutang'] : $supplier->saldo_hutang + $data['diterima'];
+            // var_dump($updateSaldoSupplier->saldo_hutang); die;
 
             if($data['pembayaran'] !== "cash") {
+                // var_dump(intval($data['bayar']));
+                // echo "<br/>";
+                // var_dump($data['diterima']);
+
+                // die;
+
                 $newPembelian->lunas = "False";
                 $newPembelian->visa = 'HUTANG';
-                $newPembelian->hutang = $data['hutang'];
+                $newPembelian->hutang = intval($data['bayar']) !== 0 ? $data['hutang'] : $data['diterima'];
                 $newPembelian->po = 'False';
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
@@ -194,7 +200,7 @@ class DataPembelianLangsungController extends Controller
                 $masuk_hutang->kd_beli = $data['ref_code'];
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $supplier->kode;
-                $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->jumlah = intval($data['bayar']) !== 0 ? $data['hutang'] : $data['diterima'];
                 $masuk_hutang->bayar = $data['bayar'];
                 $masuk_hutang->kode_kas = $newPembelian->kode_kas;
                 $masuk_hutang->operator = $data['operator'];
@@ -220,13 +226,13 @@ class DataPembelianLangsungController extends Controller
                 $angsuran->tanggal = $masuk_hutang->tanggal;
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
-                $angsuran->kode_faktur = NULL;
-                $angsuran->bayar_angsuran = $data['diterima'];
-                $angsuran->jumlah = $item_hutang->jumlah_hutang;
+                $angsuran->kode_faktur = $data['ref_code'];
+                $angsuran->bayar_angsuran = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
+                $angsuran->jumlah = intval($data['bayar']) !== 0 ? $item_hutang->jumlah_hutang : $data['diterima'];
                 $angsuran->save();
 
                 $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
-                $updateSaldoSupplier->saldo_hutang = $supplier->saldo_hutang + $data['hutang'];
+                $updateSaldoSupplier->saldo_hutang = intval($data['bayar']) !== 0 ? $supplier->saldo_hutang + $data['hutang'] : $supplier->saldo_hutang + $data['diterima'];
                 $updateSaldoSupplier->save();
             } else {            
                 $newPembelian->lunas = $data['pembayaran'] == 'cash' ? "True" : "False";
@@ -315,6 +321,7 @@ class DataPembelianLangsungController extends Controller
             'itempembelian.*',
             'supplier.kode as kode_supplier',
             'supplier.nama as nama_supplier',
+            'supplier.saldo_hutang as saldo_hutang',
             'supplier.alamat as alamat_supplier',
             'barang.nama as nama_barang',
             'barang.satuan as satuan_barang'
@@ -520,11 +527,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);

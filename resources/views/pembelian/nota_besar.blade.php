@@ -84,6 +84,8 @@
                 <th>Kode Barang</th>
                 <th>Nama Barang</th>
                 <th>Harga Satuan</th>
+                <th>Supplier</th>
+                <th>Saldo Hutang</th>
                 <th>Jumlah</th>
                 <th>Pembayaran</th>
                 <th>Subtotal</th>
@@ -94,9 +96,11 @@
             @foreach ($barangs as $key => $item)
             <tr>
                 <td class="text-center">{{ $key+1 }}</td>
-                <td>{{ $item->kode_barang }}</td>
-                <td>{{ $item->nama_barang }}</td>
+                <td class="text-center">{{ $item->kode_barang }}</td>
+                <td class="text-center">{{ $item->nama_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
+                <td class="text-center"> {{$item->nama_supplier}} ({{$item->kode_supplier}}) </td>
+                <td class="text-right"> {{$helpers->format_uang($item->saldo_hutang)}}</td>
                 <td class="text-right">{{ $item->qty." ".$item->satuan }}</td>
                 <td class="text-right">{{ $pembelian->po === 'True' ? 'DP Awal' : $item->visa }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->subtotal) }}</td>
@@ -120,24 +124,30 @@
             <tfoot>
                 @if($pembelian->po === 'False')
                 <tr>
-                    <td colspan="6" class="text-right">SubTotal</td>
+                    <td colspan="8" class="text-right">SubTotal</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right">Biaya Bongkar</td>
+                    <td colspan="8" class="text-right">Biaya Bongkar</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
                 </tr>
-
+                @if($pembelian->visa !== 'HUTANG')
                 <tr>
-                    <td colspan="6" class="text-right">Grand Total Bayar</td>
+                    <td colspan="8" class="text-right">Grand Total Bayar</td>
                     <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->jumlah + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->jumlah) }}</td>
                 </tr>
+                @else
+                <tr>
+                    <td colspan="8" class="text-right">Total Bayar</td>
+                    <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
+                </tr>
+                @endif
                 @endif
 
 
                 @if($pembelian->visa === 'HUTANG')
                 <tr>
-                    <td colspan="6" class="text-right">
+                    <td colspan="8" class="text-right">
                         {{$pembelian->visa === "DP AWAL" ? "DP Awal" : "Total DP"}}
                     </td>
                     <td class="text-right">{{ $pembelian->po === 'True' ? $helpers->format_uang($pembelian->bayar) : $helpers->format_uang($pembelian->diterima) }}</td>
@@ -145,18 +155,18 @@
                 @if($pembelian->po === "True")
                 @if($pembelian->lunas == "True")
                 <tr>
-                    <td colspan="6" class="text-right">Sisa DP</td>
+                    <td colspan="8" class="text-right">Sisa DP</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
                 </tr>
                 @else
                 <tr>
-                    <td colspan="6" class="text-right">Masuk Hutang</td>
+                    <td colspan="8" class="text-right">Masuk Hutang</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
                 </tr>
                 @endif
                 @else
                 <tr>
-                    <td colspan="6" class="text-right">Hutang</td>
+                    <td colspan="8" class="text-right">Hutang</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->hutang) }}</td>
                 </tr>
                 @endif
@@ -164,25 +174,25 @@
 
                 @if($pembelian->po === 'True')
                 <tr>
-                    <td colspan="6" class="text-right">DP Awal</td>
+                    <td colspan="8" class="text-right">DP Awal</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right">Diterima</td>
+                    <td colspan="8" class="text-right">Diterima</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->diterima) }}</td>
                 </tr>
                 @if($pembelian->lunas === "True")
                 <tr>
-                    <td colspan="6" class="text-right">Biaya Bongkar</td>
+                    <td colspan="8" class="text-right">Biaya Bongkar</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right">Grand Total Bayar</td>
+                    <td colspan="8" class="text-right">Grand Total Bayar</td>
                     <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td colspan="6" class="text-right">
+                    <td colspan="8" class="text-right">
                         @if($pembelian->visa === "LUNAS")
                         Kembali 
                         @else
@@ -193,11 +203,11 @@
                 </tr>
                 @else
                 <tr>
-                    <td colspan="6" class="text-right">Dibayar</td>
+                    <td colspan="8" class="text-right">Dibayar</td>
                     <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right">Kembali</td>
+                    <td colspan="8" class="text-right">Kembali</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
                 </tr>
                 @endif

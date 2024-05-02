@@ -1,7 +1,7 @@
 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
 
 new_token = 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
-new_juga = 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
+new_juga = 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
 
 glpat-XGXHzuQQeLq3y56Qmpnn
 

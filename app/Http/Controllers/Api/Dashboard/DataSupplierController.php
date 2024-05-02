@@ -256,7 +256,7 @@ class DataSupplierController extends Controller
     {
         try {
             $supplier = Supplier::whereNull('deleted_at')
-            ->select("id", "nama", "telp", "email", "alamat", "no_npwp")
+            ->select("id", "nama", "saldo_hutang", "telp", "email", "alamat", "no_npwp")
             ->findOrFail($id);
             return response()->json([
                 'success' => true,
