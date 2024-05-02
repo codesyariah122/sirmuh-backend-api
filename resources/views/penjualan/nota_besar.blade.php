@@ -11,7 +11,7 @@
             font-family: 'Courier New', Courier, monospace;
             margin-top: .1rem;
             letter-spacing: 1px;
-            font-size: 11px;
+            font-size: 12px;
         }
         
         table.data td,
@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <h4 style="margin-top: 1rem;">INVOICE</h4>
+    <h4 style="margin-top: 2rem;">INVOICE</h4>
     <table width="100%" style="border-collapse: collapse; margin-top: .5rem;">
 
         <tr>
