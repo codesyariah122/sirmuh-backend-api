@@ -12,7 +12,7 @@
             font-family: sans-serif;
             margin-top: .1rem;
             letter-spacing: 1px;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         table.data td,
