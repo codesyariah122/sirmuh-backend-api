@@ -112,9 +112,11 @@
             @foreach ($barangs as $key => $item)
             <tr>
                 <td class="text-center">{{ $key+1 }}</td>
-                <td>{{ $item->kode_barang }}</td>
-                <td>{{ $item->nama_barang }}</td>
+                <td class="text-center">{{ $item->kode_barang }}</td>
+                <td class="text-center">{{ $item->nama_barang }}</td>
                 <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
+                <td class="text-center"> {{$item->nama_supplier}} ({{$item->kode_supplier}}) </td>
+                <td class="text-right"> {{$helpers->format_uang($item->saldo_hutang)}}</td>
                 <td class="text-right">{{ $orders ." ".$item->satuan }}</td>
                 <td class="text-right">{{ $item->visa }}</td>
                 <td class="text-right">{{ $helpers->format_uang($orders * $item->harga_beli) }}</td>
@@ -185,6 +187,10 @@
                 <tr>
                     <td colspan="8" class="text-right">Biaya Bongkar</td>
                     <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="8" class="text-right">Sisa Bayar</td>
+                    <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->jumlah) }}</td>
                 </tr>
                 <tr>
                     <td colspan="8" class="text-right">Grand Total Bayar</td>
