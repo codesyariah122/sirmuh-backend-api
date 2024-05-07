@@ -5,6 +5,7 @@ APP_DEBUG=true
 APP_URL=https://sirmuh.api.dksindo.com
 DASHBOARD_APP=https://sirmuh.dksindo.com
 MAIL_USERNAME=owner@sirojulmuhtadin.com
+RAJAONGKIR_KEY=7cafbb655c9eeb074b99adb4f66d89cc 
 
 LOG_CHANNEL=stack
 LOG_DEPRECATIONS_CHANNEL=null

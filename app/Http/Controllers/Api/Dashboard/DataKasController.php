@@ -90,50 +90,51 @@ class DataKasController extends Controller
     public function store(Request $request)
     {
         try {
-             $validator = Validator::make($request->all(), [
-                'nama' => 'required',
-                'bank' => 'required',
-                'saldo' => 'required'
-            ]);
+         $validator = Validator::make($request->all(), [
+            'nama' => 'required',
+            'bank' => 'required',
+            'saldo' => 'required'
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
-            $kode_kas = $this->helpers->generateAcronym($request->bank);
-            $newKas = new Kas;
-            $newKas->kode = $kode_kas;
-            $newKas->nama = $request->nama;
-            $newKas->saldo = intval($request->saldo);
-            $newKas->default_toko = $request->default_toko ? 'True' : 'False';
-            $newKas->save();
-
-            if($newKas) {
-                $userOnNotif = Auth::user();
-                $data_event = [
-                    'routes' => 'kas',
-                    'alert' => 'success',
-                    'type' => 'add-data',
-                    'notif' => "{$newKas->nama}, baru saja ditambahkan 🤙!",
-                    'data' => $newKas->nama,
-                    'user' => $userOnNotif
-                ];
-                event(new EventNotification($data_event));
-
-                $newDataKas = Kas::findOrFail($newKas->id);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "Data kas dengan nama {$newDataKas->nama}, successfully added✨!",
-                    'data' => $newDataKas
-                ]);
-            }
-
-
-        } catch (\Throwable $th) {
-            throw $th;
+         if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
         }
+
+        $kode_kas = $this->helpers->generateAcronym($request->bank);
+        $newKas = new Kas;
+        $newKas->kode = $kode_kas;
+        $newKas->nama = $request->nama;
+        $newKas->saldo = intval($request->saldo);
+        $newKas->no_rek = $request->no_rek;
+        $newKas->default_toko = $request->default_toko ? 'True' : 'False';
+        $newKas->save();
+
+        if($newKas) {
+            $userOnNotif = Auth::user();
+            $data_event = [
+                'routes' => 'kas',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "{$newKas->nama}, baru saja ditambahkan 🤙!",
+                'data' => $newKas->nama,
+                'user' => $userOnNotif
+            ];
+            event(new EventNotification($data_event));
+
+            $newDataKas = Kas::findOrFail($newKas->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Data kas dengan nama {$newDataKas->nama}, successfully added✨!",
+                'data' => $newDataKas
+            ]);
+        }
+
+
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 
     /**
      * Display the specified resource.
@@ -185,6 +186,7 @@ class DataKasController extends Controller
                 $updateKas = Kas::findOrFail($id);
                 $updateKas->nama = $request->nama ?? $updateKas->nama;
                 $updateKas->kode = $request->kode ?? $updateKas->kode;
+                $newKas->no_rek = $request->no_rek ?? $updateKas->no_rek;
                 $updateKas->saldo = $request->saldo ?? $updateKas->saldo;
                 $updateKas->save();
                 $kas = Kas::whereNull('deleted_at')

@@ -149,7 +149,20 @@ class DataMutasiKasController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $mutasiKas = MutasiKas::findOrFail($id);
+
+            $dataKasDebet = Kas::whereKode($mutasikas->debet);
+            $dataKasKredit = Kas::whereKode($mutasiKas->kredit);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Detail mutasi {$mutasikas->kode}",
+                'data' => $mutasiKas,
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

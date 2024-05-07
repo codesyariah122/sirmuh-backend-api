@@ -51,7 +51,7 @@ class DataPenjualanPoController extends Controller
            ->orderByDesc('penjualan.id')
            ->limit(10);
 
-        if ($dateTransaction) {
+           if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
         }
 
@@ -277,6 +277,7 @@ class DataPenjualanPoController extends Controller
             'barang.satuan as barang_satuan',
             'barang.harga_toko as harga_toko',
             'kas.kode', 'kas.nama as nama_kas',
+            'kas.no_rek',
             DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
         )
         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
@@ -412,7 +413,7 @@ class DataPenjualanPoController extends Controller
 
             $updatePenjualan->draft = 0;
             $updatePenjualan->kode_kas = $kas->kode;
- 
+
             if($dikirim > $bayar) {
                 $updatePenjualan->lunas = "False";
                 $updatePenjualan->visa = "PIUTANG";

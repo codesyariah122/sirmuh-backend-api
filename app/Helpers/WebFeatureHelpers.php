@@ -37,6 +37,34 @@ class WebFeatureHelpers
         echo $formatIndonesia;
     }
 
+    public function format_tanggal_transaksi($tanggal)
+    {
+        $carbonDate = Carbon::parse($tanggal);
+        Carbon::setLocale('id');
+        // Format ke dalam bahasa Indonesia
+        $formatIndonesia = $carbonDate->isoFormat('D MMMM YYYY');
+
+        echo $formatIndonesia;
+    }
+
+    public function generate_norek($string) 
+    {
+        $numericString = str_replace(" ", "", $string);
+
+        $dashPositions = [2, 5, 11]; 
+        $formattedString = "";
+
+        for ($i = 0; $i < strlen($numericString); $i++) {
+            $formattedString .= $numericString[$i];
+            
+            if (in_array($i, $dashPositions)) {
+                $formattedString .= "-";
+            }
+        }
+
+        echo $formattedString;
+    }
+
     public function format_date_only($tanggal)
     {
         $carbonDate = Carbon::parse($tanggal);
@@ -241,7 +269,7 @@ class WebFeatureHelpers
         } else {
             $text       .= "$tanggal $bulan $tahun";
         }
-        
+
         return $text; 
     }
 
