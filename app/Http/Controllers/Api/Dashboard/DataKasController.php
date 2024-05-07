@@ -90,13 +90,13 @@ class DataKasController extends Controller
     public function store(Request $request)
     {
         try {
-         $validator = Validator::make($request->all(), [
+           $validator = Validator::make($request->all(), [
             'nama' => 'required',
             'bank' => 'required',
             'saldo' => 'required'
         ]);
 
-         if ($validator->fails()) {
+           if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
@@ -186,7 +186,7 @@ class DataKasController extends Controller
                 $updateKas = Kas::findOrFail($id);
                 $updateKas->nama = $request->nama ?? $updateKas->nama;
                 $updateKas->kode = $request->kode ?? $updateKas->kode;
-                $newKas->no_rek = $request->no_rek ?? $updateKas->no_rek;
+                $updateKas->no_rek = $request->no_rek ?? $updateKas->no_rek;
                 $updateKas->saldo = $request->saldo ?? $updateKas->saldo;
                 $updateKas->save();
                 $kas = Kas::whereNull('deleted_at')
