@@ -321,6 +321,7 @@ class DataPembelianLangsungController extends Controller
             'itempembelian.*',
             'supplier.kode as kode_supplier',
             'supplier.nama as nama_supplier',
+            'supplier.alamat as alamat_supplier',
             'supplier.saldo_hutang as saldo_hutang',
             'supplier.alamat as alamat_supplier',
             'barang.nama as nama_barang',
@@ -527,11 +528,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
