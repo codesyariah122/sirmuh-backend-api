@@ -356,9 +356,8 @@ class DataPenjualanPartaiController extends Controller
 
         $query = Penjualan::query()
         ->select(
-            'penjualan.*',
-            'penjualan.no_po',
-            'itempenjualan.*',
+            'penjualan.kode', 'penjualan.no_po', 'penjualan.draft', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.nama_pelanggan', 'penjualan.alamat_pelanggan', 'penjualan.member', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.angsuran', 'penjualan.subtotal', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.diskon', 'penjualan.diskon_rupiah','penjualan.tax','penjualan.tax_rupiah','penjualan.operator',
+            'itempenjualan.kode as kode_itempenjualan', 'itempenjualan.satuan', 'itempenjualan.qty', 'itempenjualan.harga',
             'pelanggan.nama as pelanggan_nama',
             'pelanggan.alamat as pelanggan_alamat',
             'barang.kode as kode_barang',
@@ -378,11 +377,11 @@ class DataPenjualanPartaiController extends Controller
         ->where('penjualan.kode', $kode);
 
         $barangs = $query->get();
-        $penjualan = $query->get()[0];
+        $penjualan = $query->first();
 
 
         // echo "<pre>";
-        // var_dump($penjualan);
+        // var_dump($query->get());
         // echo "</pre>";
         // die;
 

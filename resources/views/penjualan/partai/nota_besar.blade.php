@@ -82,8 +82,7 @@
             <th>Barang</th>
             <th>Harga</th>
             <th>Jumlah</th>
-            <th>Biaya Kirim</th>
-            <th>Sub Total</th>
+            <th>Total</th>
         </tr>
     </thead>
     <tbody>
@@ -96,17 +95,12 @@
             <td class="text-center">{{$item->barang_nama}}</td>
             <td class="text-right">{{ $helpers->format_uang($item->harga) }}</td>
             <td class="text-center">{{ sprintf("%.2f", $item->qty)." ".$item->satuan }}</td>
-            @if(count($barangs) > 0)
-            <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
-            @else
-            <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
-            @endif
-            <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($item->subtotal) }}</td>
+            <td class="text-right">{{ $helpers->format_uang($item->jumlah) }}</td>
         </tr>
         @endforeach
         <tr>
             <td class="text-center"></td>
-            <td class="text-left" colspan="4">
+            <td class="text-left" colspan="3">
                 <span>PO. NO {{$penjualan->no_po}}</span> <br>
                 <span>Date: {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}</span>
             </td>
@@ -130,10 +124,19 @@
             <!-- Bagian kanan -->
             <td style="border: none; text-align: right;" colspan="6">
                 <!-- Konten bagian kanan -->
-                <table width="100%" style="width: 260px; border-collapse: collapse;  margin-top: -4rem;margin-right:.6rem;">
+                <table width="100%" style="width: 350px; border-collapse: collapse;  margin-top: -2rem;margin-right:5.8rem;">
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
                         <td class="text-right" style="height: 20px; border-top: 0;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: none;" colspan="8" class="text-right">Pajak (11%)</td>
+                        <td class="text-right" style="height: 20px;">
+                            @php
+                            $pajak = (11 / 100)*$penjualan->jumlah;
+                            echo $helpers->format_uang($pajak)
+                            @endphp
+                        </td>
                     </tr>
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Total</td>
