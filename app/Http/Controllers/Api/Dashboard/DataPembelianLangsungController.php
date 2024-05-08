@@ -344,11 +344,6 @@ class DataPembelianLangsungController extends Controller
         }
         $setting = "";
 
-        // echo "<pre>";
-        // var_dump($orders);
-        // echo "</pre>";
-        // die;
-
         switch($type) {
             case "nota-kecil":
             return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
@@ -528,11 +523,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);

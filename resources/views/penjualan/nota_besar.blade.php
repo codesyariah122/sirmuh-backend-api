@@ -119,56 +119,39 @@
             </tr>
             @endforeach
         </tbody>
-        <tfoot style="width: 150px;">
+        <tfoot>
             <tr>
-                <!-- Bagian kiri -->
-                <td style="text-align: left; padding: 10px; border: none;" colspan="5">
-                    <h3>Pembayaran</h3>
-                    <ul>
-                        <li>Nama : {{$toko['name']}} </li>
-                        <li>No. Rek : {{$helpers->generate_norek($penjualan['no_rek'])}} </li>
-                    </ul>
-                </td>
-                
-                <!-- Bagian kanan -->
-                <td style="border: none;" colspan="8">
-                    <!-- Konten bagian kanan -->
-                    <table style="width: 70%; border: none; float: right; margin-top:-.3rem;">
-                        <tr>
-                            <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
-                            <td class="text-right" style="margin-top: -1rem; height: 20px;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
-                        </tr>
-                        @if($penjualan->lunas === "True")
-                        <tr>
-                            <td style="border: none;" colspan="8" class="text-right">Total</td>
-                            <td class="text-right" style="height: 20px;">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
-                        </tr>
-                        @else
-                        <tr>
-                            <td style="border: none;" colspan="8" class="text-right">Dibayar</td>
-                            <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->bayar) }}</td>
-                        </tr>
-                        @endif
-                        @if($penjualan->dikirim !== NULL)
-                        <tr>
-                            <td style="border: none;" colspan="8" class="text-right">Dikirim</td>
-                            <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->dikirim) }}</td>
-                        </tr>
-                        @endif
-                        @if($penjualan->lunas === "True")
-                        <tr>
-                            <td style="border: none;" colspan="8" class="text-right">Kembali</td>
-                            <td class="text-right" style="height: 20px;">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
-                        </tr>
-                        @else
-                        <tr>
-                            <td style="border: none;" colspan="8" class="text-right">Masuk Piutang</td>
-                            <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->piutang) }}</td>
-                        </tr>
-                        @endif
-                    </table>
-                </td>
+                <td colspan="8" class="text-right">Total</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
             </tr>
+            @if($penjualan->lunas === "True")
+            <tr>
+                <td colspan="8" class="text-right">Total Bayar</td>
+                <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
+            </tr>
+            @else
+            <tr>
+                <td colspan="8" class="text-right">Dibayar</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
+            </tr>
+            @endif
+            @if($penjualan->dikirim !== NULL)
+            <tr>
+                <td colspan="8" class="text-right">Dikirim</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->dikirim) }}</td>
+            </tr>
+            @endif
+            @if($penjualan->lunas === "True")
+            <tr>
+                <td colspan="8" class="text-right">Kembali</td>
+                <td class="text-right">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
+            </tr>
+            @else
+            <tr>
+                <td colspan="8" class="text-right">Masuk Piutang</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->piutang) }}</td>
+            </tr>
+            @endif
         </tfoot>
     </table>
 
