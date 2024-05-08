@@ -80,9 +80,8 @@
         <tr>
             <th>No</th>
             <th>Kode Kas</th>
-            <th>Barang / Harga Satuan</th>
-            <th>Pelanggan</th>
-            <th>Saldo Piutang</th>
+            <th>Barang</th>
+            <th>Harga</th>
             <th>Jumlah</th>
             <th>Biaya Kirim</th>
             <th>Sub Total</th>
@@ -96,9 +95,8 @@
                 {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}
             </td> --}}
             <td class="text-center">{{ $item->kode_kas }}</td>
-            <td class="text-left">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
-            <td class="text-center">{{$item->pelanggan_nama}}</td>
-            <td class="text-right">{{$helpers->format_uang($item->saldo_piutang)}}</td>
+            <td class="text-center">{{$item->barang_nama}}</td>
+            <td class="text-right">{{ $helpers->format_uang($item->harga) }}</td>
             <td class="text-center">{{ sprintf("%.2f", $item->qty)." ".$item->satuan }}</td>
             @if(count($barangs) > 0)
             <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
@@ -110,7 +108,7 @@
         @endforeach
         <tr>
             <td class="text-center"></td>
-            <td class="text-left" colspan="6">
+            <td class="text-left" colspan="5">
                 <span>PO. NO 450639945</span> <br>
                 <span>Date: {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}</span>
             </td>
@@ -123,7 +121,7 @@
     <tfoot>
         <tr>
             <!-- Bagian kiri -->
-            <td style="text-align: left; padding: 25px; border: none;" colspan="4">
+            <td style="text-align: left; padding: 35px; border: none;" colspan="4">
                 <h3>Pembayaran</h3>
                 <ul>
                     <li>Nama : {{$penjualan['nama_kas']}} </li>
@@ -134,7 +132,7 @@
             <!-- Bagian kanan -->
             <td style="border: none;" colspan="6">
                 <!-- Konten bagian kanan -->
-                <table style="width: 52%; border: none; margin-left:17.2rem; margin-top:-.3rem;">
+                <table style="width: 51%; border: none; margin-left:16.5rem; margin-top:-2.5rem; border-collapse: collapse;">
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
                         <td class="text-right" style="height: 20px; border-top: 0;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
