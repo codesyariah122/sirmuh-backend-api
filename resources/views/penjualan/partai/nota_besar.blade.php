@@ -47,14 +47,14 @@
         <tr>
             <td style="font-weight: 800;">Kepada</td>
             <td rowspan="4" width="40%" style="vertical-align: top;">
-             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-             @else
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-             @endif
-             <br>
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
 
-             <address>
+               <address>
                 {{ $toko['address'] }}
             </address>
             <br>
@@ -66,20 +66,19 @@
     </tr>
     <tr>
         <td>
-           {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
-           <br>
-           <address style="text-transform: capitalize;">
-               {{$penjualan->pelanggan_alamat}}
-           </address>
-       </td>
-   </tr>
+         {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
+         <br>
+         <address style="text-transform: capitalize;">
+             {{$penjualan->pelanggan_alamat}}
+         </address>
+     </td>
+ </tr>
 </table>
 
 <table class="data" width="100%" style="border-collapse: collapse;">
     <thead>
         <tr>
             <th>No</th>
-            <th>Kode Kas</th>
             <th>Barang</th>
             <th>Harga</th>
             <th>Jumlah</th>
@@ -94,7 +93,6 @@
             {{-- <td class="text-left">
                 {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}
             </td> --}}
-            <td class="text-center">{{ $item->kode_kas }}</td>
             <td class="text-center">{{$item->barang_nama}}</td>
             <td class="text-right">{{ $helpers->format_uang($item->harga) }}</td>
             <td class="text-center">{{ sprintf("%.2f", $item->qty)." ".$item->satuan }}</td>
@@ -108,8 +106,8 @@
         @endforeach
         <tr>
             <td class="text-center"></td>
-            <td class="text-left" colspan="5">
-                <span>PO. NO 450639945</span> <br>
+            <td class="text-left" colspan="4">
+                <span>PO. NO {{$penjualan->no_po}}</span> <br>
                 <span>Date: {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}</span>
             </td>
             <td class="text-center"></td>
@@ -121,7 +119,7 @@
     <tfoot>
         <tr>
             <!-- Bagian kiri -->
-            <td style="text-align: left; padding: 35px; border: none;" colspan="4">
+            <td style="text-align: left; padding: 17px; border: none;" colspan="4">
                 <h3>Pembayaran</h3>
                 <ul>
                     <li>Nama : {{$penjualan['nama_kas']}} </li>
@@ -130,41 +128,17 @@
             </td>
 
             <!-- Bagian kanan -->
-            <td style="border: none;" colspan="6">
+            <td style="border: none; text-align: right;" colspan="6">
                 <!-- Konten bagian kanan -->
-                <table style="width: 51%; border: none; margin-left:16.5rem; margin-top:-2.5rem; border-collapse: collapse;">
+                <table width="100%" style="width: 260px; border-collapse: collapse;  margin-top: -4rem;margin-right:.6rem;">
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
                         <td class="text-right" style="height: 20px; border-top: 0;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
                     </tr>
-                    @if($penjualan->lunas === "True")
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Total</td>
-                        <td class="text-right" style="height: 20px;">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
-                    </tr>
-                    @else
-                    <tr>
-                        <td style="border: none;" colspan="8" class="text-right">Dibayar</td>
                         <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->bayar) }}</td>
                     </tr>
-                    @endif
-                    @if($penjualan->dikirim !== NULL)
-                    <tr>
-                        <td style="border: none;" colspan="8" class="text-right">Dikirim</td>
-                        <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->dikirim) }}</td>
-                    </tr>
-                    @endif
-                    @if($penjualan->lunas === "True")
-                    <tr>
-                        <td style="border: none;" colspan="8" class="text-right">Kembali</td>
-                        <td class="text-right" style="height: 20px;">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
-                    </tr>
-                    @else
-                    <tr>
-                        <td style="border: none;" colspan="8" class="text-right">Masuk Piutang</td>
-                        <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->piutang) }}</td>
-                    </tr>
-                    @endif
                 </table>
             </td>
         </tr>
