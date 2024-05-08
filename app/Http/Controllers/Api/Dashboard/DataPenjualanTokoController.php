@@ -282,10 +282,9 @@ class DataPenjualanTokoController extends Controller
             $updatePenjualanDraft->save();
 
             $userOnNotif = Auth::user();
-
             $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
             $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
-            $hpp = $itemPenjualanBarang->hpp * $data['qty'];
+            $hpp = $itemPenjualanBarang->harga * $data['qty'];
             $diskon = $newPenjualanToko->diskon;
             $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
 
