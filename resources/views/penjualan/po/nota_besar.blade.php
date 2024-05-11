@@ -59,6 +59,11 @@
                 <address>
                     {{ $toko['address'] }}
                 </address>
+                <br>
+                {{$helpers->format_tanggal(date('d-m-Y'))}}
+                <br>
+                NO INVOICE : 
+                <b>{{$penjualan->kode}}</b>
             </td>
         </tr>
 
@@ -67,24 +72,9 @@
                 {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
             </td>
         </tr>
-
-        <tr>
-            <td>
-                <br>
-                {{$helpers->format_tanggal(date('d-m-Y'))}}
-                <br>
-                NO INVOICE : 
-                {{$penjualan->kode}}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Jenis : {{$penjualan->jenis}}
-            </td>
-        </tr>
     </table>
 
-    <table class="data" width="100%" style="margin-top:-2.5rem;">
+    <table class="data" width="100%" style="margin-top:-.5rem;">
         <thead>
             <tr>
                 <th>No</th>
@@ -155,7 +145,7 @@
         </tfoot>
     </table>
 
-    <table width="100%" style="margin-top: 3rem;">
+    <table width="100%" style="margin-top: 1.5rem;">
         <tr>
             <td class="text-right">
                 <span style="font-weight: 800;border-top: 2px solid black;width: 10%;">

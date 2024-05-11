@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('kode_po')->nullable();
             $table->integer('dp_awal')->nullable();
             $table->string('po_ke')->nullable();
-            $table->integer('qty')->nullable();
+            $table->decimal('qty', 12,5)->nullable();
             $table->string('nama_barang')->nullable();
             $table->string('kode_barang')->nullable();
             $table->integer('harga_satuan')->nullable();
