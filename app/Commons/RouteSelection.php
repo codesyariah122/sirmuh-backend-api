@@ -103,6 +103,12 @@ class RouteSelection {
         ],
 
         [
+            'endPoint' => '/barang-cetak-pemakaian',
+            'method' => 'get',
+            'controllers' => [DataBarangController::class, 'barang_cetak_pemakaian']
+        ],
+
+        [
             'endPoint' => '/barang-all',
             'method' => 'get',
             'controllers' => [DataBarangController::class, 'barang_all']

@@ -118,13 +118,16 @@ class DataPemakaianBarangController extends Controller
 
             event(new EventNotification($data_event));
 
+            $newBarangTujuan = Barang::whereKode($newPemakaian->barang_tujuan)->first();
+
             $newPemakaianBarang = [
                 'nama_barang_asal' => $dataBarangAsal->nama,
                 'kode_barang_asal' => $newPemakaian->barang_asal,
                 'nama_barang_tujuan' => $dataBarangTujuan->nama,
                 'kode_barang_tujuan' => $newPemakaian->barang_tujuan,
                 'qty' => $newPemakaian->qty,
-                'satuan_asal' => $dataBarangAsal->satuan,
+                'stok_tujuan' => $newBarangTujuan->toko,
+                'satuan_asal' => $newBarangTujuan->satuan,
                 'satuan_tujuan' => $dataBarangTujuan->satuan,
                 'keperluan' => $newPemakaian->keperluan,
                 'keterangan' => $newPemakaian->keterangan

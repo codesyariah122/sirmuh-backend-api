@@ -880,4 +880,23 @@ public function barang_pemakaian_list()
             throw $th;
         }
     }
+
+    public function barang_cetak_pemakaian()
+    {
+        try {
+            $query = DB::table('barang')
+            ->whereNull('barang.deleted_at')
+            ->join('supplier', 'barang.supplier', '=', 'supplier.kode')
+            ->where('barang.nama', 'like', 'gula cetak%') // Mengambil hanya data barang yang nama awalnya mengandung kata "gula"
+            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat');
+
+            $barangs = $query
+            ->orderByDesc('barang.id')
+            ->get();
+
+            return new ResponseDataCollect($barangs);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }
