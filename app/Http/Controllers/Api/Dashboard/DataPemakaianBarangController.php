@@ -29,8 +29,8 @@ class DataPemakaianBarangController extends Controller
 
             $query = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang', 'pemakaian_barangs.qty', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
-            ->leftJoin('barang', 'pemakaian_barangs.barang', '=', 'barang.kode');
+            ->select('pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
+            ->leftJoin('barang', 'pemakaian_barangs.barang_asal', '=', 'barang.kode');
 
             if ($keywords) {
                 $query->where('kode', 'like', '%' . $keywords . '%');
@@ -67,7 +67,7 @@ class DataPemakaianBarangController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'barang' => 'required',
+                'barang_asal' => 'required',
                 'qty' => 'required',
                 'keperluan' => 'required',
                 'keterangan' => 'required'
@@ -83,21 +83,28 @@ class DataPemakaianBarangController extends Controller
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $pemakaianKode = "PEM-".$currentDate.$randomNumber;
 
-            $dataBarang = Barang::where('kode', $request->barang)->first();
+            $dataBarangAsal = Barang::where('kode', $request->barang_asal)->first();
+            $dataBarangTujuan = Barang::where('kode', $request->barang_tujuan)->first();
             $newPemakaian = new PemakaianBarang;
             $newPemakaian->kode = $request->kode ? $request->kode : $pemakaianKode;
             $newPemakaian->tanggal = $currentDate;
-            $newPemakaian->barang = $dataBarang->kode;
+            $newPemakaian->barang_asal = $dataBarangAsal->kode;
+            $newPemakaian->barang_tujuan = $dataBarangTujuan->kode;
             $newPemakaian->qty = $request->qty;
             $newPemakaian->keperluan = $request->keperluan;
             $newPemakaian->keterangan = $request->keterangan;
             $newPemakaian->operator = $userOnNotif->name;
             $newPemakaian->save();
 
-            $updateStokBarang = Barang::findOrFail($dataBarang->id);
-            $updateStokBarang->toko = intval($dataBarang->toko) - intval($newPemakaian->qty);
-            $updateStokBarang->last_qty = $dataBarang->toko;
-            $updateStokBarang->save();
+            $updateStokBarangAsal = Barang::findOrFail($dataBarangAsal->id);
+            $updateStokBarangAsal->toko = intval($dataBarangAsal->toko) - intval($newPemakaian->qty);
+            $updateStokBarangAsal->last_qty = $dataBarangAsal->toko;
+            $updateStokBarangAsal->save();
+
+            $updateStokBarangTujuan = Barang::findOrFail($dataBarangTujuan->id);
+            $updateStokBarangTujuan->toko = intval($dataBarangTujuan->toko) + intval($newPemakaian->qty);
+            $updateStokBarangTujuan->last_qty = $dataBarangTujuan->toko;
+            $updateStokBarangTujuan->save();
 
 
             $data_event = [
@@ -112,11 +119,14 @@ class DataPemakaianBarangController extends Controller
             event(new EventNotification($data_event));
 
             $newPemakaianBarang = [
-                'nama_barang' => $dataBarang->nama,
-                'kode_barang' => $newPemakaian->barang,
+                'nama_barang_asal' => $dataBarangAsal->nama,
+                'kode_barang_asal' => $newPemakaian->barang_asal,
+                'nama_barang_tujuan' => $dataBarangTujuan->nama,
+                'kode_barang_tujuan' => $newPemakaian->barang_tujuan,
                 'qty' => $newPemakaian->qty,
-                'satuan' => $dataBarang->satuan,
-                'jenis' => $newPemakaian->jenis,
+                'satuan_asal' => $dataBarangAsal->satuan,
+                'satuan_tujuan' => $dataBarangTujuan->satuan,
+                'keperluan' => $newPemakaian->keperluan,
                 'keterangan' => $newPemakaian->keterangan
             ];
 
