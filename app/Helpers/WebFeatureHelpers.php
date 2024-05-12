@@ -189,7 +189,7 @@ class WebFeatureHelpers
     {
         $qr = new DNS2D;
         $frontendUrl = env("DASHBOARD_APP");
-        $url = url($frontendUrl . "/detail/barang/{$data}");
+        $url = url($frontendUrl . "/detail/barang-by-suppliers/{$data}");
 
         $base64QrCode = $qr->getBarcodePNG($url, "QRCODE", 12, 12);
 

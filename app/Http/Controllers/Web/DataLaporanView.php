@@ -284,14 +284,12 @@ class DataLaporanView extends Controller
             ->whereBetween('pengeluaran.tanggal', [$startDate, $endDate])
             ->get();
 
-            // Menggabungkan semua data
             $cashFlowData = $penjualanData->concat($pembelianData)
             ->concat($piutangData)
             ->concat($hutangData)
             ->concat($pemasukanData)
             ->concat($pengeluaranData);
 
-            // Memisahkan data pendapatan dan pengeluaran per tanggal
             $incomeData = collect([]);
             $expenseData = collect([]);
 
@@ -303,7 +301,6 @@ class DataLaporanView extends Controller
                 }
             }
 
-            // Menghitung total pendapatan per tanggal
             $incomePerDate = $incomeData->groupBy('tanggal')->map(function ($group) {
                 return [
                     'tanggal' => $group->first()->tanggal,
@@ -312,7 +309,6 @@ class DataLaporanView extends Controller
                 ];
             });
 
-            // Menghitung total pengeluaran per tanggal
             $expensePerDate = $expenseData->groupBy('tanggal')->map(function ($group) {
                 return [
                     'tanggal' => $group->first()->tanggal,
@@ -321,10 +317,8 @@ class DataLaporanView extends Controller
                 ];
             });
 
-            // Menggabungkan hasil perhitungan pendapatan dan pengeluaran per tanggal
             $cashFlows = $incomePerDate->merge($expensePerDate);
 
-            // Menyortir data berdasarkan tanggal
             $cashFlows = $cashFlows->sortBy('tanggal')->values();
 
             if ($startDate || $endDate) {
@@ -337,16 +331,6 @@ class DataLaporanView extends Controller
             $pdf = PDF::loadView('laporan.laporan-cash-flow.download', compact('cashFlows','perusahaan', 'periode', 'helpers'));
 
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
-            // // foreach($cashFlows as $cash) {
-            // //     echo "<pre>";
-            // //     if (isset($cash['total_pemasukan'])) {
-            // //         var_dump($cash[['total_pemasukan']]);
-            // //     } else {
-            // //         echo 0;
-            // //     }
-            // //     echo "</pre>";
-            // // }
-            // die;
             return $pdf->stream("laporan-cash-flow-{$startDate}/{$endDate}.pdf");
         } catch (\Throwable $th) {
             throw $th;

@@ -65,14 +65,12 @@ class DataLaporanCashFlowController extends Controller
             ->whereBetween('pengeluaran.tanggal', [$startDate, $endDate])
             ->get();
 
-            // Menggabungkan semua data
             $cashFlowData = $penjualanData->concat($pembelianData)
             ->concat($piutangData)
             ->concat($hutangData)
             ->concat($pemasukanData)
             ->concat($pengeluaranData);
 
-            // Memisahkan data pendapatan dan pengeluaran per tanggal
             $incomeData = collect([]);
             $expenseData = collect([]);
 
@@ -84,7 +82,6 @@ class DataLaporanCashFlowController extends Controller
                 }
             }
 
-            // Menghitung total pendapatan per tanggal
             $incomePerDate = $incomeData->groupBy('tanggal')->map(function ($group) {
                 return [
                     'tanggal' => $group->first()->tanggal,
@@ -93,7 +90,6 @@ class DataLaporanCashFlowController extends Controller
                 ];
             });
 
-            // Menghitung total pengeluaran per tanggal
             $expensePerDate = $expenseData->groupBy('tanggal')->map(function ($group) {
                 return [
                     'tanggal' => $group->first()->tanggal,
@@ -102,10 +98,8 @@ class DataLaporanCashFlowController extends Controller
                 ];
             });
 
-            // Menggabungkan hasil perhitungan pendapatan dan pengeluaran per tanggal
             $cashFlowPerDate = $incomePerDate->merge($expensePerDate);
 
-            // Menyortir data berdasarkan tanggal
             $cashFlowPerDate = $cashFlowPerDate->sortBy('tanggal')->values();
 
             // Pagination
@@ -139,7 +133,7 @@ class DataLaporanCashFlowController extends Controller
 
             $nextPage = min($page + 1, $lastPage);
             $nextUrl = $nextPage > $page ? url()->current() . '?page=' . $nextPage : null; 
-            // var_dump($nextUrl); die;
+
             $links[] = [
                 'url' => $nextUrl,
                 'label' => "Next &raquo;",
