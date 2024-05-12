@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\Dashboard\{
     DataWebFiturController,
     DataSupplierController,
     DataLaporanUtangPiutangPelangganController,
+    DataLaporanCashFlowController,
     DataPerusahaanController,
     DataLabaRugiController,
     DataKaryawanController,
@@ -668,6 +669,12 @@ class RouteSelection {
         	'endPoint' => '/laporan-penjualan',
         	'method' => 'resource',
         	'controllers' => DataLaporanPenjualanController::class
+        ],
+
+        [
+            'endPoint' => '/laporan-cash-flow',
+            'method' => 'get',
+            'controllers' => [DataLaporanCashFlowController::class, 'all']
         ],
 
         // User update

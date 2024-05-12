@@ -25,7 +25,7 @@
         }
 
         th {
-            background-color: #8a8a8a;
+            background: rgb(239, 239, 240);
         }
 
         tbody th, tbody td {
@@ -75,7 +75,7 @@
         <tbody>
             @foreach ($penjualans as $index => $penjualan)
             <tr>
-                <td>{{ $helpers->format_date_only($penjualan->tanggal) }}</td>
+                <td>{{ $helpers->format_tanggal_transaksi($penjualan->tanggal) }}</td>
                 <td>{{$penjualan->kode}}</td>
                 <td>{{$penjualan->nama_barang}}</td>
                 <td>{{$penjualan->nama_pelanggan}}</td>

@@ -56,18 +56,21 @@ Route::get('/route-cache', function() {
 
     return 'Route cached!';
 });
-
+// Print transaksi
 Route::get('/transaksi/beli/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPembelianLangsungController::class, 'cetak_nota']);
 Route::get('/transaksi/jual/toko/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPenjualanTokoController::class, 'cetak_nota']);
 Route::get('/transaksi/jual/partai/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPenjualanPartaiController::class, 'cetak_nota']);
 Route::get('/transaksi/jual/po/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPenjualanPoController::class, 'cetak_nota']);
-Route::get('/laporan/pembelian/laporan-pembelian-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_pembelian_periode']);
-Route::get('/laporan/hutang/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_hutang']);
 Route::get('/transaksi/bayar-hutang/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataHutangController::class, 'cetak_nota']);
 Route::get('/transaksi/terima-piutang/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataPiutangController::class, 'cetak_nota']);
 Route::get('/transaksi/return-pembelian/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataReturnPembelianController::class, 'cetak_nota']);
 Route::get('/transaksi/return-penjualan/cetak-nota/{type}/{kode}/{id_perusahaan}', [DataReturnPenjualanController::class, 'cetak_nota']);
+
+// Print laporan
+Route::get('/laporan/pembelian/laporan-pembelian-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_pembelian_periode']);
+Route::get('/laporan/hutang/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_hutang']);
 Route::get('/laporan/penjualan/laporan-penjualan-periode/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_penjualan_periode']);
+Route::get('/laporan/kas/cash-flow/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_cash_flow']);
 
 Route::get('/test', function () {
     return view('test');

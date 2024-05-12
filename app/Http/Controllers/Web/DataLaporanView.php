@@ -90,17 +90,26 @@ class DataLaporanView extends Controller
             ->select(
                 'pembelian.id',
                 'pembelian.tanggal', 'pembelian.kode', 'pembelian.supplier', 'pembelian.operator','pembelian.jumlah','pembelian.bayar','pembelian.diskon','pembelian.tax','pembelian.lunas','pembelian.visa',
-                'itempembelian.qty','itempembelian.subtotal', 'itempembelian.harga_setelah_diskon',
                 'supplier.nama as nama_supplier',
-                'supplier.alamat as alamat_supplier',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang'
+                'supplier.alamat as alamat_supplier'
             )
-            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->groupBy(
+                'pembelian.id',
+                'pembelian.tanggal',
+                'pembelian.kode',
+                'pembelian.supplier',
+                'pembelian.operator',
+                'pembelian.jumlah',
+                'pembelian.bayar',
+                'pembelian.diskon',
+                'pembelian.tax',
+                'pembelian.lunas',
+                'pembelian.visa',
+                'supplier.nama',
+                'supplier.alamat'
+            )
             ->orderByDesc('pembelian.tanggal');
-            // ->limit(10);
 
             if ($startDate || $endDate) {
                 $periode = [
@@ -140,19 +149,29 @@ class DataLaporanView extends Controller
             ->select(
                 'penjualan.id',
                 'penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan', 'penjualan.operator','penjualan.jumlah','penjualan.bayar','penjualan.diskon','penjualan.tax','penjualan.lunas','penjualan.visa',
-                'itempenjualan.qty','itempenjualan.subtotal', 'itempenjualan.harga',
+                // DB::raw('GROUP_CONCAT(itempenjualan.qty) as qty'),
+                // DB::raw('GROUP_CONCAT(itempenjualan.subtotal) as subtotal'),
+                // DB::raw('GROUP_CONCAT(itempenjualan.harga) as harga'),
                 'pelanggan.nama as nama_pelanggan',
-                'pelanggan.alamat as alamat_pelanggan',
-                'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier',
-                'barang.nama as nama_barang',
-                'barang.satuan as satuan_barang'
+                'pelanggan.alamat as alamat_pelanggan'
             )
-            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-            ->leftJoin('supplier', 'itempenjualan.supplier', '=', 'supplier.kode')
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-            ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+            ->groupBy(
+                'penjualan.id',
+                'penjualan.tanggal',
+                'penjualan.kode',
+                'penjualan.pelanggan',
+                'penjualan.operator',
+                'penjualan.jumlah',
+                'penjualan.bayar',
+                'penjualan.diskon',
+                'penjualan.tax',
+                'penjualan.lunas',
+                'penjualan.visa',
+                'pelanggan.nama',
+                'pelanggan.alamat'
+            )
             ->orderByDesc('penjualan.tanggal');
-            // ->limit(10);
 
             if ($startDate || $endDate) {
                 $periode = [
@@ -215,6 +234,120 @@ class DataLaporanView extends Controller
 
             return $pdf->stream("laporan-hutang-{$startDate}/{$endDate}.pdf");
 
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function laporan_cash_flow(Request $request, $id_perusahaan)
+    {
+        try {
+            $keywords = $request->keywords;
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+            $helpers = $this->helpers;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $penjualanData = DB::table('penjualan')
+            ->select('penjualan.kode', 'penjualan.tanggal', DB::raw('NULL as kd_biaya'), 'pelanggan.nama as pelanggan', 'penjualan.jumlah', DB::raw('"Penjualan" as jenis_data'))
+            ->join('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->whereBetween('penjualan.tanggal', [$startDate, $endDate])
+            ->get();
+
+            $pembelianData = DB::table('pembelian')
+            ->select('pembelian.kode', 'pembelian.tanggal', DB::raw('NULL as kd_biaya'), 'supplier.nama as supplier', 'pembelian.jumlah', DB::raw('"Pembelian" as jenis_data'))
+            ->join('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->whereBetween('pembelian.tanggal', [$startDate, $endDate])
+            ->get();
+
+            $piutangData = DB::table('piutang')
+            ->select('kode', 'tanggal', DB::raw('NULL as kd_biaya'), 'pelanggan', 'jumlah', DB::raw('"Piutang" as jenis_data'))
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->get();
+
+            $hutangData = DB::table('hutang')
+            ->select('kode', 'tanggal', DB::raw('NULL as kd_biaya'), 'supplier', 'jumlah', DB::raw('"Hutang" as jenis_data'))
+            ->whereBetween('tanggal', [$startDate, $endDate])
+            ->get();
+
+            $pemasukanData = DB::table('pemasukan')
+            ->select('pemasukan.kode', 'pemasukan.tanggal', 'pemasukan.kd_biaya', DB::raw('NULL as pelanggan'), 'jenis_pemasukan.nama as nama_biaya', 'pemasukan.jumlah', DB::raw('"Pemasukan" as jenis_data'))
+            ->join('jenis_pemasukan', 'pemasukan.kd_biaya', '=', 'jenis_pemasukan.kode')
+            ->whereBetween('pemasukan.tanggal', [$startDate, $endDate])
+            ->get();
+
+            $pengeluaranData = DB::table('pengeluaran')
+            ->select('pengeluaran.kode', 'pengeluaran.tanggal', 'pengeluaran.kd_biaya', DB::raw('NULL as supplier'), 'biaya.nama as nama_biaya', 'pengeluaran.jumlah', DB::raw('"Pengeluaran" as jenis_data'))
+            ->join('biaya', 'pengeluaran.kd_biaya', '=', 'biaya.kode')
+            ->whereBetween('pengeluaran.tanggal', [$startDate, $endDate])
+            ->get();
+
+            // Menggabungkan semua data
+            $cashFlowData = $penjualanData->concat($pembelianData)
+            ->concat($piutangData)
+            ->concat($hutangData)
+            ->concat($pemasukanData)
+            ->concat($pengeluaranData);
+
+            // Memisahkan data pendapatan dan pengeluaran per tanggal
+            $incomeData = collect([]);
+            $expenseData = collect([]);
+
+            foreach ($cashFlowData as $data) {
+                if ($data->jenis_data === 'Penjualan' || $data->jenis_data === 'Piutang' || $data->jenis_data === 'Pemasukan') {
+                    $incomeData->push($data);
+                } elseif ($data->jenis_data === 'Pembelian' || $data->jenis_data === 'Hutang' || $data->jenis_data === 'Pengeluaran') {
+                    $expenseData->push($data);
+                }
+            }
+
+            // Menghitung total pendapatan per tanggal
+            $incomePerDate = $incomeData->groupBy('tanggal')->map(function ($group) {
+                return [
+                    'tanggal' => $group->first()->tanggal,
+                    'total_pemasukan' => $group->sum('jumlah'),
+                    'data' => $group->first->kode
+                ];
+            });
+
+            // Menghitung total pengeluaran per tanggal
+            $expensePerDate = $expenseData->groupBy('tanggal')->map(function ($group) {
+                return [
+                    'tanggal' => $group->first()->tanggal,
+                    'total_pengeluaran' => $group->sum('jumlah'),
+                    'data' => $group->first->kode
+                ];
+            });
+
+            // Menggabungkan hasil perhitungan pendapatan dan pengeluaran per tanggal
+            $cashFlows = $incomePerDate->merge($expensePerDate);
+
+            // Menyortir data berdasarkan tanggal
+            $cashFlows = $cashFlows->sortBy('tanggal')->values();
+
+            if ($startDate || $endDate) {
+                $periode = [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ];
+            }
+
+            $pdf = PDF::loadView('laporan.laporan-cash-flow.download', compact('cashFlows','perusahaan', 'periode', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+            // // foreach($cashFlows as $cash) {
+            // //     echo "<pre>";
+            // //     if (isset($cash['total_pemasukan'])) {
+            // //         var_dump($cash[['total_pemasukan']]);
+            // //     } else {
+            // //         echo 0;
+            // //     }
+            // //     echo "</pre>";
+            // // }
+            // die;
+            return $pdf->stream("laporan-cash-flow-{$startDate}/{$endDate}.pdf");
         } catch (\Throwable $th) {
             throw $th;
         }

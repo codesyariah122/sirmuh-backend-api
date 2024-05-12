@@ -52,7 +52,7 @@
     </address>
 
 
-    <h3>Laporan Pembelian</h3>
+    <h3>Laporan Cash Flow</h3>
     <hr style="margin-top:-.7rem;">
     <ul style="list-style: none; margin-left:-2rem;margin-top:-.2rem;">
         <li style="font-size: 10px;">PERIODE : {{$periode['start_date']}} S/D {{$periode['end_date']}}</li>
@@ -64,37 +64,46 @@
             <tr>
                 <th width="50">Tanggal</th>
                 <th width="50">No Faktur</th>
-                <th>Supplier</th>
-                <th>Operator</th>
-                <th>Pembayaran</th>
-                <th>Disc</th>
-                <th>PPN</th>
-                <th>Jumlah</th>
+                <th>Jenis</th>
+                <th>Pendapatan</th>
+                <th>Pengeluaran</th>
+                <th>Supplier / Pelanggan</th>
                 <!-- Add more columns based on your query -->
             </tr>
         </thead>
         <tbody>
-            @foreach ($pembelians as $index => $pembelian)
+            @foreach ($cashFlows as $index => $cash)
             <tr>
-                <td>{{ $helpers->format_tanggal_transaksi($pembelian->tanggal) }}</td>
-                <td>{{$pembelian->kode}}</td>
-                <td>{{$pembelian->nama_supplier}}</td>
-                <td>{{ $pembelian->operator }}</td>
-                <td>{{$pembelian->visa}}</td>
-                <td>{{ round($pembelian->diskon) }}</td>
-                <td>{{round($pembelian->tax)}}</td>
-                <td style="text-align: right;">{{$helpers->format_uang($pembelian->jumlah)}}</td>
+                <td>{{ $helpers->format_tanggal_transaksi($cash['tanggal']) }}</td>
+                <td>{{$cash['data']->kode}}</td>
+                <td>{{$cash['data']->jenis_data}}</td>
+                <td style="text-align: right;">
+                    @if(isset($cash['total_pemasukan']))
+                    {{$helpers->format_uang($cash['total_pemasukan'])}}
+                    @else
+                    {{$helpers->format_uang(0)}}
+                    @endif
+                </td>
+                <td style="text-align: right;">
+                    @if(isset($cash['total_pengeluaran']))
+                    {{$helpers->format_uang($cash['total_pengeluaran'])}}
+                    @else
+                    {{$helpers->format_uang(0)}}
+                    @endif
+                </td>
+                <td>
+                    @if(isset($cash['data']->supplier))
+                    {{$cash['data']->supplier}}
+                    @elseif(isset($cash['data']->pelanggan))
+                    {{$cash['data']->pelanggan}}
+                    @else
+                    -
+                    @endif
+                </td>
                 <!-- Add more columns based on your query -->
             </tr>
             @endforeach
         </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="6"></td>
-                <td>Total</td>
-                <td style="text-align: right;">Rp. {{ $helpers->format_uang($pembelians->sum('jumlah')) }}</td>
-            </tr>
-        </tfoot>
     </table>
 </body>
 </html>

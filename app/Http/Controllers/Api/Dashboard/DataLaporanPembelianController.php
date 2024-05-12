@@ -44,20 +44,20 @@ class DataLaporanPembelianController extends Controller
 			)
 			->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
 			->groupBy(
-                'pembelian.id',
-                'pembelian.tanggal',
-                'pembelian.kode',
-                'pembelian.supplier',
-                'pembelian.operator',
-                'pembelian.jumlah',
-                'pembelian.bayar',
-                'pembelian.diskon',
-                'pembelian.tax',
-                'pembelian.lunas',
-                'pembelian.visa',
-                'supplier.nama',
-                'supplier.alamat'
-            )
+				'pembelian.id',
+				'pembelian.tanggal',
+				'pembelian.kode',
+				'pembelian.supplier',
+				'pembelian.operator',
+				'pembelian.jumlah',
+				'pembelian.bayar',
+				'pembelian.diskon',
+				'pembelian.tax',
+				'pembelian.lunas',
+				'pembelian.visa',
+				'supplier.nama',
+				'supplier.alamat'
+			)
 			->orderByDesc('pembelian.tanggal')
 			->limit(10);
 
@@ -70,7 +70,6 @@ class DataLaporanPembelianController extends Controller
 			->paginate(10);
 
 			return new ResponseDataCollect($pembelians);
-
 
 		} catch (\Throwable $th) {
 			throw $th;
