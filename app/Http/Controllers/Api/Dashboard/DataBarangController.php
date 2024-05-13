@@ -365,12 +365,12 @@ public function detail_by_barcode($barcode)
             $check_barang = Barang::whereNama($request->nama)->get();
 
 
-            if(count($check_barang) > 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Barang dengan nama {$request->nama}, sudah ada / tersedia 🤦!"
-                ]);
-            }
+            // if(count($check_barang) > 0) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => "Barang dengan nama {$request->nama}, sudah ada / tersedia 🤦!"
+            //     ]);
+            // }
 
             $newBarang = new Barang;
             $kode = explode(' ', $request->nama);
