@@ -47,7 +47,7 @@
             <td style="vertical-align: top;">
                 Kepada
             </td>
-            <td rowspan="6" width="30%" style="vertical-align: top;">
+            <td rowspan="6" width="40%" style="vertical-align: top;">
                 @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
                 <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
                 @else

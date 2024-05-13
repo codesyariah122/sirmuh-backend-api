@@ -217,7 +217,11 @@ class DataHutangController extends Controller
             $jmlHutang = intval($hutang->jumlah);
             $kasId = $request->kode_kas ? $request->kode_kas : $hutang->kode_kas;
 
-            $dataKas = Kas::whereKode($kasId)->first();
+            if($request->kode_kas !== NULL) {
+                $dataKas = kas::findOrFail($kasId);
+            } else {
+                $dataKas = Kas::whereKode($kasId)->first();
+            }
 
             $checkAngsuran = PembayaranAngsuran::where('kode', $hutang->kode)
             ->get();
