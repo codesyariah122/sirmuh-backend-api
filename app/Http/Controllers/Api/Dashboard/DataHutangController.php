@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Jobs\ProcessLargeRequest;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Events\{EventNotification};
-use App\Models\{Toko, Hutang, Pembelian, ItemPembelian,PembayaranAngsuran,Kas,ItemHutang };
+use App\Models\{Toko, Hutang, Pembelian, ItemPembelian,PembayaranAngsuran,Kas,ItemHutang, Supplier};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use Auth;
@@ -228,7 +228,9 @@ class DataHutangController extends Controller
 
             if(count($checkAngsuran) > 0) {
                 $dataPembelian = Pembelian::whereKode($hutang->kd_beli)->first();
+                $supplier = Supplier::whereKode($hutang->supplier)->first();
                 $updatePembelian = Pembelian::findOrFail($dataPembelian->id);
+                $updateSupplier = Supplier::findOrFail($supplier->id);
                 $updatePembelian->bayar = intval($dataPembelian->bayar) + $bayar;
                 // $updatePembelian->diterima = intval($dataPembelian->diterima) + $bayar;
 
@@ -236,6 +238,7 @@ class DataHutangController extends Controller
                     $updatePembelian->lunas = "True";
                     $updatePembelian->visa = "LUNAS";
                     $updatePembelian->hutang = 0;
+                    $updateSupplier->saldo_hutang = 0;
                     if($dataPembelian->po === "True") {
                         // $updatePembelian->angsuran = $updatePembelian->bayar;
                         $updatePembelian->receive = "True";
@@ -245,16 +248,21 @@ class DataHutangController extends Controller
                     $updatePembelian->lunas = "False";
                     $updatePembelian->visa = "HUTANG";
                     $updatePembelian->hutang = intval($dataPembelian->hutang) - $bayar;
+                    $updateSupplier->saldo_hutang = intval($supplier->saldo_hutang) - $bayar;
                 }
+
                 $updatePembelian->save();
+                $updateSupplier->save();
 
                 $updateHutang = Hutang::findOrFail($hutang->id);
                 if($bayar >= $jmlHutang) {
-                    $updateHutang->jumlah = $bayar - $jmlHutang;
+                    $updateHutang->jumlah = 0;
                     $updateHutang->bayar = $bayar;
+                    $updateHutang->kembali = $request->kembali ? $request->kembali : $bayar - $jmlHutang;
                 } else {
                     $updateHutang->jumlah = $jmlHutang - $bayar;
                     $updateHutang->bayar = intval($hutang->bayar) + $bayar;
+                    $updateHutang->kembali = 0;
                 }
                 $updateHutang->ket = $request->ket ?? "";
                 $updateHutang->save();
@@ -282,7 +290,11 @@ class DataHutangController extends Controller
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
                 $angsuran->bayar_angsuran = $bayar;
-                $angsuran->jumlah = intval($angsuranTerakhir->jumlah) - $bayar;
+                if($bayar >= intval($angsuranTerakhir->jumlah)) {
+                    $angsuran->jumlah = 0;
+                } else { 
+                    $angsuran->jumlah = intval($angsuranTerakhir->jumlah) - $bayar;
+                }
                 $angsuran->save();
 
                 $notifEvent =  "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸";

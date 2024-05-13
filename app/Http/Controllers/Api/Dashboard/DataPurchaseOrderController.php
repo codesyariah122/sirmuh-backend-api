@@ -373,17 +373,17 @@ class DataPurchaseOrderController extends Controller
             $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
             $updatePembelian = Pembelian::where('po', 'True')
             ->findOrFail($id);
+            $supplier = Supplier::whereKode($updatePembelian->supplier)->first();
+            $updateSupplier = Supplier::findOrFail($supplier->id);
             $dataItemPo = PurchaseOrder::where('kode_po', $updatePembelian->kode)->get();
             $totalSubtotal = $dataItemPo->sum('subtotal');
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
 
-            if(intval($kas->saldo) < $diterima) {
-                return response()->json([
-                    'error' => true,
-                    'message' => "Saldo tidak mencukupi!!"
-                ]);
-            }
+            // var_dump(intval($kas->saldo));
+            // var_dump($data['hutang']);
+            // var_dump(intval($kas->saldo) < $diterima);
+            // die;
 
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
@@ -393,6 +393,13 @@ class DataPurchaseOrderController extends Controller
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
                 $updatePembelian->hutang = $data['hutang'];
+
+                if(intval($kas->saldo) < $data['hutang']) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Saldo tidak mencukupi!!"
+                    ]);
+                }
 
                 // Masuk ke hutang
                 $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
@@ -438,6 +445,9 @@ class DataPurchaseOrderController extends Controller
                 // $bindCalc = $updatePembelian->diterima - $updatePembelian->jumlah;
                 // $updateKas->saldo = $kas->saldo - $bindCalc;
                 // $updateKas->save();
+
+                $updateSupplier->saldo_hutang = $data['hutang'];
+                $updateSupplier->save();
             } else if($data['sisa_dp'] <= 1000) {
                 $updatePembelian->kembali = $data['sisa_dp'];
                 $updatePembelian->lunas = "True";
