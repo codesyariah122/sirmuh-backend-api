@@ -374,13 +374,19 @@ public function detail_by_barcode($barcode)
 
             $newBarang = new Barang;
             $kode = explode(' ', $request->nama);
+            $supplierKode = explode(' ', $request->supplier);
             $substringArray = [];
+            $substringArraySupplier = [];
+
+            foreach($supplierKode as $x) {
+                $substringArraySupplier[] = substr($x, 0, 1);
+            }
 
             foreach ($kode as $i) {
                 $substringArray[] = substr($i, 0, 1);
             }
 
-            $newBarang->kode = strtoupper(implode('', $substringArray));
+            $newBarang->kode = strtoupper(implode('', $substringArray)).'.'.strtoupper(implode('', $substringArraySupplier));
 
 
             $newBarang->nama = $request->nama;
