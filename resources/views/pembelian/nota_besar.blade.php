@@ -46,15 +46,15 @@
                 Kepada
             </td>
             <td rowspan="6" width="30%" style="vertical-align: top;">
-             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-             @else
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-             @endif
-             <br>
-             <span>{{ $toko['name'] }} </span>                
-             <br>
-             <address>
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
+               <span>{{ $toko['name'] }} </span>                
+               <br>
+               <address>
                 {{ $toko['address'] }}
             </address>
             <br>
@@ -118,6 +118,7 @@
         @foreach ($barangs as $key => $item)
         <tr>
             <td class="text-center">{{ $key+1 }}</td>
+            <td class="text-center">{{ $helpers->format_tanggal_transaksi($pembelian['tanggal']) }}</td>
             <td class="text-center">{{ $item->kode_barang }}</td>
             <td class="text-center">{{ $item->nama_barang }}</td>
             <td class="text-right">{{ $helpers->format_uang($item->harga_beli) }}</td>
