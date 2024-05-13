@@ -29,7 +29,7 @@ class DataPemakaianBarangController extends Controller
 
             $query = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
             ->leftJoin('barang', 'pemakaian_barangs.barang_asal', '=', 'barang.kode');
 
             if ($keywords) {
@@ -152,7 +152,28 @@ class DataPemakaianBarangController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $query = PemakaianBarang::query()
+            ->whereNull('pemakaian_barangs.deleted_at')
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang_asal.kode as kode_barang_asal', 'barang_asal.nama as nama_barang_asal', 'barang_asal.satuan as satuan_barang_asal', 'barang_tujuan.kode as kode_barang_tujuan', 'barang_tujuan.nama as nama_barang_tujuan', 'barang_tujuan.satuan as satuan_barang_tujuan')
+            ->leftJoin('barang as barang_asal', function($join) {
+                $join->on('pemakaian_barangs.barang_asal', '=', 'barang_asal.kode');
+            })
+            ->leftJoin('barang as barang_tujuan', function($join) {
+                $join->on('pemakaian_barangs.barang_tujuan', '=', 'barang_tujuan.kode');
+            })
+            ->where('pemakaian_barangs.id', $id);
+
+            $pemakaian_barang = $query->first();
+            
+            return response()->Json([
+                'success' => true,
+                'message' => "Detail pemakaian barang {$pemakaian_barang->kode}",
+                'data' => $pemakaian_barang
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
