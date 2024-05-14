@@ -153,6 +153,7 @@ class DataPembelianLangsungController extends Controller
             // $updateStokBarang->save();
 
             $kas = Kas::findOrFail($data['kode_kas']);
+            $kasBiaya = Kas::findOrFail($data['kas_biaya']);
 
             if($kas->saldo < $data['diterima']) {
                 return response()->json([
@@ -167,6 +168,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->draft = 0;
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
+            $newPembelian->kas_biaya = intval($data['biayabongkar']) > 0 ? $kasBiaya->kode : NULL;
 
             $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
@@ -244,7 +246,7 @@ class DataPembelianLangsungController extends Controller
             }
 
             $newPembelian->return = "False";
-            $newPembelian->biayabongkar =  $data['biayabongkar'] ?? NULL;
+            $newPembelian->biayabongkar =  $data['biayabongkar'];
             $newPembelian->keterangan = $data['keterangan'];
             $newPembelian->operator = $data['operator'];
 
@@ -254,6 +256,12 @@ class DataPembelianLangsungController extends Controller
             foreach($updateDrafts as $idx => $draft) {
                 $updateDrafts[$idx]->draft = 0;
                 $updateDrafts[$idx]->save();
+            }
+
+            if(intval($data['biayabongkar']) > 0) {
+                $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
+                $updateKasBiaya->saldo = intval($kasBiaya->saldo) - $data['biayabongkar'];
+                $updateKasBiaya->save();
             }
             
             if($data['pembayaran'] !== "cash") {
