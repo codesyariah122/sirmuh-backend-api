@@ -46,19 +46,23 @@
                 Kepada
             </td>
             <td rowspan="6" width="40%" style="vertical-align: top;">
-             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-             @else
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-             @endif
-             <br>
-             <span>{{ $toko['name'] }} </span>                
-             <br>
-             <address>
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
+               <span>{{ $toko['name'] }} </span>                
+               <br>
+               <address>
                 {{ $toko['address'] }}
             </address>
             <br>
-            {{$helpers->format_tanggal(date('Y-m-d'))}}
+            @php
+            use Carbon\Carbon;
+            $currentDate = Carbon::now()->format('d-m-Y');
+            @endphp
+            Tanggal : {{$helpers->format_tanggal_transaksi($currentDate)}}
             <br>
             NO INVOICE : 
             <b>{{$pembelian->kode}}</b>

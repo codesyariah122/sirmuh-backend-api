@@ -47,18 +47,22 @@
         <tr>
             <td style="font-weight: 800;">Kepada</td>
             <td rowspan="4" width="40%" style="vertical-align: top;">
-               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-               @else
-               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-               @endif
-               <br>
+             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+             @else
+             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+             @endif
+             <br>
 
-               <address>
+             <address>
                 {{ $toko['address'] }}
             </address>
             <br>
-            Tanggal : {{$helpers->format_tanggal_transaksi(date('d-m-y'))}}
+            @php
+            use Carbon\Carbon;
+            $currentDate = Carbon::now()->format('d-m-Y');
+            @endphp
+            Tanggal : {{$helpers->format_tanggal_transaksi($currentDate)}}
             <br>
             NO INVOICE : 
             <b>{{$penjualan->kode}}</b>
@@ -66,13 +70,13 @@
     </tr>
     <tr>
         <td>
-         {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
-         <br>
-         <address style="text-transform: capitalize;">
-             {{$penjualan->pelanggan_alamat}}
-         </address>
-     </td>
- </tr>
+           {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
+           <br>
+           <address style="text-transform: capitalize;">
+               {{$penjualan->pelanggan_alamat}}
+           </address>
+       </td>
+   </tr>
 </table>
 
 <table class="data" width="100%" style="border-collapse: collapse;">

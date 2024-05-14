@@ -60,7 +60,11 @@
                     {{ $toko['address'] }}
                 </address>
                 <br>
-                {{$helpers->format_tanggal(date('d-m-Y'))}}
+                @php
+                use Carbon\Carbon;
+                $currentDate = Carbon::now()->format('d-m-Y');
+                @endphp
+                Tanggal : {{$helpers->format_tanggal_transaksi($currentDate)}}
                 <br>
                 NO INVOICE : 
                 <b>{{$penjualan->kode}}</b>
@@ -125,12 +129,12 @@
                 <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
             </tr>
             @endif
-            @if($penjualan->dikirim !== NULL)
+            {{-- @if($penjualan->dikirim !== NULL)
             <tr>
                 <td colspan="8" class="text-right">Dikirim</td>
                 <td class="text-right">{{ $helpers->format_uang($penjualan->dikirim) }}</td>
             </tr>
-            @endif
+            @endif --}}
             @if($penjualan->lunas === "True")
             <tr>
                 <td colspan="8" class="text-right">Kembali</td>
