@@ -468,7 +468,13 @@ class DataPurchaseOrderController extends Controller
             }
             $updatePembelian->kas_biaya = intval($data['biayabongkar']) > 0 ? $kasBiaya->kode : NULL;
             $updatePembelian->multiple_input = $data["multiple_input"];
-            $updatePembelian->jumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
+
+            $dataJumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
+            if(intval($data['biayabongkar']) > 0) {
+                $dataJumlahWithBiaya = $dataJumlah - intval($data['biayabongkar']);
+            }
+
+            $updatePembelian->jumlah = intval($data['biayabongkar']) > 0 ? $dataJumlahWithBiaya : $dataJumlah;
             $updatePembelian->bayar = $bayar;
             $updatePembelian->diterima = $totalSubtotal;
             $updatePembelian->return = "False";
@@ -537,11 +543,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
