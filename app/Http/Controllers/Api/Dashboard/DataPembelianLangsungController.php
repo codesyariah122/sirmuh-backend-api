@@ -170,7 +170,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->kas_biaya = intval($data['biayabongkar']) > 0 ? $kasBiaya->kode : NULL;
 
-            $newPembelian->jumlah = intval($data['biayabongkar']) > 0 ? $data['jumlah'] + intval($data['biayabongkar']) : $data['jumlah'];
+            $newPembelian->jumlah = intval($data['biayabongkar']) > 0 ? $data['jumlah'] - intval($data['biayabongkar']) : $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
 

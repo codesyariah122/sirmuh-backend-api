@@ -472,7 +472,7 @@ class DataPurchaseOrderController extends Controller
             $dataJumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
 
             if(intval($data['biayabongkar']) > 0) {
-                $dataJumlahWithBiaya = $dataJumlah + intval($data['biayabongkar']);
+                $dataJumlahWithBiaya = $dataJumlah - intval($data['biayabongkar']);
             }
 
             $updatePembelian->jumlah = intval($data['biayabongkar']) > 0 ? $dataJumlahWithBiaya : $dataJumlah;
