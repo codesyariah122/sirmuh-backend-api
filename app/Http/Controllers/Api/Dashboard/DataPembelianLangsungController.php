@@ -173,7 +173,15 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->jumlah = intval($data['biayabongkar']) > 0 ? $data['jumlah'] - intval($data['biayabongkar']) : $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
-            $newPembelian->kembali = intval($data['bayar']) >= intval($data['jumlah']) ? intval($data['bayar']) - intval($data['jumlah']) : intval($data['jumlah']) - intval($data['bayar']);
+
+            if(intval($data['bayar']) >= intval($data['jumlah'])) {
+                $kembali = intval($data['bayar']) - intval($data['jumlah']);
+            } else if(intval($data['bayar']) === 0) {
+                $kembali = 0;
+            } else {
+                $kembali = intval($data['jumlah']) - intval($data['bayar']);
+            }
+            $newPembelian->kembali = $kembali;
 
             // $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
             // $updateSaldoSupplier->saldo_hutang = intval($data['bayar']) !== 0 ? $supplier->saldo_hutang + $data['hutang'] : $supplier->saldo_hutang + $data['diterima'];
@@ -188,7 +196,7 @@ class DataPembelianLangsungController extends Controller
 
                 $newPembelian->lunas = "False";
                 $newPembelian->visa = 'HUTANG';
-                $newPembelian->hutang = intval($data['bayar']) !== 0 ? $data['hutang'] : $data['diterima'];
+                $newPembelian->hutang = intval($data['bayar']) !== 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['diterima']) - intval($data['biayabongkar']);
                 $newPembelian->po = 'False';
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
@@ -202,7 +210,10 @@ class DataPembelianLangsungController extends Controller
                 $masuk_hutang->kd_beli = $data['ref_code'];
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $supplier->kode;
-                $masuk_hutang->jumlah = intval($data['bayar']) !== 0 ? $data['hutang'] : $data['diterima'];
+                // if(intval($data['biayabongkar']) > 0) {
+                //     $jumlahHutang = intval($data['bayar'])
+                // }
+                $masuk_hutang->jumlah = intval($data['bayar']) !== 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['diterima']) - intval($data['biayabongkar']);
                 $masuk_hutang->bayar = $data['bayar'];
                 $masuk_hutang->kode_kas = $newPembelian->kode_kas;
                 $masuk_hutang->operator = $data['operator'];
@@ -531,11 +542,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
