@@ -13,10 +13,15 @@
             letter-spacing: 1px;
             font-size: 11px;
         }
+
+        table.data th {
+            background: rgb(239, 239, 240);
+        }
+
         table.data td,
         table.data th {
             border: 1px solid #ccc;
-            padding: 2px;
+            padding: 4px;
             font-size: 10px;
         }
         table.data {
@@ -34,95 +39,87 @@
     </style>
 </head>
 <body>
-    <table width="100%" style="border-collapse: collapse; margin-top: -.5rem;">
+    <h4 style="margin-top: 1rem;">INVOICE</h4>
+    <table width="100%" style="border-collapse: collapse; margin-top: .5rem;">
         <tr>
             <td style="vertical-align: top;">
                 Kepada
             </td>
-            <td rowspan="6" width="30%" style="vertical-align: top;">
-                @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-                @else
-                <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="100" />
-                @endif
-                <br>
+            <td rowspan="6" width="40%" style="vertical-align: top;">
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
+               <span>{{ $toko['name'] }} </span>                
+               <br>
+               <address>
+                {{ $toko['address'] }}
+            </address>
+            <br>
+            {{$helpers->format_tanggal(date('Y-m-d'))}}
+            <br>
+            NO INVOICE : 
+            <b>{{$hutang->kode}}</b>
+        </td>
+    </tr>
 
-                {{ $toko['name'] }}                 
-                <br>
-                <address>
-                    {{ $toko['address'] }}
-                </address>
-            </td>
-        </tr>
+    <tr>
+        <td>
+            {{ucfirst($hutang->nama_supplier)}}({{$hutang->supplier}})
+            <br>
+            <address>
+                {{$hutang->alamat_supplier !== NULL ? $hutang->alamat_supplier : 'Belum ada alamat'}}
+            </address>
+        </td>
+    </tr>
+</table>
 
+<table class="data" width="100%" style="margin-top: -.5rem;">
+    <thead>
         <tr>
-            <td>
-                {{$hutang->nama_supplier}}({{$hutang->supplier}})
-            </td>
+            <th>Kode Transaksi</th>
+            <th>Tanggal Pembelian</th>
+            <th>Supplier</th>
+            <th>Jumlah</th>
+            <th>Dibayarkan</th>
+            <th>Hutang</th>
         </tr>
-
+    </thead>
+    <tbody>
         <tr>
-            <td>
-                NO INVOICE : 
-                {{$hutang->kode}}
-                <br>
-                {{$helpers->format_tanggal($hutang['tanggal'])}}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Jenis : {{$hutang->po == 'True' ? 'Pembelian P.O' : 'Pembelian Langsung'}}
-            </td>
-        </tr>
-    </table>
-
-    <table class="data" width="100%" style="margin-top: -1rem;">
-        <thead>
-            <tr>
-                <th>Nama Barang</th>
-                <!-- <th>Supplier</th> -->
-                <th>Kode Barang</th>
-                <th>Harga Beli</th>
-                <th>Qty</th>
-                <th>Jumlah</th>
-                <th>Dibayarkan</th>
-                <th>Hutang</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{ $hutang->nama_barang }}</td>
-                <td>{{ $hutang->kode_barang }}</td>
-                <!-- <td>{{ $hutang->nama_supplier }} ({{$hutang->supplier}})</td> -->
-                <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
-                <td class="text-right">{{ round($hutang->qty)." ".$hutang->satuan }}</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->qty * $hutang->harga_beli) }}</td>
-                @if($hutang->po === "False")
-                <td class="text-right">{{ $helpers->format_uang($hutang->bayar_pembelian) }}</td>
-                @else
-                @foreach($angsurans->first() ? [$angsurans->first()] : [] as $angsuran)
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian + $angsuran->bayar_angsuran) }}</td>
-                @endforeach
-                @endif
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
-            </tr>
-        </tbody>
-        <tfoot>
+            <td class="text-center">{{ $hutang->kode_transaksi }}</td>
+            <td class="text-center">{{ $helpers->format_tanggal_transaksi($hutang->tanggal_pembelian) }}</td>
+            <td class="text-center">{{ $hutang->nama_supplier }} ({{$hutang->supplier}})</td>
+            <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
+            <td class="text-right">{{ $helpers->format_uang($hutang->qty * $hutang->harga_beli) }}</td>
             @if($hutang->po === "False")
-            <tr>
-                <td colspan="6" class="text-right">Total Beli</td>
-                <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
-            </tr>
+            <td class="text-right">{{ $helpers->format_uang($hutang->bayar_pembelian) }}</td>
             @else
-            <tr>
-                <td colspan="6" class="text-right">Total Beli</td>
-                <td class="text-right">{{$hutang->lunas === "True" ?  $helpers->format_uang($hutang->diterima) :  $helpers->format_uang($hutang->jumlah_pembelian)}}</td>
-            </tr>
+            @foreach($angsurans->first() ? [$angsurans->first()] : [] as $angsuran)
+            <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian + $angsuran->bayar_angsuran) }}</td>
+            @endforeach
             @endif
-            <tr>
-                <td colspan="6" class="text-right">Diskon</td>
-                <td class="text-right">{{  $helpers->format_uang($hutang->diskon) }}</td>
-            </tr>
+            <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
+        </tr>
+    </tbody>
+    <tfoot>
+        @if($hutang->po === "False")
+        <tr>
+            <td colspan="6" class="text-right">Total Beli</td>
+            <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
+        </tr>
+        @else
+        <tr>
+            <td colspan="6" class="text-right">Total Beli</td>
+            <td class="text-right">{{$hutang->lunas === "True" ?  $helpers->format_uang($hutang->diterima) :  $helpers->format_uang($hutang->jumlah_pembelian)}}</td>
+        </tr>
+        @endif
+        <tr>
+            <td colspan="6" class="text-right">Diskon</td>
+            <td class="text-right">{{  $helpers->format_uang($hutang->diskon) }}</td>
+        </tr>
             <!-- <tr>
                 <td colspan="6" class="text-right">Dp Awal</td>
                 <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian - $hutang->jumlah) }}</td>
@@ -150,12 +147,12 @@
             @endif
         </tfoot>
     </table>
-    <table width="100%" style="margin-top: -.1rem;">
+    <table width="100%" style="margin-top: 1rem;">
         <tr>
             <td class="text-right">
                 <h4>Kasir</h4>
                 <br>
-                <span style="margin-top:-.2rem;">{{ strtoupper($hutang->operator) }}</span>
+                <span style="margin-top:-.2rem;font-weight: 800;">{{ strtoupper($hutang->operator) }}</span>
             </td>
         </tr>
     </table>

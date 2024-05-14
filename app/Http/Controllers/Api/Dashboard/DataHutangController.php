@@ -472,6 +472,7 @@ class DataHutangController extends Controller
             'hutang.kode', 'hutang.tanggal','hutang.supplier','hutang.jumlah as jml_hutang','hutang.bayar as byr_hutang','hutang.operator',
             'itemhutang.jumlah as hutang_jumlah',
             'itemhutang.jumlah_hutang as jumlah_hutang',
+            'pembelian.kode as kode_transaksi',
             'pembelian.tanggal as tanggal_pembelian',
             'pembelian.kode_kas',
             'pembelian.jumlah as jumlah_pembelian',
