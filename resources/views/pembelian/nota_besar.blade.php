@@ -133,21 +133,21 @@
         <tfoot>
             @if($pembelian->po === 'False')
             <tr>
-                <td colspan="9" class="text-right" style="border:none;">Biaya Bongkar</td>
+                <td colspan="9" class="text-right">Biaya Bongkar</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
             </tr>
             <tr>
-                <td colspan="9" class="text-right" style="border:none;">SubTotal</td>
+                <td colspan="9" class="text-right">SubTotal</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->jumlah) }}</td>
             </tr>
             @if($pembelian->visa !== 'HUTANG')
             <tr>
-                <td colspan="9" class="text-right" style="border:none;">Total</td>
+                <td colspan="9" class="text-right">Total</td>
                 <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->jumlah - $pembelian->biayabongkar) : $helpers->format_uang($pembelian->jumlah) }}</td>
             </tr>
             @else
             <tr>
-                <td colspan="9" class="text-right" style="border:none;">Total Bayar</td>
+                <td colspan="9" class="text-right">Total Bayar</td>
                 <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
             </tr>
             @endif
@@ -196,7 +196,7 @@
                 <td class="text-right">{{ $helpers->format_uang($pembelian->biayabongkar) }}</td>
             </tr>
             <tr>
-                <td colspan="9" class="text-right" style="border:none;">Total</td>
+                <td colspan="9" class="text-right">Total</td>
                 <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->diterima + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->diterima) }}</td>
             </tr>
             <tr>
