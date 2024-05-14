@@ -170,7 +170,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->kas_biaya = intval($data['biayabongkar']) > 0 ? $kasBiaya->kode : NULL;
 
-            $newPembelian->jumlah = intval($data['biayabongkar']) > 0 ? $data['jumlah'] - $data['biayabongkar'] : $data['jumlah'];
+            $newPembelian->jumlah = intval($data['biayabongkar']) > 0 ? $data['jumlah'] - intval($data['biayabongkar']) : $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
             $newPembelian->kembali = intval($data['bayar']) >= intval($data['jumlah']) ? intval($data['bayar']) - intval($data['jumlah']) : intval($data['jumlah']) - intval($data['bayar']);
@@ -531,11 +531,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
