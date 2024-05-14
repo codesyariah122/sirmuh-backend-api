@@ -153,7 +153,7 @@ class DataPembelianLangsungController extends Controller
             // $updateStokBarang->save();
 
             $kas = Kas::findOrFail($data['kode_kas']);
-            $kasBiaya = Kas::findOrFail($data['kas_biaya']);
+            $kasBiaya = $data['kas_biaya'] !== null ? Kas::findOrFail($data['kas_biaya']) : null;
 
             if($kas->saldo < $data['diterima']) {
                 return response()->json([
@@ -174,29 +174,36 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
 
-            if(intval($data['bayar']) >= intval($data['jumlah'])) {
-                $kembali = intval($data['bayar']) - intval($data['jumlah']);
-            } else if(intval($data['bayar']) === 0) {
-                $kembali = 0;
+            if($data['showDp'] === 'true') {
+                $kembali = 0;              
             } else {
-                $kembali = intval($data['jumlah']) - intval($data['bayar']);
+                if(intval($data['bayar']) >= intval($data['jumlah'])) {
+                    $kembali = intval($data['bayar']) - intval($data['jumlah']);
+                } else if(intval($data['bayar']) === 0) {
+                    $kembali = 0;
+                } else {
+                    $kembali = intval($data['jumlah']) - intval($data['bayar']);
+                }  
             }
             $newPembelian->kembali = $kembali;
-
             // $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
             // $updateSaldoSupplier->saldo_hutang = intval($data['bayar']) !== 0 ? $supplier->saldo_hutang + $data['hutang'] : $supplier->saldo_hutang + $data['diterima'];
             // var_dump($updateSaldoSupplier->saldo_hutang); die;
-
+            // $hutang = intval($data['bayar']) !== 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['diterima']) - intval($data['biayabongkar']);
+            // var_dump($kembali);
+            // var_dump($data['showDp']);
+            // var_dump($data['hutang']); 
+            // die;
             if($data['pembayaran'] !== "cash") {
-                // var_dump(intval($data['bayar']));
-                // echo "<br/>";
-                // var_dump($data['diterima']);
-
-                // die;
-
                 $newPembelian->lunas = "False";
                 $newPembelian->visa = 'HUTANG';
-                $newPembelian->hutang = intval($data['bayar']) !== 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['diterima']) - intval($data['biayabongkar']);
+                if($data['hutang'] === 'true') {
+                    $hutang = intval($data['hutang']);
+                } else {
+                    $hutang = intval($data['bayar']) !== 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['diterima']) - intval($data['biayabongkar']);
+                }
+
+                $newPembelian->hutang = $hutang;
                 $newPembelian->po = 'False';
                 $newPembelian->receive = "True";
                 $newPembelian->jt = $data['jt'];
@@ -262,7 +269,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
-            
+
             $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
             foreach($updateDrafts as $idx => $draft) {
                 $updateDrafts[$idx]->draft = 0;
@@ -274,7 +281,7 @@ class DataPembelianLangsungController extends Controller
                 $updateKasBiaya->saldo = intval($kasBiaya->saldo) - $data['biayabongkar'];
                 $updateKasBiaya->save();
             }
-            
+
             if($data['pembayaran'] !== "cash") {
                 $diterima = intval($newPembelian->diterima);
                 $updateKas = Kas::findOrFail($data['kode_kas']);
@@ -355,7 +362,7 @@ class DataPembelianLangsungController extends Controller
 
         $barangs = $query->get();
         $pembelian = $query->get()[0];
-        
+
         foreach($barangs as $barang) {            
             $orders = PurchaseOrder::where('kode_po', $kode)
             ->where('kode_barang', $barang->kode_barang)
@@ -386,7 +393,7 @@ class DataPembelianLangsungController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.kas_biaya', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.kas_biaya', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'pembelian.biayabongkar', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->leftJoin('return_pembelian', 'pembelian.kode', '=', 'return_pembelian.no_faktur')
