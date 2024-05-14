@@ -409,7 +409,7 @@ class DataPurchaseOrderController extends Controller
                 $masuk_hutang->kd_beli = $updatePembelian->kode;
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;
-                $masuk_hutang->jumlah = $data['hutang'];
+                $masuk_hutang->jumlah = intval($data['biayabongkar']) > 0 ? $data['hutang'] - $data['biayabongkar'] : $data['hutang'];
                 // $masuk_hutang->bayar = $totalSubtotal;
                 $masuk_hutang->bayar = $bayar - $data['jumlah_saldo'];
                 $masuk_hutang->kode_kas = $updatePembelian->kode_kas;
@@ -447,7 +447,7 @@ class DataPurchaseOrderController extends Controller
                 // $updateKas->saldo = $kas->saldo - $bindCalc;
                 // $updateKas->save();
 
-                $updateSupplier->saldo_hutang = $data['hutang'];
+                $updateSupplier->saldo_hutang = intval($data['biayabongkar']) > 0 ? $data['hutang'] - $data['biayabongkar'] : $data['hutang'];
                 $updateSupplier->save();
             } else if($data['sisa_dp'] <= 1000) {
                 $updatePembelian->kembali = $data['sisa_dp'];
@@ -470,7 +470,7 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->multiple_input = $data["multiple_input"];
 
             $dataJumlah = $data['jumlah_saldo'] ? $data['jumlah_saldo'] : $updatePembelian->jumlah;
-            
+
             if(intval($data['biayabongkar']) > 0) {
                 $dataJumlahWithBiaya = $dataJumlah - intval($data['biayabongkar']);
             }
@@ -544,11 +544,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
