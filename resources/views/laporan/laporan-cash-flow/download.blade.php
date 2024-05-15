@@ -48,14 +48,14 @@
     <img src="{{ public_path('storage/tokos/' . $perusahaan['logo']) }}" alt="{{$perusahaan['logo']}}" width="100">
     
     <div style="margin-top: -1rem;">
-     <h5>{{$perusahaan->name}}</h5>
-     <address style="margin-top: -23px;font-size:9px;">
+       <h5>{{$perusahaan->name}}</h5>
+       <address style="margin-top: -23px;font-size:9px;">
         {{$perusahaan->address}}
     </address>
 </div>
 
 
-<h3>Laporan Cash Flow</h3>
+<h4>Laporan Cash Flow</h4>
 <hr style="margin-top:-.7rem;">
 <ul style="list-style: none; margin-left:-2rem;margin-top:-.2rem;">
     <li style="font-size: 10px;">PERIODE : {{$periode['start_date']}} S/D {{$periode['end_date']}}</li>
