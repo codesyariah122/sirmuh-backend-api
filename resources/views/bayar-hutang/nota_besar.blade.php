@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Nota Pembayaran Hutang -  {{$kode}}</title>
-    {{-- @vite(['resources/css/app.css']) --}}
     <style>
         * {
             font-family: 'Courier New', Courier, monospace;
@@ -84,6 +83,7 @@
             <th>Supplier</th>
             <th>Jumlah</th>
             <th>Dibayarkan</th>
+            <th>Status</th>
             <th>Hutang</th>
         </tr>
     </thead>
@@ -93,7 +93,7 @@
             <td class="text-center">{{ $helpers->format_tanggal_transaksi($hutang->tanggal_pembelian) }}</td>
             <td class="text-center">{{ $hutang->nama_supplier }} ({{$hutang->supplier}})</td>
             <td class="text-right">{{ $helpers->format_uang($hutang->harga_beli) }}</td>
-            <td class="text-right">{{ $helpers->format_uang($hutang->qty * $hutang->harga_beli) }}</td>
+            
             @if($hutang->po === "False")
             <td class="text-right">{{ $helpers->format_uang($hutang->bayar_pembelian) }}</td>
             @else
@@ -101,7 +101,9 @@
             <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian + $angsuran->bayar_angsuran) }}</td>
             @endforeach
             @endif
-            <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td>
+            <td class="text-center">{{ $hutang->visa }}</td>
+            <td class="text-right">{{ $helpers->format_uang($hutang->qty * $hutang->harga_beli) }}</td>
+            {{-- <td class="text-right">{{ $helpers->format_uang($hutang->jumlah) }}</td> --}}
         </tr>
     </tbody>
     <tfoot>
@@ -109,6 +111,10 @@
         <tr>
             <td colspan="6" class="text-right">Total Beli</td>
             <td class="text-right">{{ $helpers->format_uang($hutang->jumlah_pembelian) }}</td>
+        </tr>
+        <tr>
+            <td colspan="6" class="text-right">Biaya Bongkar</td>
+            <td class="text-right">{{$helpers->format_uang($hutang->biayabongkar)}}</td>
         </tr>
         @else
         <tr>

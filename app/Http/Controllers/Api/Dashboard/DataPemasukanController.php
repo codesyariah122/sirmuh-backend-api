@@ -60,7 +60,7 @@ class DataPemasukanController extends Controller
             }
             
 
-            $pemasukans = $query->orderBy("pemasukan.tanggal", "DESC")
+            $pemasukans = $query->orderBy("pemasukan.id", "DESC")
             ->paginate(10);
 
             return new ResponseDataCollect($pemasukans);
@@ -88,59 +88,59 @@ class DataPemasukanController extends Controller
     public function store(Request $request)
     {
         try {
-             $validator = Validator::make($request->all(), [
-                'kode' => 'required',
-                'jenis_pemasukan' => 'required',
-                'kode_kas' => 'required',
-                'jumlah' => 'required'
-            ]);
+           $validator = Validator::make($request->all(), [
+            'kode' => 'required',
+            'jenis_pemasukan' => 'required',
+            'kode_kas' => 'required',
+            'jumlah' => 'required'
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 400);
-            }
-
-            $newPemasukan = new Pemasukan;
-            $newPemasukan->kode = $request->kode;
-            $newPemasukan->tanggal = $request->tanggal;
-            $newPemasukan->kd_biaya = $request->jenis_pemasukan;
-            $newPemasukan->keterangan = $request->keterangan;
-            $newPemasukan->kode_kas = $request->kode_kas;
-            $newPemasukan->jumlah = $request->jumlah;
-            $newPemasukan->operator = $request->operator;
-            $newPemasukan->kode_pelanggan = $request->kode_pelanggan;
-            $newPemasukan->nama_pelanggan = $request->nama_pelanggan;
-            $newPemasukan->save();
-
-            if($newPemasukan) {
-                $dataKas = Kas::whereKode($request->kode_kas)->first();
-                $updateKas = Kas::findOrFail($dataKas->id);
-                $updateKas->saldo = intval($dataKas->saldo) + intval($request->jumlah);
-                $updateKas->save();
-
-                $userOnNotif = Auth::user();
-                $data_event = [
-                    'routes' => 'kas',
-                    'alert' => 'success',
-                    'type' => 'add-data',
-                    'notif' => "Pemasukan {$newPemasukan->kode}, baru saja ditambahkan 🤙!",
-                    'data' => $newPemasukan->kode,
-                    'user' => $userOnNotif
-                ];
-                event(new EventNotification($data_event));
-
-                $newDataPemasukan= Pemasukan::findOrFail($newPemasukan->id);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "Pemasukan dengan kode {$newPemasukan->kode}, successfully added✨!",
-                    'data' => $newDataPemasukan
-                ]);
-            }
-
-        } catch (\Throwable $th) {
-            throw $th;
+           if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
         }
+
+        $newPemasukan = new Pemasukan;
+        $newPemasukan->kode = $request->kode;
+        $newPemasukan->tanggal = $request->tanggal;
+        $newPemasukan->kd_biaya = $request->jenis_pemasukan;
+        $newPemasukan->keterangan = $request->keterangan;
+        $newPemasukan->kode_kas = $request->kode_kas;
+        $newPemasukan->jumlah = $request->jumlah;
+        $newPemasukan->operator = $request->operator;
+        $newPemasukan->kode_pelanggan = $request->kode_pelanggan;
+        $newPemasukan->nama_pelanggan = $request->nama_pelanggan;
+        $newPemasukan->save();
+
+        if($newPemasukan) {
+            $dataKas = Kas::whereKode($request->kode_kas)->first();
+            $updateKas = Kas::findOrFail($dataKas->id);
+            $updateKas->saldo = intval($dataKas->saldo) + intval($request->jumlah);
+            $updateKas->save();
+
+            $userOnNotif = Auth::user();
+            $data_event = [
+                'routes' => 'kas',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "Pemasukan {$newPemasukan->kode}, baru saja ditambahkan 🤙!",
+                'data' => $newPemasukan->kode,
+                'user' => $userOnNotif
+            ];
+            event(new EventNotification($data_event));
+
+            $newDataPemasukan= Pemasukan::findOrFail($newPemasukan->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Pemasukan dengan kode {$newPemasukan->kode}, successfully added✨!",
+                'data' => $newDataPemasukan
+            ]);
+        }
+
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 
     /**
      * Display the specified resource.

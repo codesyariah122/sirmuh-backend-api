@@ -483,6 +483,7 @@ class DataHutangController extends Controller
             'pembelian.jt',
             'pembelian.lunas',
             'pembelian.hutang',
+            'pembelian.biayabongkar',
             'itempembelian.kode_barang',
             'itempembelian.nama_barang',
             'itempembelian.qty',

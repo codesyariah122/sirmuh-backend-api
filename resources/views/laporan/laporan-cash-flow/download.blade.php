@@ -46,64 +46,67 @@
 </head>
 <body>
     <img src="{{ public_path('storage/tokos/' . $perusahaan['logo']) }}" alt="{{$perusahaan['logo']}}" width="100">
-    <h5>{{$perusahaan->name}}</h5>
-    <address style="margin-top: -23px;font-size:9px;">
+    
+    <div style="margin-top: -1rem;">
+     <h5>{{$perusahaan->name}}</h5>
+     <address style="margin-top: -23px;font-size:9px;">
         {{$perusahaan->address}}
     </address>
+</div>
 
 
-    <h3>Laporan Cash Flow</h3>
-    <hr style="margin-top:-.7rem;">
-    <ul style="list-style: none; margin-left:-2rem;margin-top:-.2rem;">
-        <li style="font-size: 10px;">PERIODE : {{$periode['start_date']}} S/D {{$periode['end_date']}}</li>
-    </ul>
-    <hr style="margin-top:-.7rem;">
+<h3>Laporan Cash Flow</h3>
+<hr style="margin-top:-.7rem;">
+<ul style="list-style: none; margin-left:-2rem;margin-top:-.2rem;">
+    <li style="font-size: 10px;">PERIODE : {{$periode['start_date']}} S/D {{$periode['end_date']}}</li>
+</ul>
+<hr style="margin-top:-.7rem;">
 
-    <table>
-        <thead>
-            <tr>
-                <th width="50">Tanggal</th>
-                <th width="50">No Faktur</th>
-                <th>Jenis</th>
-                <th>Pendapatan</th>
-                <th>Pengeluaran</th>
-                <th>Supplier / Pelanggan</th>
-                <!-- Add more columns based on your query -->
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($cashFlows as $index => $cash)
-            <tr>
-                <td>{{ $helpers->format_tanggal_transaksi($cash['tanggal']) }}</td>
-                <td>{{$cash['data']->kode}}</td>
-                <td>{{$cash['data']->jenis_data}}</td>
-                <td style="text-align: right;">
-                    @if(isset($cash['total_pemasukan']))
-                    {{$helpers->format_uang($cash['total_pemasukan'])}}
-                    @else
-                    {{$helpers->format_uang(0)}}
-                    @endif
-                </td>
-                <td style="text-align: right;">
-                    @if(isset($cash['total_pengeluaran']))
-                    {{$helpers->format_uang($cash['total_pengeluaran'])}}
-                    @else
-                    {{$helpers->format_uang(0)}}
-                    @endif
-                </td>
-                <td>
-                    @if(isset($cash['data']->supplier))
-                    {{$cash['data']->supplier}}
-                    @elseif(isset($cash['data']->pelanggan))
-                    {{$cash['data']->pelanggan}}
-                    @else
-                    -
-                    @endif
-                </td>
-                <!-- Add more columns based on your query -->
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+<table>
+    <thead>
+        <tr>
+            <th width="50">Tanggal</th>
+            {{-- <th width="50">No Faktur</th> --}}
+            <th>Jenis</th>
+            <th>Pendapatan</th>
+            <th>Pengeluaran</th>
+            <th>Supplier / Pelanggan</th>
+            <!-- Add more columns based on your query -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($cashFlows as $index => $cash)
+        <tr style="border-collapse: collapse;">
+            <td>{{ $helpers->format_tanggal_transaksi($cash['tanggal']) }}</td>
+            {{-- <td>{{$cash['data']->kode}}</td> --}}
+            <td>{{$cash['data']->jenis_data}}</td>
+            <td style="text-align: right;">
+                @if(isset($cash['total_pemasukan']))
+                {{$helpers->format_uang($cash['total_pemasukan'])}}
+                @else
+                {{$helpers->format_uang(0)}}
+                @endif
+            </td>
+            <td style="text-align: right;">
+                @if(isset($cash['total_pengeluaran']))
+                {{$helpers->format_uang($cash['total_pengeluaran'])}}
+                @else
+                {{$helpers->format_uang(0)}}
+                @endif
+            </td>
+            <td>
+                @if(isset($cash['data']->supplier))
+                {{$cash['data']->supplier}}
+                @elseif(isset($cash['data']->pelanggan))
+                {{$cash['data']->pelanggan}}
+                @else
+                -
+                @endif
+            </td>
+            <!-- Add more columns based on your query -->
+        </tr>
+        @endforeach
+    </tbody>
+</table>
 </body>
 </html>

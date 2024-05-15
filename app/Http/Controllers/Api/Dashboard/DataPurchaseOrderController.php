@@ -544,11 +544,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
@@ -582,6 +582,11 @@ class DataPurchaseOrderController extends Controller
             $updateKas = Kas::findOrFail($dataKas->id);
             $updateKas->saldo = $dataKas->saldo + $delete_pembelian->jumlah;
             $updateKas->save();
+
+            $dataKasBiaya = Kas::where('kode', $delete_pembelian->kas_biaya)->first();
+            $updateKasBiaya = Kas::findOrFail($dataKasBiaya->id);
+            $updateKasBiaya->saldo = $dataKasBiaya->saldo + $delete_pembelian->biayabongkar;
+            $updateKasBiaya->save();
 
             $orderItems = PurchaseOrder::where('kode_po', $delete_pembelian->kode)->get();
             foreach($orderItems as $item) {                    
