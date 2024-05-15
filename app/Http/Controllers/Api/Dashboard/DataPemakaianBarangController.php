@@ -155,7 +155,7 @@ class DataPemakaianBarangController extends Controller
         try {
             $query = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang_asal.kode as kode_barang_asal', 'barang_asal.nama as nama_barang_asal', 'barang_asal.satuan as satuan_barang_asal', 'barang_tujuan.kode as kode_barang_tujuan', 'barang_tujuan.nama as nama_barang_tujuan', 'barang_tujuan.satuan as satuan_barang_tujuan')
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang_asal.kode as kode_barang_asal', 'barang_asal.nama as nama_barang_asal', 'barang_asal.toko as stok_barangasal', 'barang_asal.last_qty as last_qty_barangasal', 'barang_asal.satuan as satuan_barang_asal', 'barang_tujuan.kode as kode_barang_tujuan', 'barang_tujuan.nama as nama_barang_tujuan', 'barang_tujuan.toko as stok_barangtujuan', 'barang_tujuan.last_qty as last_qty_barangtujuan', 'barang_tujuan.satuan as satuan_barang_tujuan')
             ->leftJoin('barang as barang_asal', function($join) {
                 $join->on('pemakaian_barangs.barang_asal', '=', 'barang_asal.kode');
             })
