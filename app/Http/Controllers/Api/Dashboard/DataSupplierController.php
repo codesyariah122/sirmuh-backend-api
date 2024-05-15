@@ -210,13 +210,12 @@ class DataSupplierController extends Controller
                     'message' => "Pelanggan dengan nama {$existing_supplier->nama}, has already been taken✨!"
                 ]);
             }
-
             $new_supplier = new Supplier;
             $new_supplier->kode = strtoupper(implode('', $substringArray));
-            $new_supplier->nama = $request->nama;
+            $new_supplier->nama = strtoupper($request->nama);
             $new_supplier->email = $request->email;
             $new_supplier->telp = $this->user_helpers->formatPhoneNumber($request->telp);
-            $new_supplier->alamat = htmlspecialchars(nl2br($request->alamat));
+            $new_supplier->alamat = strip_tags($request->alamat);
             $new_supplier->no_npwp = $request->no_npwp;
             $new_supplier->save();
 

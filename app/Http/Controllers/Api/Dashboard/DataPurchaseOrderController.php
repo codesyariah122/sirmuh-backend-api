@@ -393,7 +393,7 @@ class DataPurchaseOrderController extends Controller
             if($diterima > $bayar) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
-                $updatePembelian->hutang = $data['hutang'];
+                $updatePembelian->hutang = intval($data['hutang']) - intval($data['biayabongkar']);
 
                 if(intval($kas->saldo) < $data['hutang']) {
                     return response()->json([
@@ -409,7 +409,7 @@ class DataPurchaseOrderController extends Controller
                 $masuk_hutang->kd_beli = $updatePembelian->kode;
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;
-                $masuk_hutang->jumlah = intval($data['biayabongkar']) > 0 ? $data['hutang'] - $data['biayabongkar'] : $data['hutang'];
+                $masuk_hutang->jumlah = intval($data['biayabongkar']) > 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['hutang']);
                 // $masuk_hutang->bayar = $totalSubtotal;
                 $masuk_hutang->bayar = $bayar - $data['jumlah_saldo'];
                 $masuk_hutang->kode_kas = $updatePembelian->kode_kas;

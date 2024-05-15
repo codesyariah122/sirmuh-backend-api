@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Barang, Kategori, SatuanBeli, SatuanJual, Supplier, ItemPembelian, Roles};
+use App\Models\{Barang, Kategori, KategoriBarang, SatuanBeli, SatuanJual, Supplier, ItemPembelian, Roles};
 use Auth;
 
 class DataBarangController extends Controller 
@@ -364,27 +364,10 @@ public function detail_by_barcode($barcode)
             $check_barang = Barang::whereNama($request->nama)->get();
 
             $newBarang = new Barang;
-            $kode = explode(' ', $request->nama);
-            $supplierKode = explode(' ', $request->supplier);
-            $substringArray = [];
-            $substringArraySupplier = [];
-
-            foreach($supplierKode as $x) {
-                $substringArraySupplier[] = substr($x, 0, 1);
-            }
-
-            foreach ($kode as $i) {
-                $substringArray[] = substr($i, 0, 1);
-            }
-
-            if(count($check_barang) > 0) {
-                $newBarang->kode = strtoupper(implode('', $substringArray));
-            } else {
-                $newBarang->kode = strtoupper(implode('', $substringArray)).'.'.strtoupper(implode('', $substringArraySupplier));
-            }
-
-            $newBarang->nama = $request->nama;
+            $newBarang->nama = strtoupper($request->nama);
+            $newBarang->kode = $request->kode;
             $newBarang->kategori_barang = $request->kategori_barang;
+            $newBarang->kategori = $request->supplier;
                 // if ($request->hasFile('photo')) {
                 //     $photoPath = $request->file('photo')->store('barang');
                 //     $data['photo'] = $photoPath;
@@ -397,17 +380,17 @@ public function detail_by_barcode($barcode)
             }
 
 
-            $checkKategori = Kategori::where('kode', $request->kategori)->count();
+            $checkKategori = KategoriBarang::where('nama', $request->kategori_barang)->count();
 
             if($checkKategori === 0) {
-                $newKategori = new Kategori;
-                $newKategori->kode = $request->kategori;
+                $newKategori = new KategoriBarang;
+                $newKategori->nama = $request->kategori_barang;
                 $newKategori->save();
-                $kategoriBarang = Kategori::findOrFail($newKategori->id);
-                $newBarang->kategori = $kategoriBarang->kode;
+                $kategoriBarang = KategoriBarang::findOrFail($newKategori->id);
+                $newBarang->kategori = $kategoriBarang->nama;
             } else {
-                $kategoriBarang = Kategori::where('kode', $request->kategori)->first();
-                $newBarang->kategori = $kategoriBarang->kode;
+                $kategoriBarang = KategoriBarang::where('nama', $request->kategori_barang)->first();
+                $newBarang->kategori_barang = $kategoriBarang->nama;
             }
 
             $checkSatuanBeli = SatuanBeli::where('nama', $request->satuanbeli)->count();
@@ -449,21 +432,23 @@ public function detail_by_barcode($barcode)
             $newBarang->harga_toko = $request->hargajual !== 'null' ? $request->hargajual : null;
             $newBarang->diskon = $request->diskon !== 'null' ? $request->diskon : null;
 
-            $checkSupplier = Supplier::where('nama', $request->supplier)->count();
+            $checkSupplier = Supplier::where('kode', $request->kategori)->count();
             if($checkSupplier > 0) {
-                $supplierBarang = Supplier::where('nama', $request->supplier)->first();
+                $supplierBarang = Supplier::where('kode', $request->kategori)->first();
                 $newBarang->supplier = $supplierBarang->kode;
+                $newBarang->kategori = $supplierBarang->nama;
             } else {
                 $newSupplier = new Supplier;
-                $kode = $this->generateAcronym($request->supplier);
+                $kode = $this->generateAcronym($request->kategori);
                 $newSupplier->kode = $kode;
-                $newSupplier->nama = $request->supplier;
+                $newSupplier->nama = $request->kategori;
                 $newSupplier->save();
                 $newSupplierBarang = Supplier::findOrFail($newSupplier->id);
-                $newBarang->supplier = $newSupplierBarang->kode;
+                $newBarang->kategori = $newSupplierBarang->kode;
+                $newBarang->supplier = $newSupplierBarang->nama;
             }
 
-            $newBarang->kode_barcode = $newBarang->kode;
+            $newBarang->kode_barcode = $request->barcode;
 
             if ($request->tglbeli !== "null") {
                 $tgl_terakhir = Carbon::createFromFormat('Y-m-d', $request->tglbeli)->format('Y-m-d');
@@ -479,14 +464,6 @@ public function detail_by_barcode($barcode)
             $userOnNotif = Auth::user();
 
             if ($newBarang) {
-                $supplierBarang = Supplier::where('nama', $request->supplier)->first();
-                $kategoriBarang = Kategori::where('kode', $request->kategori)->first();
-                $supplierBarangIds = [$supplierBarang->id];
-                $kategoriBarangIds = [$kategoriBarang->id];
-                $newBarang->suppliers()->sync($supplierBarangIds, false);
-                $newBarang->kategoris()->sync($kategoriBarangIds, false);
-
-
                 $newBarangSaved = Barang::where('id', $newBarang->id)
                 ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
                 ->with('suppliers')
