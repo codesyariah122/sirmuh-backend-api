@@ -447,7 +447,7 @@ class DataPurchaseOrderController extends Controller
                 // $updateKas->saldo = $kas->saldo - $bindCalc;
                 // $updateKas->save();
 
-                $updateSupplier->saldo_hutang = intval($data['biayabongkar']) > 0 ? $data['hutang'] - $data['biayabongkar'] : $data['hutang'];
+                $updateSupplier->saldo_hutang = intval($data['biayabongkar']) > 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : $data['hutang'];
                 $updateSupplier->save();
             } else if($data['sisa_dp'] <= 1000) {
                 $updatePembelian->kembali = $data['sisa_dp'];
@@ -544,11 +544,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
