@@ -455,11 +455,13 @@ class DataPenjualanPoController extends Controller
                 $angsuran = new PembayaranAngsuran;
                 $angsuran->kode = $masuk_piutang->kode;
                 $angsuran->tanggal = $masuk_piutang->tanggal;
+                $angsuran->operator = $data['operator'];
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
-                $angsuran->kode_faktur = NULL;
+                $angsuran->kode_faktur = $updatePenjualan->kode;
                 $angsuran->bayar_angsuran = $data['bayar'] ? $bayar - $data['jumlah_saldo'] : 0;
                 $angsuran->jumlah = $item_piutang->jumlah_piutang;
+                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$updatePenjualan->kode_kas}";
                 $angsuran->save();
 
                 // $updateKas = Kas::findOrFail($kas->id);

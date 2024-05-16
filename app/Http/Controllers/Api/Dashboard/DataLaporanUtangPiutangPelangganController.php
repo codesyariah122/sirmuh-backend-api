@@ -31,7 +31,7 @@ class DataLaporanUtangPiutangPelangganController extends Controller
     public function laporanHutangPiutang()
     {
         $tenggatWaktu = 7;
-        $supplierList = ['GR.KB', 'GR.AF', 'RT'];
+        $supplierList = [];
         $owner = User::where('role', 1)->first();
 
         // $hutangs = Hutang::where('operator', strtoupper($owner->name))
@@ -57,6 +57,7 @@ class DataLaporanUtangPiutangPelangganController extends Controller
         $hutangs = Cache::remember('hutangs_data', now()->addMinutes(10), function () use ($owner, $supplierList, $tenggatWaktu) {
             return Hutang::where('operator', strtoupper($owner->name))
             ->whereIn('supplier', $supplierList)
+            // ->where('jumlah', '>', 0)
             ->whereMonth('tanggal', '>=', 7)
             ->whereMonth('tanggal', '<=', 10)
             ->whereYear('tanggal', '>=', 2023)
@@ -69,6 +70,7 @@ class DataLaporanUtangPiutangPelangganController extends Controller
 
         $piutangs = Cache::remember('piutangs_data', now()->addMinutes(10), function () use ($owner, $tenggatWaktu) {
             return Piutang::where('operator', strtoupper($owner->name))
+            // ->where('jumlah', '>', 0)
             ->whereMonth('tanggal', '>=', 1)
             ->whereYear('tanggal', '>=', 2024)
             ->orderBy('tanggal', 'DESC')

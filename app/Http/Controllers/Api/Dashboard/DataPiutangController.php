@@ -173,6 +173,8 @@ class DataPiutangController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
+            $user = Auth::user();
+
             $query =  Piutang::query()
             ->select('piutang.*', 'penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan','penjualan.bayar as bayar_penjualan', 'penjualan.visa','penjualan.lunas', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
             ->leftJoin('penjualan', 'piutang.kd_jual', '=', 'penjualan.kode')
@@ -188,7 +190,12 @@ class DataPiutangController extends Controller
             $jmlHutang = intval($piutang->jumlah);
             $kasId = $request->kode_kas;
 
-            $dataKas = Kas::findOrFail($kasId);
+            if(gettype($kasId) === "string") {
+                $kodeKas = Kas::whereKode($kasId)->first();
+                $dataKas = Kas::findOrFail($kodeKas->id);
+            } else {
+                $dataKas = Kas::findOrFail($kasId);
+            }
 
             $checkAngsuran = PembayaranAngsuran::where('kode', $piutang->kode)
             ->get();
@@ -247,12 +254,15 @@ class DataPiutangController extends Controller
                 $angsuran = new PembayaranAngsuran;
                 $angsuran->kode = $piutang->kode;
                 $angsuran->tanggal = $piutang->tanggal;
+                $angsuran->operator = $user->name;
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kas = "{$dataKas->nama} ($dataKas->kode)";
+                $angsuran->kode_faktur = $updatePenjualan->kode;
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
                 $angsuran->bayar_angsuran = $bayar;
                 $angsuran->jumlah = intval($angsuranTerakhir->jumlah) - $bayar;
+                $angsuran->keterangan = strip_tags($request->keterangan);
                 $angsuran->save();
 
                 $notifEvent =  "Piutang dengan kode {$piutang->kode}, dibayarkan {$bayar} 💸";

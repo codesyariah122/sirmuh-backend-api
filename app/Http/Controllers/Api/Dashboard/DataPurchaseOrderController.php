@@ -435,11 +435,13 @@ class DataPurchaseOrderController extends Controller
                 $angsuran = new PembayaranAngsuran;
                 $angsuran->kode = $masuk_hutang->kode;
                 $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->operator = $data['operator'];
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
-                $angsuran->kode_faktur = NULL;
+                $angsuran->kode_faktur = $updatePembelian->kode;
                 $angsuran->bayar_angsuran = $data['bayar'] ? $bayar - $data['jumlah_saldo'] : 0;
                 $angsuran->jumlah = $item_hutang->jumlah_hutang;
+                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$updatePembelian->kode_kas}";
                 $angsuran->save();
 
                 // $updateKas = Kas::findOrFail($kas->id);

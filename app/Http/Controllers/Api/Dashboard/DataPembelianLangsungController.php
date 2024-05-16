@@ -240,11 +240,13 @@ class DataPembelianLangsungController extends Controller
                 $angsuran = new PembayaranAngsuran;
                 $angsuran->kode = $masuk_hutang->kode;
                 $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->operator = $data['operator'];
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = $data['ref_code'];
                 $angsuran->bayar_angsuran = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
                 $angsuran->jumlah = intval($data['bayar']) !== 0 ? $item_hutang->jumlah_hutang : $data['diterima'];
+                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$newPembelian->kode_kas}";
                 $angsuran->save();
 
                 $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
@@ -545,11 +547,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);

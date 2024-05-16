@@ -205,11 +205,13 @@ class DataPenjualanPartaiController extends Controller
                 $angsuran = new PembayaranAngsuran;
                 $angsuran->kode = $masuk_hutang->kode;
                 $angsuran->tanggal = $masuk_hutang->tanggal;
+                $angsuran->operator = $data['operator'];
                 $angsuran->angsuran_ke = $angsuranKeBaru;
                 $angsuran->kode_pelanggan = NULL;
-                $angsuran->kode_faktur = NULL;
+                $angsuran->kode_faktur = $data['ref_code'];
                 $angsuran->bayar_angsuran = $data['diterima'];
                 $angsuran->jumlah = $item_piutang->jumlah;
+                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$newPenjualanToko->kode_kas}";
                 $angsuran->save();
             } else {
                 if(intval($data['bayar']) >= intval($data['jumlah'])) {
