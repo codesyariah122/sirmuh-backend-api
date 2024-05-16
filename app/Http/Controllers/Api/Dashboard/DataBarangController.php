@@ -380,18 +380,33 @@ public function detail_by_barcode($barcode)
             }
 
 
-            $checkKategori = KategoriBarang::where('nama', $request->kategori_barang)->count();
+            $supplierData = Supplier::whereKode($request->kategori)->first();
+            $checkKategoriSupplier = Kategori::where('kode', $supplierData->nama)->count();
 
-            if($checkKategori === 0) {
-                $newKategori = new KategoriBarang;
-                $newKategori->nama = $request->kategori_barang;
-                $newKategori->save();
-                $kategoriBarang = KategoriBarang::findOrFail($newKategori->id);
+            if($checkKategoriSupplier === 0) {
+                $newKategoriSupplier = new Kategori;
+                $newKategoriSupplier->kode = $supplierData->nama;
+                $newKategoriSupplier->save();
+                $kategoriSupplier = Kategori::findOrFail($newKategoriSupplier->id);
+                $newBarang->kategori = $kategoriSupplier->kode;
+            } else {
+                $kategoriSupplier = Kategori::where('kode', $supplierData->nama)->first();
+                $newBarang->kategori = $kategoriSupplier->kode;
+            }
+
+            $checkKategoriBarang = KategoriBarang::where('nama', $request->kategori_barang)->count();
+
+            if($checkKategoriBarang === 0) {
+                $newKategoriBarang = new KategoriBarang;
+                $newKategoriBarang->nama = $request->kategori_barang;
+                $newKategoriBarang->save();
+                $kategoriBarang = KategoriBarang::findOrFail($newKategoriBarang->id);
                 $newBarang->kategori = $kategoriBarang->nama;
             } else {
                 $kategoriBarang = KategoriBarang::where('nama', $request->kategori_barang)->first();
                 $newBarang->kategori_barang = $kategoriBarang->nama;
             }
+
 
             $checkSatuanBeli = SatuanBeli::where('nama', $request->satuanbeli)->count();
             if($checkSatuanBeli === 0) {
