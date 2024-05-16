@@ -264,6 +264,7 @@ class DataHutangController extends Controller
                     $updateHutang->bayar = intval($hutang->bayar) + $bayar;
                     $updateHutang->kembali = 0;
                 }
+                // $updateHutang->kode_kas = "{$dataKas->nama} ($dataKas->kode)";
                 $updateHutang->ket = $request->ket ?? "";
                 $updateHutang->save();
 
@@ -287,6 +288,7 @@ class DataHutangController extends Controller
                 $angsuran->kode = $hutang->kode;
                 $angsuran->tanggal = $hutang->tanggal;
                 $angsuran->angsuran_ke = $angsuranKeBaru;
+                $angsuran->kas = "{$dataKas->nama} ($dataKas->kode)";
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
                 $angsuran->bayar_angsuran = $bayar;
