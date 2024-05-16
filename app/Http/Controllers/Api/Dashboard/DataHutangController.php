@@ -243,6 +243,10 @@ class DataHutangController extends Controller
                         // $updatePembelian->angsuran = $updatePembelian->bayar;
                         $updatePembelian->receive = "True";
                         $updatePembelian->kekurangan_sdh_dibayar = "True";
+                        $dataItemPembelian = ItemPembelian::whereKode($updatePembelian->kode)->first();
+                        $updateItemPembelian = ItemPembelian::findOrFail($dataItemPembelian->id);
+                        $updateItemPembelian->stop_qty = "True";
+                        $updateItemPembelian->save();
                     }
                 } else {
                     $updatePembelian->lunas = "False";
