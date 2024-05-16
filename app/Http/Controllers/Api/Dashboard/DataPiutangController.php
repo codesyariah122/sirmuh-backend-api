@@ -44,7 +44,8 @@ class DataPiutangController extends Controller
             $startOfMonth = $now->startOfMonth()->toDateString();
             $endOfMonth = $now->endOfMonth()->toDateString();
             $dateTransaction = $request->query('date_transaction');
-
+            $user = Auth::user();
+            
             $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'penjualan.visa', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
             ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
@@ -69,7 +70,12 @@ class DataPiutangController extends Controller
                 $query->whereDate('hutang.tanggal', '=', $dateTransaction);
             }
 
-            $query->orderByDesc('piutang.id');
+            $query->orderByDesc('piutang.id')
+            ->where(function ($query) use ($user) {
+                if ($user->role !== 1) {
+                    $query->whereRaw('LOWER(piutang.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                } 
+            });
 
             $piutangs = $query->paginate(10);
             return new ResponseDataCollect($piutangs);
