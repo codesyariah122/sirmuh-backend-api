@@ -195,11 +195,23 @@ class DataSupplierController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
-            $kode = explode(' ', $request->nama);
+            $namaArray = explode(' ', $request->nama);
+
             $substringArray = [];
 
-            foreach ($kode as $i) {
-                $substringArray[] = substr($i, 0, 1);
+            foreach ($namaArray as $i) {
+                $substringArray[] = strtoupper(substr($i, 0, 1));
+            }
+
+            $initials = '';
+
+            if (count($substringArray) > 1) {
+                $initials = $substringArray[0] . $substringArray[count($substringArray) - 1];
+            } else {
+                $initials = $substringArray[0];
+                if (strlen($namaArray[0]) > 1) {
+                    $initials .= strtoupper(substr($namaArray[0], 1, 1));
+                }
             }
 
             $existing_supplier = Supplier::whereNama($request->nama)->first();
@@ -207,11 +219,11 @@ class DataSupplierController extends Controller
             if($existing_supplier) {
                 return response()->json([
                     'error' => true,
-                    'message' => "Pelanggan dengan nama {$existing_supplier->nama}, has already been taken✨!"
+                    'message' => "Supplier dengan nama {$existing_supplier->nama}, has already been taken✨!"
                 ]);
             }
             $new_supplier = new Supplier;
-            $new_supplier->kode = strtoupper(implode('', $substringArray));
+            $new_supplier->kode = $initials;
             $new_supplier->nama = strtoupper($request->nama);
             $new_supplier->email = $request->email;
             $new_supplier->telp = $this->user_helpers->formatPhoneNumber($request->telp);
