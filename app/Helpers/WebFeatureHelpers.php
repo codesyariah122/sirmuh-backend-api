@@ -218,7 +218,7 @@ class WebFeatureHelpers
     public function terbilang($angka)
     {
         $angka = abs(floatval($angka));
-        $baca  = array('', 'satu', 'dua ', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
+        $baca  = array('nol', 'satu', 'dua ', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
         $terbilang = '';
 
         if ($angka < 12) {
