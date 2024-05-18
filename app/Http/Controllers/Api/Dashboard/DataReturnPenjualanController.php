@@ -189,10 +189,11 @@ class DataReturnPenjualanController extends Controller
         try {
             $penjualan = Penjualan::findOrFail($id);
             $dataReturnPenjualan = ReturnPenjualan::where('no_faktur', $penjualan->kode)
-            ->where('kembali', 'False')
             ->first();
-            $returnPenjualan = ReturnPenjualan::select('return_penjualan.*', 'penjualan.id as id_penjualan', 'penjualan.return', 'kas.id as kas_id', 'kas.kode as kode_kas', 'kas.nama as nama_kas')
+            $returnPenjualan = ReturnPenjualan::select('return_penjualan.*', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan', 'penjualan.kode_kas as kas_penjualan', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.dikirim', 'penjualan.biayakirim', 'penjualan.kembali','penjualan.lunas','penjualan.piutang', 'penjualan.keterangan', 'penjualan.return','penjualan.status', 'penjualan.created_at as created_at_penjualan', 'itempenjualan.qty as qty_item', 'itempenjualan.last_qty', 'kas.id as kas_id', 'kas.kode as kode_kas_penjualan', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan')
             ->leftJoin('penjualan', 'return_penjualan.no_faktur', '=', 'penjualan.kode')
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->leftJoin('pelanggan', 'return_penjualan.pelanggan', '=', 'pelanggan.kode')
             ->leftJoin('kas', 'return_penjualan.kode_kas', '=', 'kas.kode')
             ->findOrFail($dataReturnPenjualan->id);
 
@@ -238,6 +239,7 @@ class DataReturnPenjualanController extends Controller
             $updateStokBarang = Barang::findOrFail($dataBarang->id);
 
             $bindQty = intval($dataItem->qty) - intval($data['item_qty']);
+
             $lastQty = $dataItem->qty;
             $itemPenjualan->qty = $bindQty;
             $itemPenjualan->last_qty = $lastQty;
