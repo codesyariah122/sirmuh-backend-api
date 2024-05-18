@@ -45,7 +45,7 @@ class DataPenjualanPartaiController extends Controller
 
            $query = Penjualan::query()
            ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.biayakirim', 'penjualan.status', 'penjualan.receive','kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.biayakirim', 'penjualan.status', 'penjualan.receive', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
@@ -237,7 +237,7 @@ class DataPenjualanPartaiController extends Controller
                 $newPenjualanToko->po = 'False';
                 $newPenjualanToko->receive = $data['status_kirim'] !== "PROSES" ? "True" : "False";
                 $newPenjualanToko->jt = $data['jt'] ?? 0;
-                $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'DIKIRIM';
+                $newPenjualanToko->status = $data['status_kirim'] ? $data['status_kirim'] : 'PROSES';
             }
             $newPenjualanToko->return = "False";
             $newPenjualanToko->jenis = "PENJUALAN PARTAI";

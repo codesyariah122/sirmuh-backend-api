@@ -128,7 +128,7 @@
             <!-- Bagian kanan -->
             <td style="border: none; text-align: right;" colspan="6">
                 <!-- Konten bagian kanan -->
-                <table width="100%" style="width: 350px; border-collapse: collapse;  margin-top: -2rem;margin-right:5.8rem;">
+                <table width="100%" style="width: 355px; border-collapse: collapse;  margin-top: -2rem;margin-right:10.1rem;">
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
                         <td class="text-right" style="height: 20px; border-top: 0;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
