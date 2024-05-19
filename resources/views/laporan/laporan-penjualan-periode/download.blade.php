@@ -64,7 +64,7 @@
             <tr>
                 <th width="50">Tanggal</th>
                 <th width="50">No Faktur</th>
-                <th>Barang</th>
+                {{-- <th>Barang</th> --}}
                 <th>Pelanggan</th>
                 <th>Operator</th>
                 <th>Pembayaran</th>
@@ -77,7 +77,7 @@
             <tr>
                 <td>{{ $helpers->format_tanggal_transaksi($penjualan->tanggal) }}</td>
                 <td>{{$penjualan->kode}}</td>
-                <td>{{$penjualan->nama_barang}}</td>
+                {{-- <td>{{$penjualan->nama_barang}}</td> --}}
                 <td>{{$penjualan->nama_pelanggan}}</td>
                 <td>{{ $penjualan->operator }}</td>
                 <td>{{$penjualan->visa}}</td>
@@ -88,7 +88,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="5"></td>
+                <td colspan="4"></td>
                 <td>Total</td>
                 <td style="text-align: right;">Rp. {{ $helpers->format_uang($penjualans->sum('jumlah')) }}</td>
             </tr>
