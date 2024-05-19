@@ -1481,8 +1481,8 @@ class DataWebFiturController extends Controller
             $type = $request->type;
 
             switch($type) {
-             case "pembelian":
-             foreach ($barangs as $barang) {
+               case "pembelian":
+               foreach ($barangs as $barang) {
                 $updateBarang = Barang::findOrFail($barang['id']);
                 if($barang['qty'] > $updateBarang->last_qty){
                     $bindStok = $barang['qty'] + $updateBarang->last_qty;
@@ -1581,12 +1581,22 @@ public function edit_stok_data_barang(Request $request)
         $type = $request->type;
 
         switch($type) {
-         case "pembelian":
-         foreach ($barangs as $barang) {
+           case "pembelian":
+           foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
-            $lastQty = $updateBarang->toko;
+                // if($barang['qty'] > $updateBarang->last_qty){
+                //     $newStok = $updateBarang->toko + $barang['qty'];
+                // } else {
+                //     $newStok = $updateBarang->toko;
+                // }
+            if($barang['last_qty'] !== NULL && $barang['last_qty'] >= 0) {
+                $lastQty = $barang['last_qty'];
+            } else {
+                $lastQty = $updateBarang->toko;
+            }
 
-            $newStok = max(0, $updateBarang->last_qty) + $barang['qty'];
+                // $newStok = $updateBarang->toko + $barang['qty'];
+            $newStok = max(0, $updateBarang->toko) - $barang['qty'];
             $updateBarang->toko = $newStok;
             $updateBarang->last_qty = $lastQty;
             $updateBarang->save();
@@ -1602,9 +1612,9 @@ public function edit_stok_data_barang(Request $request)
             } else {
                 $lastQty = $updateBarang->toko;
             }
-            $stokBarang = max(0, $stok->last_qty);
+            $stokBarang = max(0, $stok->toko);
             $updateBarang->toko = $stokBarang + $qtyBarang;
-            $updateBarang->last_qty = $stok->qty;
+            $updateBarang->last_qty = $lastQty;
             $updateBarang->save();
         }
         break;
@@ -1636,8 +1646,8 @@ public function update_stok_barang_all(Request $request)
         $type = $request->type;
 
         switch($type) {
-         case "pembelian":
-         foreach ($barangs as $barang) {
+           case "pembelian":
+           foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
                 // if($barang['qty'] > $updateBarang->last_qty){
                 //     $newStok = $updateBarang->toko + $barang['qty'];
@@ -2267,18 +2277,18 @@ public function update_faktur_terakhir(Request $request)
             $updateFakturTerakhir->save();
 
         } else {
-         $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
-         ->first();
-         $updateFakturTerakhir->faktur = $request->faktur;
-         $updateFakturTerakhir->tanggal = $today;
-         $updateFakturTerakhir->save();
+           $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+           ->first();
+           $updateFakturTerakhir->faktur = $request->faktur;
+           $updateFakturTerakhir->tanggal = $today;
+           $updateFakturTerakhir->save();
 
-     }
-     return response()->json([
+       }
+       return response()->json([
         'success' => true,
         'message' => 'Faktur terakhir terupdate!'
     ], 200);
- } catch (\Throwable $th) {
+   } catch (\Throwable $th) {
     throw $th;
 }
 }
