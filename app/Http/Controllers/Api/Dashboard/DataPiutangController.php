@@ -116,7 +116,7 @@ class DataPiutangController extends Controller
     {
         try {
             $query =  Piutang::query()
-            ->select('piutang.*', 'itempiutang.jumlah_piutang as jumlah_piutang','itempiutang.return','itempiutang.jumlah','penjualan.kode as kode_penjualan', 'penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan','penjualan.bayar as bayar_penjualan', 'penjualan.visa','penjualan.lunas', 'penjualan.piutang as piutang_penjualan', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
+            ->select('piutang.*', 'itempiutang.jumlah_piutang as jumlah_piutang','itempiutang.return','penjualan.kode as kode_penjualan', 'penjualan.jt as jatuh_tempo','penjualan.kode_kas','penjualan.jumlah as jumlah_penjualan','penjualan.bayar as bayar_penjualan', 'penjualan.visa','penjualan.lunas', 'penjualan.piutang as piutang_penjualan', 'pelanggan.id as id_pelanggan', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan', 'itempenjualan.nama_barang', 'itempenjualan.kode_barang', 'itempenjualan.qty as qty_penjualan', 'itempenjualan.satuan as satuan_penjualan_barang', 'itempenjualan.harga as harga_beli', 'barang.kategori', 'barang.kode as kode_barang', 'barang.kode_barcode as kode_barcode',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama', 'pembayaran_angsuran.tanggal as tanggal_angsuran', 'pembayaran_angsuran.angsuran_ke', 'pembayaran_angsuran.bayar_angsuran', 'pembayaran_angsuran.jumlah as jumlah_angsuran')
             ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
             ->leftJoin('penjualan', 'piutang.kd_jual', '=', 'penjualan.kode')
             ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
@@ -196,14 +196,20 @@ class DataPiutangController extends Controller
             } else {
                 $dataKas = Kas::findOrFail($kasId);
             }
-
+            
             $checkAngsuran = PembayaranAngsuran::where('kode', $piutang->kode)
             ->get();
 
             if(count($checkAngsuran) > 0) {
+
                 $dataPenjualan = Penjualan::whereKode($piutang->kd_jual)->first();
                 $updatePenjualan = Penjualan::findOrFail($dataPenjualan->id);
                 $updatePenjualan->bayar = intval($dataPenjualan->bayar) + $bayar;
+
+                // var_dump($bayar);
+                // var_dump($dataPenjualan->piutang);
+                // var_dump($bayar >= intval($dataPenjualan->piutang));
+                // die;
 
                 if($bayar >= intval($dataPenjualan->piutang)) {
                     $updatePenjualan->lunas = "True";
@@ -212,6 +218,7 @@ class DataPiutangController extends Controller
                     $updatePenjualan->receive = "True";
                     $updatePenjualan->status = "DIKIRIM";
                     $updatePenjualan->kembali = $bayar - intval($dataPenjualan->piutang);
+
                     if($dataPenjualan->po === "True") {
                         $updatePenjualan->angsuran = $updatePenjualan->bayar;
                         $updatePenjualan->receive = "True";
@@ -226,7 +233,10 @@ class DataPiutangController extends Controller
 
                 $updatePiutang = Piutang::findOrFail($piutang->id);
                 if($bayar >= $jmlHutang) {
-                    $updatePiutang->jumlah = $bayar - $jmlHutang;
+                    $resultPiutang = $bayar - $jmlHutang;
+
+                    $updatePiutang->jumlah = $resultPiutang > 0 ? 0 : $resultPiutang;
+
                     $updatePiutang->bayar = $bayar;
                 } else {
                     $updatePiutang->jumlah = $jmlHutang - $bayar;
@@ -250,6 +260,7 @@ class DataPiutangController extends Controller
                 ->first();
 
                 $angsuranKeBaru = ($angsuranTerakhir) ? $angsuranTerakhir->angsuran_ke + 1 : 1;
+                $resultPiutangAngsuran = intval($angsuranTerakhir->jumlah) - $bayar;
 
                 $angsuran = new PembayaranAngsuran;
                 $angsuran->kode = $piutang->kode;
@@ -261,7 +272,7 @@ class DataPiutangController extends Controller
                 $angsuran->kode_pelanggan = NULL;
                 $angsuran->kode_faktur = NULL;
                 $angsuran->bayar_angsuran = $bayar;
-                $angsuran->jumlah = intval($angsuranTerakhir->jumlah) - $bayar;
+                $angsuran->jumlah = $resultPiutangAngsuran < 0 ? 0 : intval($angsuranTerakhir->jumlah) - $bayar;
                 $angsuran->keterangan = strip_tags($request->keterangan);
                 $angsuran->save();
 

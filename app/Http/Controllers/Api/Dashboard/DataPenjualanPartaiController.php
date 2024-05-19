@@ -155,6 +155,7 @@ class DataPenjualanPartaiController extends Controller
             $newPenjualanToko->no_po = $data['no_po'];
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
             $newPenjualanToko->kode_kas = $kas->kode;
+            $newPenjualanToko->diskon = $data['diskon'];
 
             if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
                 $newPenjualanToko->jumlah = $data['jumlah'];

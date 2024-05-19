@@ -27,6 +27,11 @@ class WebFeatureHelpers
         $this->data = $data;
     }
 
+    function convertCurrencyToInteger($currencyString) {
+        $cleanedString = preg_replace('/[^0-9]/', '', $currencyString);
+        return (int) $cleanedString;
+    }
+
     public function format_tanggal($tanggal)
     {
         $carbonDate = Carbon::parse($tanggal);
