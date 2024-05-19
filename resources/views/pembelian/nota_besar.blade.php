@@ -220,7 +220,7 @@
                     Sisa DP
                     @endif
                 </td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }} </td>
             </tr>
             @else
             <tr>
@@ -229,7 +229,7 @@
             </tr>
             <tr>
                 <td colspan="9" class="text-right">Kembali</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->diterima - $pembelian->jumlah) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->jumlah) }}</td>
             </tr>
             @endif
             @endif

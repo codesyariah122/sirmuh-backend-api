@@ -153,7 +153,8 @@ class DataPembelianLangsungController extends Controller
             // $updateStokBarang->save();
 
             $kas = Kas::findOrFail($data['kode_kas']);
-            $kasBiaya = $data['kas_biaya'] !== null ? Kas::findOrFail($data['kas_biaya']) : null;
+
+            $kasBiaya = $data['kas_biaya'] !== "null" ? Kas::findOrFail($data['kas_biaya']) : null;
 
             if($kas->saldo < $data['diterima']) {
                 return response()->json([
@@ -274,7 +275,7 @@ class DataPembelianLangsungController extends Controller
                 $updateDrafts[$idx]->save();
             }
 
-            if(intval($data['biayabongkar']) > 0) {
+            if(intval($data['biayabongkar']) > 0 || $data['kas_biaya'] !== "null") {
                 $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
                 $updateKasBiaya->saldo = intval($kasBiaya->saldo) - $data['biayabongkar'];
                 $updateKasBiaya->save();
@@ -321,7 +322,10 @@ class DataPembelianLangsungController extends Controller
                 return new RequestDataCollect($newPembelianSaved);
             }
         } catch (\Throwable $th) {
-            throw $th;
+            return response()->json([
+                'error' => true,
+                'message' => $th->getMessage()
+            ]);
         }
     }
 
@@ -439,6 +443,15 @@ class DataPembelianLangsungController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'keterangan' => 'required',
+            ]);
+
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
             $data = $request->all();
 
             if(gettype($data['bayar']) === 'string') {
@@ -446,6 +459,11 @@ class DataPembelianLangsungController extends Controller
             } else {
                 $bayar = intval($data['bayar']);
             }
+
+            // echo "<pre>";
+            // var_dump($data); 
+            // echo "</pre>";
+            // die;
 
             if(gettype($data['diterima']) === 'string') {
                 $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
@@ -476,7 +494,8 @@ class DataPembelianLangsungController extends Controller
             $updatePembelian->kode_kas = $kas->kode;
             $updatePembelian->jumlah = $data['total'] ? $total : $updatePembelian->jumlah;
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
-            $updatePembelian->diterima = $data['diterima'] ? intval($data['diterima']) : $updatePembelian->diterima;
+            $updatePembelian->diterima = $data['total'] ? $total : $updatePembelian->diterima;
+            $updatePembelian->keterangan_edit = $data['keterangan_edit'];
 
             if($data['masuk_hutang']) {
                 $updatePembelian->jt = $data['jt'];
@@ -499,7 +518,7 @@ class DataPembelianLangsungController extends Controller
             $updatePembelian->save();
 
             $updateKas = Kas::findOrFail($kas->id);
-            $updateKas->saldo = intval($kas->saldo) - intval($updatePembelian->diterima);
+            $updateKas->saldo = intval($kas->saldo) - intval($updatePembelian->jumlah);
             $updateKas->save();
 
             if($updatePembelian) {
@@ -547,11 +566,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
