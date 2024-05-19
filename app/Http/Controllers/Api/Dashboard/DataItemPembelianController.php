@@ -390,7 +390,7 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->jumlah = $totalSubtotal;
                 $dataPembelian->bayar = $dataPembelian->bayar;
                 $dataPembelian->diterima = $dataPembelian->diterima;
-                $updatePembelian->kembali = intval($dataPembelian->bayar) - intval($totalSubtotal);
+                $dataPembelian->kembali = intval($dataPembelian->bayar) - intval($totalSubtotal);
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                 $dataPembelian->save();
 

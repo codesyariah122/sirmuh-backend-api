@@ -495,7 +495,7 @@ class DataPembelianLangsungController extends Controller
             $updatePembelian->jumlah = $data['total'] ? $total : $updatePembelian->jumlah;
             $updatePembelian->bayar = $data['bayar'] ? intval($bayar) : $updatePembelian->bayar;
             $updatePembelian->diterima = $data['total'] ? $total : $updatePembelian->diterima;
-            $updatePembelian->keterangan_edit = $data['keterangan_edit'];
+            $updatePembelian->keterangan_edit = $data['keterangan'];
 
             if($data['masuk_hutang']) {
                 $updatePembelian->jt = $data['jt'];
@@ -566,11 +566,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
