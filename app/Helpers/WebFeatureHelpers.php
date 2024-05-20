@@ -177,13 +177,14 @@ class WebFeatureHelpers
         $barcodeFileName = $data . '_barcode.png';
         $barcodeDirectory = 'barcodes';
 
-        // Pastikan direktori sudah ada, jika tidak, buat direktori
         if (!Storage::disk('public')->exists($barcodeDirectory)) {
             Storage::disk('public')->makeDirectory($barcodeDirectory, 0777, true, true);
         }
 
-        // Simpan barcode sebagai gambar PNG
-        $binaryBarcode = $generator->getBarcode($data, $generator::TYPE_CODE_128);
+        $appUrl = env("APP_URL");
+        $url = url($appUrl . "/detail/?type=barang&query={$data}");
+
+        $binaryBarcode = $generator->getBarcode($url, $generator::TYPE_CODE_128);
         Storage::disk('public')->put("{$barcodeDirectory}/{$barcodeFileName}", $binaryBarcode);
 
         return $binaryBarcode;
@@ -193,8 +194,8 @@ class WebFeatureHelpers
     public function generateQrCode($data)
     {
         $qr = new DNS2D;
-        $frontendUrl = env("DASHBOARD_APP");
-        $url = url($frontendUrl . "/detail/barang-by-suppliers/{$data}");
+        $appdUrl = env("APP_URL");
+        $url = url($appdUrl . "/detail/?type=barang&query={$data}");
 
         $base64QrCode = $qr->getBarcodePNG($url, "QRCODE", 12, 12);
 
@@ -223,7 +224,7 @@ class WebFeatureHelpers
     public function terbilang($angka)
     {
         $angka = abs(floatval($angka));
-        $baca  = array('nol', 'satu', 'dua ', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
+        $baca  = array('', 'satu', 'dua ', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas');
         $terbilang = '';
 
         if ($angka < 12) {
@@ -243,6 +244,7 @@ class WebFeatureHelpers
         } elseif ($angka < 1000000000) {
             $terbilang = $this->terbilang(floor($angka / 1000000)) . ' juta ' . $this->terbilang($angka % 1000000);
         }
+
 
         return $terbilang;
     }

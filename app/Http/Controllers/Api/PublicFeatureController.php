@@ -11,6 +11,41 @@ use App\Models\{Barang, User, Toko, Pembelian};
 
 class PublicFeatureController extends Controller
 {
+
+    private $feature_helpers;
+
+    public function __construct()
+    {
+        $this->feature_helpers = new WebFeatureHelpers;
+    }
+
+    public function detail_data_view(Request $request)
+    {
+        try {
+            $type = $request->query('type');
+            $query = $request->query('query');
+
+            switch($type) {
+                case "barang":
+                $detailData = Barang::whereNull('deleted_at')
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
+                ->where('kode_barcode', $query)
+                ->with("kategoris")
+                ->with('suppliers')
+                ->first();
+                break;
+
+                default:
+                $detailData = [];
+            }
+
+            return view('detail', ['detail' => $detailData, 'type' => $type, 'nama' => "Detail Barang {$detailData->nama}"]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function detail_data(Request $request)
     {
         try {
@@ -20,7 +55,7 @@ class PublicFeatureController extends Controller
             switch($type) {
             	case "barang":
             	$detailData = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier',  'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
                 ->whereKodeBarcode($query)
                 ->with("kategoris")
                 ->with('suppliers')
@@ -29,6 +64,11 @@ class PublicFeatureController extends Controller
 
                 default:
                 $detailData = [];
+            }
+
+            foreach ($detailData  as $item) {
+                $kodeBarcode = $item->kode_barcode;
+                $this->feature_helpers->generateQrCode($kodeBarcode);
             }
 
             return new ResponseDataCollect($detailData);

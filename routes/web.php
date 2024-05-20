@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Dashboard\{
     DataReturnPenjualanController
 };
 use App\Http\Controllers\Web\{DataLaporanView};
+use App\Http\Controllers\Api\{PublicFeatureController};
 // use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 
 // WebSocketsRouter::dashboard('/laravel-websockets');
@@ -75,4 +76,4 @@ Route::get('/laporan/kas/cash-flow/{id_perusahaan}/{start_date}/{end_date}', [Da
 Route::get('/test', function () {
     return view('test');
 });
-Route::get('/detail/{barcode}', [DetailProductController::class, 'index']);
+Route::get('/detail', [PublicFeatureController::class, 'detail_data_view']);

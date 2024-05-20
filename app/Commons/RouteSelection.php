@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\Dashboard\{
     DataItemPembelianController,
     DataKoreksiStokController,
     DataPemakaianBarangController,
+    DataItemPemakaianBarangController,
     DataPurchaseOrderController,
     DataLaporanPembelianController,
     DataLaporanPenjualanController,
@@ -374,6 +375,13 @@ class RouteSelection {
             'endPoint' => '/check-bayar-piutang/{id}',
             'method' => 'get',
             'controllers' => [DataPiutangController::class, 'check_bayar_piutang']
+        ],
+
+        // Pemakaian barang
+        [
+            'endPoint' => '/item-pemakaian',
+            'method' => 'resource',
+            'controllers' => DataItemPemakaianBarangController::class
         ],
 
         [
