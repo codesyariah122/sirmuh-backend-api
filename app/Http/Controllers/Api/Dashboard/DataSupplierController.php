@@ -231,6 +231,10 @@ class DataSupplierController extends Controller
             $new_supplier->no_npwp = $request->no_npwp;
             $new_supplier->save();
 
+            $new_kategori_supplier = new Kategori;
+            $new_kategori_supplier->kode = $new_supplier->nama;
+            $new_kategori_supplier->save();
+
             if($new_supplier) {
                 $userOnNotif = Auth::user();
                 $data_event = [
