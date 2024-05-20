@@ -203,7 +203,7 @@ class DataBarangController extends Controller
 
             foreach ($barangs as $item) {
                 $kodeBarcode = $item->kode_barcode;
-                $this->feature_helpers->generateQrCode($kodeBarcode);
+                $this->feature_helpers->generateBarcode($kodeBarcode);
             }
 
             // var_dump($barangs); die;
