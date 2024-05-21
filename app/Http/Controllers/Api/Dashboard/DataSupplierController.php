@@ -322,6 +322,18 @@ class DataSupplierController extends Controller
             $update_supplier->no_npwp = $request->no_npwp ? $request->no_npwp : $update_supplier->no_npwp;
             $update_supplier->save();
 
+            $checkKategori = Kategori::where('kode', $update_supplier->nama)->first();
+
+            if($checkKategori !== NULL) {
+                $updateKategori = Kategori::findOrFail($checkKategori->id);
+                $updateKategori->kode = $request->nama ? $request->nama : $update_supplier->nama;
+                $updateKategori->save();
+            } else {
+                $new_kategori_supplier = new Kategori;
+                $new_kategori_supplier->kode = $new_supplier->nama;
+                $new_kategori_supplier->save();
+            }
+
             if($update_supplier) {
                 $userOnNotif = Auth::user();
                 $data_event = [
