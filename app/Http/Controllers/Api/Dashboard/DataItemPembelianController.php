@@ -312,12 +312,12 @@ class DataItemPembelianController extends Controller
                 $itemPurchaseOrders = PurchaseOrder::where('kode_po', $updateItemPembelian->kode)->get();
                 $totalSubtotalPo = $itemPurchaseOrders->sum('subtotal');
 
-                // $dataPembelian->jumlah = $dataPembelian->jumlah;
-                // $dataPembelian->bayar = $dataPembelian->jumlah;
-                // $dataPembelian->diterima = $totalSubtotalPo;
-                // $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
+                $dataPembelian->jumlah = $dataPembelian->jumlah;
+                $dataPembelian->bayar = $dataPembelian->jumlah;
+                $dataPembelian->diterima = $totalSubtotalPo;
+                $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
 
-                // $dataPembelian->save();
+                $dataPembelian->save();
 
 
                 // $purchaseOrderTerakhir = PurchaseOrder::where('kode_po', $dataPembelian->kode)
@@ -390,7 +390,6 @@ class DataItemPembelianController extends Controller
                 $dataPembelian->jumlah = $totalSubtotal;
                 $dataPembelian->bayar = $dataPembelian->bayar;
                 $dataPembelian->diterima = $dataPembelian->diterima;
-                $dataPembelian->kembali = intval($dataPembelian->bayar) - intval($totalSubtotal);
                 $dataPembelian->jt = $request->jt ? $request->jt : $dataPembelian->jt;
                 $dataPembelian->save();
 
@@ -418,6 +417,7 @@ class DataItemPembelianController extends Controller
             throw $th;
         }
     }
+
 
     public function updateItemPo(Request $request, $id)
     {
