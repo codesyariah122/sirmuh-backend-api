@@ -57,7 +57,7 @@ class DataItemPemakaianBarangController extends Controller
             $newItem->draft = $data['draft'];
             $newItem->barang_asal = $data['barang']['kode_barang'];
             $newItem->harga = $data['barang']['harga'];
-            $newItem->total = $data['barang']['qty'] > 0 ? intval($data['barang']['harga_beli']) * $data['barang']['qty'] : intval($data['barang']['harga_beli']);
+            $newItem->total = $data['barang']['qty'] > 0 ? intval($data['barang']['harga']) * $data['barang']['qty'] : intval($data['barang']['harga']);
             $newItem->supplier = $dataSupplier->kode;
             $newItem->save();
 
@@ -124,7 +124,7 @@ class DataItemPemakaianBarangController extends Controller
             $dataItemPemakaian = ItemPemakaian::findOrFail($id);
             $dataItemPemakaian->qty_asal = $data['qty'];
             $dataItemPemakaian->harga = $data['harga'];
-            $dataItemPemakaian->total = $data['harga'] * $data['qty'];
+            $dataItemPemakaian->total = $dataItemPemakaian->harga * $data['qty'];
             $dataItemPemakaian->save();
 
             return response()->json([
