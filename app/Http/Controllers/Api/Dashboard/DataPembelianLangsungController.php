@@ -121,15 +121,11 @@ class DataPembelianLangsungController extends Controller
                 'barangs' => 'required',
             ]);
 
-
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
 
             $data = $request->all();
-            // echo "<pre>";
-            // var_dump($data); die;
-            // echo "</pre>";
 
             $barangs = $data['barangs'];
             
@@ -143,14 +139,10 @@ class DataPembelianLangsungController extends Controller
 
             $formattedIncrement = sprintf('%03d', $increment);
 
-
             $supplier = Supplier::findOrFail($data['supplier']);
 
             $barangIds = array_column($dataBarangs, 'id');
             $barangs = Barang::whereIn('id', $barangIds)->get();
-            // $updateStokBarang = Barang::findOrFail($data['barang']);
-            // $updateStokBarang->toko = $updateStokBarang->toko + $request->qty;
-            // $updateStokBarang->save();
 
             $kas = Kas::findOrFail($data['kode_kas']);
 
@@ -170,8 +162,7 @@ class DataPembelianLangsungController extends Controller
             $newPembelian->supplier = $supplier->kode;
             $newPembelian->kode_kas = $kas->kode;
             $newPembelian->kas_biaya = intval($data['biayabongkar']) > 0 ? $kasBiaya->kode : NULL;
-
-            $newPembelian->jumlah = intval($data['biayabongkar']) > 0 ? $data['jumlah'] - intval($data['biayabongkar']) : $data['jumlah'];
+            $newPembelian->jumlah = $data['jumlah'];
             $newPembelian->bayar = $data['bayar'];
             $newPembelian->diterima = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
 
@@ -187,17 +178,15 @@ class DataPembelianLangsungController extends Controller
                 }  
             }
             $newPembelian->kembali = $kembali;
-            // $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
-            // $updateSaldoSupplier->saldo_hutang = intval($data['bayar']) !== 0 ? $supplier->saldo_hutang + $data['hutang'] : $supplier->saldo_hutang + $data['diterima'];
 
             if($data['pembayaran'] !== "cash") {
                 $newPembelian->lunas = "False";
                 $newPembelian->visa = 'HUTANG';
 
                 if($data['showDp'] === 'true') {
-                    $hutang = intval($data['hutang']) - intval($data['biayabongkar']);
+                    $hutang = intval($data['hutang']);
                 } else {
-                    $hutang = intval($data['bayar']) !== 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['diterima']) - intval($data['biayabongkar']);
+                    $hutang = intval($data['bayar']) !== 0 ? intval($data['hutang']) : intval($data['diterima']);
                 }
 
                 $newPembelian->hutang = $hutang;
@@ -294,7 +283,6 @@ class DataPembelianLangsungController extends Controller
             }
 
             $userOnNotif = Auth::user();
-
             if($newPembelian) {
                 $newPembelianSaved =  Pembelian::query()
                 ->select(
