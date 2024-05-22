@@ -50,156 +50,156 @@ class DataPelangganController extends Controller
                 ->orderByDesc('id')
                 ->paginate(10);
             } else if($sales){
-                 $pelanggans = Pelanggan::whereNull('deleted_at')
-                 ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-                 ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                 ->where('sales', $sales)
-                 ->orderByDesc('id')
-                 ->paginate(10);
-            } else if($kode) {
-                 $pelanggans = Pelanggan::whereNull('deleted_at')
-                 ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-                 ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                 ->where('kode', $kode)
-                 ->orderByDesc('id')
-                 ->paginate(10);
-            }else {
-                if($sortName && $sortType) {
-                    $pelanggans =  Pelanggan::whereNull('deleted_at')
-                    ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-                    ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                    ->orderBy($sortName, $sortType)
-                    ->paginate(10); 
-                } else {                    
-                    $pelanggans =  Pelanggan::whereNull('deleted_at')
-                    ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-                    ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                    ->orderBy('id', 'DESC')
-                    ->paginate(10);
-                }
+               $pelanggans = Pelanggan::whereNull('deleted_at')
+               ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+               ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+               ->where('sales', $sales)
+               ->orderByDesc('id')
+               ->paginate(10);
+           } else if($kode) {
+               $pelanggans = Pelanggan::whereNull('deleted_at')
+               ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+               ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+               ->where('kode', $kode)
+               ->orderByDesc('id')
+               ->paginate(10);
+           }else {
+            if($sortName && $sortType) {
+                $pelanggans =  Pelanggan::whereNull('deleted_at')
+                ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+                ->orderBy($sortName, $sortType)
+                ->paginate(10); 
+            } else {                    
+                $pelanggans =  Pelanggan::whereNull('deleted_at')
+                ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+                ->orderBy('id', 'DESC')
+                ->paginate(10);
             }
+        }
 
-            return new ResponseDataCollect($pelanggans);
+        return new ResponseDataCollect($pelanggans);
 
-        } catch (\Throwable $th) {
-            throw $th;
+    } catch (\Throwable $th) {
+        throw $th;
+    }
+}
+
+public function list_partai(Request $request)
+{
+    try {
+        $keywords = $request->query('keywords');
+        $sales = $request->query('sales');
+        $kode = $request->query('kode');
+        $sortName = $request->query('sort_name');
+        $sortType = $request->query('sort_type');
+        $allowedCodes = ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'];
+
+        if($keywords) {
+            $pelanggans = Pelanggan::whereNull('deleted_at')
+            ->whereIn('kode', $allowedCodes)
+            ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+            ->where(function($query) use ($keywords) {
+                $query->where('nama', 'like', '%' . $keywords . '%')
+                ->orWhere('kode', 'like', '%' . $keywords . '%');
+            })
+            ->orderByDesc('id')
+            ->paginate(10);
+        } else if($sales){
+           $pelanggans = Pelanggan::whereNull('deleted_at')
+           ->whereIn('kode', $allowedCodes)
+           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+           ->where('sales', $sales)
+           ->orderByDesc('id')
+           ->paginate(10);
+       } else if($kode) {
+           $pelanggans = Pelanggan::whereNull('deleted_at')
+           ->whereIn('kode', $allowedCodes)
+           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+           ->where('kode', $kode)
+           ->orderByDesc('id')
+           ->paginate(10);
+       }else {
+        if($sortName && $sortType) {
+            $pelanggans =  Pelanggan::whereNull('deleted_at')
+            ->whereIn('kode', $allowedCodes)
+            ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+            ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+            ->orderBy($sortName, $sortType)
+            ->paginate(10); 
+        } else {                    
+            $pelanggans =  Pelanggan::whereNull('deleted_at')
+            ->whereIn('kode', $allowedCodes)
+            ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+            ->orderBy('id', 'DESC')
+            ->paginate(10);
         }
     }
 
-    public function list_partai(Request $request)
-    {
-        try {
-            $keywords = $request->query('keywords');
-            $sales = $request->query('sales');
-            $kode = $request->query('kode');
-            $sortName = $request->query('sort_name');
-            $sortType = $request->query('sort_type');
-            $allowedCodes = ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'];
+    return new ResponseDataCollect($pelanggans);
 
-            if($keywords) {
-                $pelanggans = Pelanggan::whereNull('deleted_at')
-                ->whereIn('kode', $allowedCodes)
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                ->where(function($query) use ($keywords) {
-                    $query->where('nama', 'like', '%' . $keywords . '%')
-                    ->orWhere('kode', 'like', '%' . $keywords . '%');
-                })
-                ->orderByDesc('id')
-                ->paginate(10);
-            } else if($sales){
-                 $pelanggans = Pelanggan::whereNull('deleted_at')
-                 ->whereIn('kode', $allowedCodes)
-                 ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                 ->where('sales', $sales)
-                ->orderByDesc('id')
-                ->paginate(10);
-            } else if($kode) {
-                 $pelanggans = Pelanggan::whereNull('deleted_at')
-                 ->whereIn('kode', $allowedCodes)
-                 ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                 ->where('kode', $kode)
-                ->orderByDesc('id')
-                ->paginate(10);
-            }else {
-                if($sortName && $sortType) {
-                    $pelanggans =  Pelanggan::whereNull('deleted_at')
-                    ->whereIn('kode', $allowedCodes)
-                    ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                    ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-                    ->orderBy($sortName, $sortType)
-                    ->paginate(10); 
-                } else {                    
-                    $pelanggans =  Pelanggan::whereNull('deleted_at')
-                    ->whereIn('kode', $allowedCodes)
-                    ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                    ->orderBy('id', 'DESC')
-                    ->paginate(10);
-                }
-            }
+} catch (\Throwable $th) {
+    throw $th;
+}
+}
 
-            return new ResponseDataCollect($pelanggans);
+public function index(Request $request)
+{
+    try {
+        $keywords = $request->query('keywords');
+        $sales = $request->query('sales');
+        $kode = $request->query('kode');
+        $sortName = $request->query('sort_name');
+        $sortType = $request->query('sort_type');
 
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
 
-    public function index(Request $request)
-    {
-        try {
-            $keywords = $request->query('keywords');
-            $sales = $request->query('sales');
-            $kode = $request->query('kode');
-            $sortName = $request->query('sort_name');
-            $sortType = $request->query('sort_type');
-            
-
-            if($keywords) {
-                $pelanggans = Pelanggan::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                ->where(function($query) use ($keywords) {
-                    $query->where('nama', 'like', '%' . $keywords . '%')
-                    ->orWhere('kode', 'like', '%' . $keywords . '%');
-                })
+        if($keywords) {
+            $pelanggans = Pelanggan::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+            ->where(function($query) use ($keywords) {
+                $query->where('nama', 'like', '%' . $keywords . '%')
+                ->orWhere('kode', 'like', '%' . $keywords . '%');
+            })
                 // ->orderByDesc('harga_toko')
-                ->orderByDesc('id')
-                ->paginate(10);
-            } else if($sales){
-                 $pelanggans = Pelanggan::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                ->where('sales', $sales)
+            ->orderByDesc('id')
+            ->paginate(10);
+        } else if($sales){
+           $pelanggans = Pelanggan::whereNull('deleted_at')
+           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+           ->where('sales', $sales)
                 // ->orderByDesc('harga_toko')
-                ->orderByDesc('id')
-                ->paginate(10);
-            } else if($kode) {
-                 $pelanggans = Pelanggan::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-                ->where('kode', $kode)
+           ->orderByDesc('id')
+           ->paginate(10);
+       } else if($kode) {
+           $pelanggans = Pelanggan::whereNull('deleted_at')
+           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+           ->where('kode', $kode)
                 // ->orderByDesc('harga_toko')
-                ->orderByDesc('id')
-                ->paginate(10);
-            }else {
-                if($sortName && $sortType) {
-                    $pelanggans =  Pelanggan::whereNull('deleted_at')
-                    ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+           ->orderByDesc('id')
+           ->paginate(10);
+       }else {
+        if($sortName && $sortType) {
+            $pelanggans =  Pelanggan::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
                     // ->orderByDesc('harga_toko')
-                    ->orderBy($sortName, $sortType)
-                    ->paginate(10); 
-                } else {                    
-                    $pelanggans =  Pelanggan::whereNull('deleted_at')
-                    ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+            ->orderBy($sortName, $sortType)
+            ->paginate(10); 
+        } else {                    
+            $pelanggans =  Pelanggan::whereNull('deleted_at')
+            ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
                     // ->orderByDesc('harga_toko')
-                    ->orderBy('id', 'DESC')
-                    ->paginate(10);
-                }
-            }
-
-            return new ResponseDataCollect($pelanggans);
-
-        } catch (\Throwable $th) {
-            throw $th;
+            ->orderBy('id', 'DESC')
+            ->paginate(10);
         }
     }
+
+    return new ResponseDataCollect($pelanggans);
+
+} catch (\Throwable $th) {
+    throw $th;
+}
+}
 
     /**
      * Show the form for creating a new resource.
@@ -246,10 +246,10 @@ class DataPelangganController extends Controller
 
             $new_pelanggan = new Pelanggan;
             $new_pelanggan->kode = strtoupper(implode('', $substringArray));
-            $new_pelanggan->nama = $request->nama;
+            $new_pelanggan->nama = strtoupper($request->nama);
             $new_pelanggan->email = $request->email;
             $new_pelanggan->telp = $this->user_helpers->formatPhoneNumber($request->telp);
-            $new_pelanggan->alamat = $request->alamat;
+            $new_pelanggan->alamat = strip_tags($request->alamat);
             $new_pelanggan->pekerjaan = $request->pekerjaan;
             $new_pelanggan->save();
 
@@ -327,7 +327,7 @@ class DataPelangganController extends Controller
             $update_pelanggan->nama = $request->nama ? $request->nama : $update_pelanggan->nama;
             $update_pelanggan->email = $request->email ? $request->email : $update_pelanggan->email;
             $update_pelanggan->telp = $request->telp ? $this->user_helpers->formatPhoneNumber($request->telp) : $update_pelanggan->telp;
-            $update_pelanggan->alamat = $request->alamat ? $request->alamat : $update_pelanggan->alamat;
+            $update_pelanggan->alamat = $request->alamat ? strip_tags($request->alamat) : strip_tags($update_pelanggan->alamat);
             $update_pelanggan->pekerjaan = $request->pekerjaan ? $request->pekerjaan : $update_pelanggan->pekerjaan;
             $update_pelanggan->save();
 
@@ -356,7 +356,7 @@ class DataPelangganController extends Controller
             $user = Auth::user();
 
             $userRole = Roles::findOrFail($user->role);
-                
+
             if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "KASIR") {
                 $pelanggan = Pelanggan::whereNull('deleted_at')
                 ->findOrFail($id);

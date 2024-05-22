@@ -47,6 +47,8 @@ class DataItemPemakaianBarangController extends Controller
         try {
             $data = $request->all();
 
+            // dd($data); die;
+
             $dataSupplier = Supplier::findOrFail($data['barang']['supplier_id']);
 
             $newItem = new ItemPemakaian;
@@ -62,6 +64,8 @@ class DataItemPemakaianBarangController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "New item pemakaian {$newItem->barang_asal}, successfully added✨",
+                'draft' => true,
+                'item_pemakaian_id' => $newItem->id,
                 'data' => $newItem
             ]);
         } catch (\Throwable $th) {
@@ -77,10 +81,10 @@ class DataItemPemakaianBarangController extends Controller
      */
     public function show($id)
     {
-       try {
+     try {
         $dataItem = ItemPemakaian::whereKodePemakaian($id)->first();
         $item = ItemPemakaian::query()
-        ->select('itempemakaian.id','itempemakaian.kode_pemakaian', 'itempemakaian.draft', 'itempemakaian.barang_asal', 'itempemakaian.qty_asal', 'itempemakaian.barang_tujuan', 'itempemakaian.qty_tujuan', 'itempemakaian.harga', 'itempemakaian.biaya', 'itempemakaian.total', 'itempemakaian.supplier', 'barang.id as id_barang', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp as harga_beli', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+        ->select('itempemakaian.id','itempemakaian.kode_pemakaian', 'itempemakaian.draft', 'itempemakaian.barang_asal', 'itempemakaian.qty_asal', 'itempemakaian.barang_tujuan', 'itempemakaian.qty_tujuan', 'itempemakaian.harga', 'itempemakaian.biaya', 'itempemakaian.total', 'itempemakaian.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
         ->leftJoin('barang', 'itempemakaian.barang_asal', '=', 'barang.kode')
         ->leftJoin('supplier', 'itempemakaian.supplier', '=', 'supplier.kode')
         ->findOrFail($dataItem->id);
@@ -115,7 +119,22 @@ class DataItemPemakaianBarangController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $data = $request->all();
+            $dataItemPemakaian = ItemPemakaian::findOrFail($id);
+            $dataItemPemakaian->qty_asal = $data['qty'];
+            $dataItemPemakaian->harga = $data['harga'];
+            $dataItemPemakaian->total = $dataItemPemakaian->harga * $data['qty'];
+            $dataItemPemakaian->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => "successfully update new qty item pemakaian {$dataItemPemakaian->kode}",
+                'data' => $dataItemPemakaian
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

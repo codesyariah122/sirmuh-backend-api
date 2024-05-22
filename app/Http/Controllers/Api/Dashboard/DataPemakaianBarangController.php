@@ -30,7 +30,8 @@ class DataPemakaianBarangController extends Controller
 
             $query = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'itempemakaian.draft', 'itempemakaian.total', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
+            ->leftJoin('itempemakaian', 'pemakaian_barangs.kode', '=', 'itempemakaian.kode_pemakaian')
             ->leftJoin('barang', 'pemakaian_barangs.barang_asal', '=', 'barang.kode');
 
             if ($keywords) {
@@ -69,7 +70,7 @@ class DataPemakaianBarangController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'barang_asal' => 'required',
-                'qty' => 'required',
+                'qty_asal' => 'required',
                 'keperluan' => 'required',
                 'keterangan' => 'required'
             ]);
@@ -84,16 +85,22 @@ class DataPemakaianBarangController extends Controller
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $pemakaianKode = "PEM-".$currentDate.$randomNumber;
 
-            $dataBarangAsal = Barang::where('kode', $request->barang_asal)->first();
-            $dataBarangTujuan = Barang::where('kode', $request->barang_tujuan)->first();
+            if($request->barang_asal !== NULL) {
+                $dataBarangAsal = Barang::where('kode', $request->barang_asal)->first();
+            }
+
+            if($request->barang_tujuan !== NULL) {
+                $dataBarangTujuan = Barang::where('kode', $request->barang_tujuan)->first();
+            }
+
             $newPemakaian = new PemakaianBarang;
             $newPemakaian->kode = $request->kode ? $request->kode : $pemakaianKode;
             $newPemakaian->tanggal = $currentDate;
-            $newPemakaian->barang_asal = $dataBarangAsal->kode;
-            $newPemakaian->barang_tujuan = $dataBarangTujuan->kode;
-            $newPemakaian->qty = $request->qty;
-            $newPemakaian->keperluan = $request->keperluan;
-            $newPemakaian->keterangan = $request->keterangan;
+            $newPemakaian->barang_asal = $request->barang_asal ?? NULL;
+            $newPemakaian->barang_tujuan = $request->barang_tujuan ?? NULL;
+            $newPemakaian->qty = $request->qty_asal ?? 0;
+            $newPemakaian->keperluan = $request->keperluan ?? NULL;
+            $newPemakaian->keterangan = $request->keterangan ?? NULL;
             $newPemakaian->operator = $userOnNotif->name;
             $newPemakaian->save();
 
@@ -102,10 +109,12 @@ class DataPemakaianBarangController extends Controller
             $updateStokBarangAsal->last_qty = $dataBarangAsal->toko;
             $updateStokBarangAsal->save();
 
-            $updateStokBarangTujuan = Barang::findOrFail($dataBarangTujuan->id);
-            $updateStokBarangTujuan->toko = intval($dataBarangTujuan->toko) + intval($newPemakaian->qty);
-            $updateStokBarangTujuan->last_qty = $dataBarangTujuan->toko;
-            $updateStokBarangTujuan->save();
+            if($request->barang_tujuan !== NULL) {                
+                $updateStokBarangTujuan = Barang::findOrFail($dataBarangTujuan->id);
+                $updateStokBarangTujuan->toko = intval($dataBarangTujuan->toko) + intval($newPemakaian->qty);
+                $updateStokBarangTujuan->last_qty = $dataBarangTujuan->toko;
+                $updateStokBarangTujuan->save();
+            }
 
 
             $data_event = [
@@ -119,25 +128,25 @@ class DataPemakaianBarangController extends Controller
 
             event(new EventNotification($data_event));
 
-            $newBarangTujuan = Barang::whereKode($newPemakaian->barang_tujuan)->first();
+            // $newBarangTujuan = Barang::whereKode($newPemakaian->barang_tujuan)->first();
 
-            $newPemakaianBarang = [
-                'nama_barang_asal' => $dataBarangAsal->nama,
-                'kode_barang_asal' => $newPemakaian->barang_asal,
-                'nama_barang_tujuan' => $dataBarangTujuan->nama,
-                'kode_barang_tujuan' => $newPemakaian->barang_tujuan,
-                'qty' => $newPemakaian->qty,
-                'stok_tujuan' => $newBarangTujuan->toko,
-                'satuan_asal' => $newBarangTujuan->satuan,
-                'satuan_tujuan' => $dataBarangTujuan->satuan,
-                'keperluan' => $newPemakaian->keperluan,
-                'keterangan' => $newPemakaian->keterangan
-            ];
+            // $newPemakaianBarang = [
+            //     'nama_barang_asal' => $dataBarangAsal->nama,
+            //     'kode_barang_asal' => $newPemakaian->barang_asal,
+            //     'nama_barang_tujuan' => $dataBarangTujuan->nama,
+            //     'kode_barang_tujuan' => $newPemakaian->barang_tujuan,
+            //     'qty' => $newPemakaian->qty,
+            //     'stok_tujuan' => $newBarangTujuan->toko,
+            //     'satuan_asal' => $newBarangTujuan->satuan,
+            //     'satuan_tujuan' => $dataBarangTujuan->satuan,
+            //     'keperluan' => $newPemakaian->keperluan,
+            //     'keterangan' => $newPemakaian->keterangan
+            // ];
 
             return response()->json([
                 'success' => true,
                 'message' => "Pemakaian barang {$newPemakaian->nama_barang}, successfully added ✨!",
-                'data' => $newPemakaianBarang
+                'data' => $newPemakaian
             ], 200);
 
         } catch (\Throwable $th) {
