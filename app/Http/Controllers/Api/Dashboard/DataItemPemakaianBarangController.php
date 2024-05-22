@@ -81,7 +81,7 @@ class DataItemPemakaianBarangController extends Controller
      */
     public function show($id)
     {
-       try {
+     try {
         $dataItem = ItemPemakaian::whereKodePemakaian($id)->first();
         $item = ItemPemakaian::query()
         ->select('itempemakaian.id','itempemakaian.kode_pemakaian', 'itempemakaian.draft', 'itempemakaian.barang_asal', 'itempemakaian.qty_asal', 'itempemakaian.barang_tujuan', 'itempemakaian.qty_tujuan', 'itempemakaian.harga', 'itempemakaian.biaya', 'itempemakaian.total', 'itempemakaian.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
@@ -124,7 +124,7 @@ class DataItemPemakaianBarangController extends Controller
             $dataItemPemakaian = ItemPemakaian::findOrFail($id);
             $dataItemPemakaian->qty_asal = $data['qty'];
             $dataItemPemakaian->harga = $data['harga'];
-            $dataItemPemakaian->total = $dataItemPemakaian->harga * $data['qty'];
+            $dataItemPemakaian->total = $data['harga'] * $data['qty'];
             $dataItemPemakaian->save();
 
             return response()->json([
