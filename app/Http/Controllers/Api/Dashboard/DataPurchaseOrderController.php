@@ -371,7 +371,7 @@ class DataPurchaseOrderController extends Controller
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
             $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
-            $kembali = intval(preg_replace("/[^0-9]/", "", $data['kembali']));
+            $kembali = $data['kembali'] ? intval(preg_replace("/[^0-9]/", "", $data['kembali'])) : 0;
             $updatePembelian = Pembelian::where('po', 'True')
             ->findOrFail($id);
             $supplier = Supplier::whereKode($updatePembelian->supplier)->first();
@@ -551,11 +551,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
