@@ -50,20 +50,20 @@ class DataPelangganController extends Controller
                 ->orderByDesc('id')
                 ->paginate(10);
             } else if($sales){
-               $pelanggans = Pelanggan::whereNull('deleted_at')
-               ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-               ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-               ->where('sales', $sales)
-               ->orderByDesc('id')
-               ->paginate(10);
-           } else if($kode) {
-               $pelanggans = Pelanggan::whereNull('deleted_at')
-               ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
-               ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-               ->where('kode', $kode)
-               ->orderByDesc('id')
-               ->paginate(10);
-           }else {
+             $pelanggans = Pelanggan::whereNull('deleted_at')
+             ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+             ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+             ->where('sales', $sales)
+             ->orderByDesc('id')
+             ->paginate(10);
+         } else if($kode) {
+             $pelanggans = Pelanggan::whereNull('deleted_at')
+             ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
+             ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+             ->where('kode', $kode)
+             ->orderByDesc('id')
+             ->paginate(10);
+         }else {
             if($sortName && $sortType) {
                 $pelanggans =  Pelanggan::whereNull('deleted_at')
                 ->whereNotIn('kode', ['YJG', 'UN', 'UJ', 'TL', 'PKS', 'IDF', 'IND'])
@@ -107,20 +107,20 @@ public function list_partai(Request $request)
             ->orderByDesc('id')
             ->paginate(10);
         } else if($sales){
-           $pelanggans = Pelanggan::whereNull('deleted_at')
-           ->whereIn('kode', $allowedCodes)
-           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-           ->where('sales', $sales)
-           ->orderByDesc('id')
-           ->paginate(10);
-       } else if($kode) {
-           $pelanggans = Pelanggan::whereNull('deleted_at')
-           ->whereIn('kode', $allowedCodes)
-           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-           ->where('kode', $kode)
-           ->orderByDesc('id')
-           ->paginate(10);
-       }else {
+         $pelanggans = Pelanggan::whereNull('deleted_at')
+         ->whereIn('kode', $allowedCodes)
+         ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+         ->where('sales', $sales)
+         ->orderByDesc('id')
+         ->paginate(10);
+     } else if($kode) {
+         $pelanggans = Pelanggan::whereNull('deleted_at')
+         ->whereIn('kode', $allowedCodes)
+         ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+         ->where('kode', $kode)
+         ->orderByDesc('id')
+         ->paginate(10);
+     }else {
         if($sortName && $sortType) {
             $pelanggans =  Pelanggan::whereNull('deleted_at')
             ->whereIn('kode', $allowedCodes)
@@ -165,20 +165,20 @@ public function index(Request $request)
             ->orderByDesc('id')
             ->paginate(10);
         } else if($sales){
-           $pelanggans = Pelanggan::whereNull('deleted_at')
-           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-           ->where('sales', $sales)
+         $pelanggans = Pelanggan::whereNull('deleted_at')
+         ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+         ->where('sales', $sales)
                 // ->orderByDesc('harga_toko')
-           ->orderByDesc('id')
-           ->paginate(10);
-       } else if($kode) {
-           $pelanggans = Pelanggan::whereNull('deleted_at')
-           ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
-           ->where('kode', $kode)
+         ->orderByDesc('id')
+         ->paginate(10);
+     } else if($kode) {
+         $pelanggans = Pelanggan::whereNull('deleted_at')
+         ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
+         ->where('kode', $kode)
                 // ->orderByDesc('harga_toko')
-           ->orderByDesc('id')
-           ->paginate(10);
-       }else {
+         ->orderByDesc('id')
+         ->paginate(10);
+     }else {
         if($sortName && $sortType) {
             $pelanggans =  Pelanggan::whereNull('deleted_at')
             ->select('id', 'kode', 'nama', 'alamat', 'telp', 'pekerjaan', 'tgl_lahir', 'saldo_piutang', 'point', 'sales', 'area', 'max_piutang', 'kota', 'rayon', 'saldo_tabungan')
@@ -245,7 +245,7 @@ public function index(Request $request)
             }
 
             $new_pelanggan = new Pelanggan;
-            $new_pelanggan->kode = strtoupper(implode('', $substringArray));
+            $new_pelanggan->kode = $request->kode ? $request->kode : strtoupper(implode('', $substringArray));
             $new_pelanggan->nama = strtoupper($request->nama);
             $new_pelanggan->email = $request->email;
             $new_pelanggan->telp = $this->user_helpers->formatPhoneNumber($request->telp);
