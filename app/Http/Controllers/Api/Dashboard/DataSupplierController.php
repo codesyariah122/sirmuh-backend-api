@@ -223,7 +223,7 @@ class DataSupplierController extends Controller
                 ]);
             }
             $new_supplier = new Supplier;
-            $new_supplier->kode = $initials;
+            $new_supplier->kode = $request->kode ? $request->kode : $initials;
             $new_supplier->nama = strtoupper($request->nama);
             $new_supplier->email = $request->email;
             $new_supplier->telp = $this->user_helpers->formatPhoneNumber($request->telp);
