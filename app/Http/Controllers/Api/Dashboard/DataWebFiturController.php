@@ -1967,6 +1967,7 @@ public function delete_item_pembelian_po($id)
         $dataPembelian = Pembelian::whereKode($itemPembelian->kode)->first();
         $udpateDataPembelian = Pembelian::findOrFail($dataPembelian->id);
         $udpateDataPembelian->diterima = 0;
+        $udpateDataPembelian->jt = 0;
         $udpateDataPembelian->save();
 
         $purchaseOrders = PurchaseOrder::where('kode_barang', $itemPembelian->kode_barang)

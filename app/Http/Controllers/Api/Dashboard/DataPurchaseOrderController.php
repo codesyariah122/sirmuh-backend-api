@@ -371,9 +371,10 @@ class DataPurchaseOrderController extends Controller
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
             $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
-            // if($data['kembali']) {                
-            //     $kembali = $data['kembali'] ? intval(preg_replace("/[^0-9]/", "", $data['kembali'])) : 0;
-            // }
+            
+            if(isset($data['kembali'])) {                
+                $kembali = $data['kembali'] ? intval(preg_replace("/[^0-9]/", "", $data['kembali'])) : 0;
+            }
             $updatePembelian = Pembelian::where('po', 'True')
             ->findOrFail($id);
             $supplier = Supplier::whereKode($updatePembelian->supplier)->first();
@@ -382,21 +383,26 @@ class DataPurchaseOrderController extends Controller
             $totalSubtotal = $dataItemPo->sum('subtotal');
 
             $kas = Kas::whereKode($data['kode_kas'])->first();
-            $kasBiaya = Kas::findOrFail($data['kas_biaya']);
+            if($data['kas_biaya']) {
+                $kasBiaya = Kas::findOrFail($data['kas_biaya']);
+            }
 
             // var_dump(intval($kas->saldo));
             // var_dump($data['hutang']);
             // var_dump(intval($kas->saldo) < $diterima);
             // die;
 
+            // var_dump($data['jt']); die;
+
             $updatePembelian->draft = 0;
             $updatePembelian->kode_kas = $kas->kode;
-
+            $updatePembelian->keterangan = $data['keterangan'] !== NULL ? $data['keterangan'] : $updatePembelian->keterangan;
 
             if($diterima > $bayar) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
-                $updatePembelian->hutang = intval($data['hutang']) - intval($data['biayabongkar']);
+                $updatePembelian->hutang = intval($data['hutang']);
+                $updatePembelian->jt = $data['jt'];
 
                 if(intval($kas->saldo) < $data['hutang']) {
                     return response()->json([
@@ -412,7 +418,7 @@ class DataPurchaseOrderController extends Controller
                 $masuk_hutang->kd_beli = $updatePembelian->kode;
                 $masuk_hutang->tanggal = $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;
-                $masuk_hutang->jumlah = intval($data['biayabongkar']) > 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : intval($data['hutang']);
+                $masuk_hutang->jumlah = intval($data['hutang']);
                 // $masuk_hutang->bayar = $totalSubtotal;
                 $masuk_hutang->bayar = $bayar - $data['jumlah_saldo'];
                 $masuk_hutang->kode_kas = $updatePembelian->kode_kas;
@@ -484,12 +490,13 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->jumlah = intval($data['biayabongkar']) > 0 ? $dataJumlahWithBiaya : $dataJumlah;
             $updatePembelian->bayar = $bayar;
             $updatePembelian->diterima = $totalSubtotal;
-            // if($data['kembali']) {
-            //     $updatePembelian->kembali = $kembali;
-            // }
+            if(isset($data['kembali'])) {
+                $updatePembelian->kembali = $kembali;
+            }
             $updatePembelian->return = "False";
             $updatePembelian->biayabongkar = $data['biayabongkar'];
-            $updatePembelian->kekurangan_deposit = ($bayar - intval($updatePembelian->jumlah)) - (intval($data['biayabongkar']) - intval($data['sisa_dp']));
+            $calculateKekurangan = ($bayar - intval($updatePembelian->jumlah)) - (intval($data['biayabongkar']) - intval($data['sisa_dp']));
+            $updatePembelian->kekurangan_deposit = $calculateKekurangan < 0 ? 0 : $calculateKekurangan;
             $updatePembelian->kekurangan_sdh_dibayar = "True";
 
             if($updatePembelian->save()) {
@@ -555,11 +562,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
