@@ -271,7 +271,7 @@ class DataSupplierController extends Controller
     {
         try {
             $supplier = Supplier::whereNull('deleted_at')
-            ->select("id", "nama", "saldo_hutang", "telp", "email", "alamat", "no_npwp")
+            ->select("id", "nama", "kode", "saldo_hutang", "telp", "email", "alamat", "no_npwp")
             ->findOrFail($id);
             return response()->json([
                 'success' => true,
@@ -314,7 +314,7 @@ class DataSupplierController extends Controller
 
             $update_supplier = Supplier::whereNull('deleted_at')
             ->findOrFail($id);
-            $update_supplier->kode = $request->kode ? strtoupper(implode('', $substringArray)) : $update_supplier->kode;
+            $update_supplier->kode = $request->kode ? $request->kode : $update_supplier->kode;
             $update_supplier->nama = $request->nama ? $request->nama : $update_supplier->nama;
             $update_supplier->email = $request->email ? $request->email : $update_supplier->email;
             $update_supplier->telp = $request->telp ? $this->user_helpers->formatPhoneNumber($request->telp) : $update_supplier->telp;

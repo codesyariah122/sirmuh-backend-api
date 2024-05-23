@@ -8,7 +8,6 @@
         "php": "^8.2.12",
         "bacon/bacon-qr-code": "^2.0",
         "barryvdh/laravel-dompdf": "^2.0",
-        "beyondcode/laravel-websockets": "^2.0@beta",
         "fruitcake/laravel-cors": "^3.0",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.5",
