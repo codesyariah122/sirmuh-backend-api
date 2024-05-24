@@ -40,7 +40,7 @@ class TestingEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('sirmuh-ui-dev');
+        return new Channel(env('PUSHER_APP_CHANNEL'));
         // return new PrivateChannel('mychannel');
     }
 }

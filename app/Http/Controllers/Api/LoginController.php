@@ -110,7 +110,7 @@ class LoginController extends Controller
 
                             return response()->json([
                                 'is_login' => true,
-                                'message' => "Akun sedang digunakan {$last_login}, silahkan cek email anda!",
+                                'message' => "Akun sedang digunakan {$last_login}, silahkan hubungi pemilik akun 🤦!!!",
                                 'quote' => 'Please check the notification again!',
                                 'data' => $users,
                                 'menus' => $menus

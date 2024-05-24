@@ -23,9 +23,9 @@ class LoginEvent implements ShouldBroadcast
     
     public function __construct($param)
     {
-        logger('LoginEvent constructed with:', $param);
         $this->data = $param;
     }
+
 
     /**
      * Get the channels the event should broadcast on.
@@ -35,8 +35,8 @@ class LoginEvent implements ShouldBroadcast
     public function broadcastOn()
     {
         // return new PrivateChannel('channel-name');
-        // return new Channel(env('PUSHER_APP_CHANNEL'));
-        return new PrivateChannel('sirmuh-ui-dev');
+        return new Channel(env('PUSHER_APP_CHANNEL'));
+        // return new PrivateChannel('sirmuh-ui-dev');
     }
 
     public function broadcastWith()
