@@ -47,14 +47,14 @@
         <tr>
             <td style="font-weight: 800;">Kepada</td>
             <td rowspan="4" width="40%" style="vertical-align: top;">
-             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-             @else
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-             @endif
-             <br>
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
 
-             <address>
+               <address>
                 {{ $toko['address'] }}
             </address>
             <br>
@@ -70,13 +70,13 @@
     </tr>
     <tr>
         <td>
-           {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
-           <br>
-           <address style="text-transform: capitalize;">
-               {{$penjualan->pelanggan_alamat}}
-           </address>
-       </td>
-   </tr>
+         {{$penjualan->pelanggan_nama}}({{$penjualan->pelanggan}})
+         <br>
+         <address style="text-transform: capitalize;">
+             {{$penjualan->pelanggan_alamat}}
+         </address>
+     </td>
+ </tr>
 </table>
 
 <table class="data" width="100%" style="border-collapse: collapse;">
@@ -103,12 +103,12 @@
         </tr>
         @endforeach
         <tr>
-            <td class="text-center"></td>
+            <td class="text-center" style="border-right: 0; border-right: none;"></td>
             <td class="text-left" colspan="3">
-                <span>PO. NO {{$penjualan->no_po}}</span> <br>
+                <span>PO. NO : {{$penjualan->no_po}}</span> <br>
                 <span>Date: {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}</span>
             </td>
-            <td class="text-center"></td>
+            <td class="text-center" style="border-left: 0; border-left: none;"></td>
         </tr>
     </tbody>
 </table>
@@ -128,18 +128,15 @@
             <!-- Bagian kanan -->
             <td style="border: none; text-align: right;" colspan="6">
                 <!-- Konten bagian kanan -->
-                <table width="100%" style="width: 355px; border-collapse: collapse;  margin-top: -2rem;margin-right:10.1rem;">
+                <table width="93%" style="margin-right: -.3rem; border-collapse: collapse;  margin-top: -.2rem; float: right;">
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
                         <td class="text-right" style="height: 20px; border-top: 0;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
                     </tr>
                     <tr>
-                        <td style="border: none;" colspan="8" class="text-right">Pajak (11%)</td>
+                        <td style="border: none;" colspan="8" class="text-right">Pajak ({{$penjualan->tax}}%)</td>
                         <td class="text-right" style="height: 20px;">
-                            @php
-                            $pajak = (11 / 100)*$penjualan->jumlah;
-                            echo $helpers->format_uang($pajak)
-                            @endphp
+                            {{$helpers->format_uang($penjualan->tax_rupiah)}}
                         </td>
                     </tr>
                     <tr>

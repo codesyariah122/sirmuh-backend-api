@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{PemakaianBarang, Barang};
+use App\Models\{PemakaianBarang, Barang, ItemPemakaian};
 use Auth;
 
 class DataPemakaianBarangController extends Controller
@@ -30,12 +30,9 @@ class DataPemakaianBarangController extends Controller
 
             $query = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'itempemakaian.draft', 'itempemakaian.total', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.satuan')
-            ->leftJoin('itempemakaian', 'pemakaian_barangs.kode', '=', 'itempemakaian.kode_pemakaian')
-            ->leftJoin('barang', 'pemakaian_barangs.barang_asal', '=', 'barang.kode');
-
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.draft', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.total', 'pemakaian_barangs.operator', 'pemakaian_barangs.draft');
             if ($keywords) {
-                $query->where('kode', 'like', '%' . $keywords . '%');
+                $query->where('pemakaian_barangs.kode', 'like', '%' . $keywords . '%');
             }
 
             $pemakian_barangs = $query
@@ -69,10 +66,9 @@ class DataPemakaianBarangController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'barang_asal' => 'required',
-                'qty_asal' => 'required',
                 'keperluan' => 'required',
-                'keterangan' => 'required'
+                'keterangan' => 'required',
+                'total' => 'required'
             ]);
 
             if ($validator->fails()) {
@@ -93,59 +89,33 @@ class DataPemakaianBarangController extends Controller
                 $dataBarangTujuan = Barang::where('kode', $request->barang_tujuan)->first();
             }
 
+            // var_dump($request->draft); die;
+
             $newPemakaian = new PemakaianBarang;
             $newPemakaian->kode = $request->kode ? $request->kode : $pemakaianKode;
+            $newPemakaian->draft = $request->draft;
             $newPemakaian->tanggal = $currentDate;
-            $newPemakaian->barang_asal = $request->barang_asal ?? NULL;
-            $newPemakaian->barang_tujuan = $request->barang_tujuan ?? NULL;
-            $newPemakaian->qty = $request->qty_asal ?? 0;
             $newPemakaian->keperluan = $request->keperluan ?? NULL;
             $newPemakaian->keterangan = $request->keterangan ?? NULL;
+            $newPemakaian->total = $request->total ?? NULL;
             $newPemakaian->operator = $userOnNotif->name;
             $newPemakaian->save();
-
-            $updateStokBarangAsal = Barang::findOrFail($dataBarangAsal->id);
-            $updateStokBarangAsal->toko = intval($dataBarangAsal->toko) - intval($newPemakaian->qty);
-            $updateStokBarangAsal->last_qty = $dataBarangAsal->toko;
-            $updateStokBarangAsal->save();
-
-            if($request->barang_tujuan !== NULL) {                
-                $updateStokBarangTujuan = Barang::findOrFail($dataBarangTujuan->id);
-                $updateStokBarangTujuan->toko = intval($dataBarangTujuan->toko) + intval($newPemakaian->qty);
-                $updateStokBarangTujuan->last_qty = $dataBarangTujuan->toko;
-                $updateStokBarangTujuan->save();
-            }
 
 
             $data_event = [
                 'routes' => 'pemakaian-barang',
                 'alert' => 'success',
                 'type' => 'add-data',
-                'notif' => "Pemakaian barang {$newPemakaian->nama_barang}, successfully added 🤙!",
+                'notif' => "Pemakaian barang {$newPemakaian->kode}, successfully added 🤙!",
                 'data' => $newPemakaian,
                 'user' => $userOnNotif
             ];
 
             event(new EventNotification($data_event));
 
-            // $newBarangTujuan = Barang::whereKode($newPemakaian->barang_tujuan)->first();
-
-            // $newPemakaianBarang = [
-            //     'nama_barang_asal' => $dataBarangAsal->nama,
-            //     'kode_barang_asal' => $newPemakaian->barang_asal,
-            //     'nama_barang_tujuan' => $dataBarangTujuan->nama,
-            //     'kode_barang_tujuan' => $newPemakaian->barang_tujuan,
-            //     'qty' => $newPemakaian->qty,
-            //     'stok_tujuan' => $newBarangTujuan->toko,
-            //     'satuan_asal' => $newBarangTujuan->satuan,
-            //     'satuan_tujuan' => $dataBarangTujuan->satuan,
-            //     'keperluan' => $newPemakaian->keperluan,
-            //     'keterangan' => $newPemakaian->keterangan
-            // ];
-
             return response()->json([
                 'success' => true,
-                'message' => "Pemakaian barang {$newPemakaian->nama_barang}, successfully added ✨!",
+                'message' => "Pemakaian barang {$newPemakaian->kode}, successfully added ✨!",
                 'data' => $newPemakaian
             ], 200);
 
@@ -163,23 +133,46 @@ class DataPemakaianBarangController extends Controller
     public function show($id)
     {
         try {
-            $query = PemakaianBarang::query()
+            $pemakaianBarang = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.barang_asal', 'pemakaian_barangs.qty', 'pemakaian_barangs.barang_tujuan', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.operator', 'barang_asal.kode as kode_barang_asal', 'barang_asal.nama as nama_barang_asal', 'barang_asal.toko as stok_barangasal', 'barang_asal.last_qty as last_qty_barangasal', 'barang_asal.satuan as satuan_barang_asal', 'barang_tujuan.kode as kode_barang_tujuan', 'barang_tujuan.nama as nama_barang_tujuan', 'barang_tujuan.toko as stok_barangtujuan', 'barang_tujuan.last_qty as last_qty_barangtujuan', 'barang_tujuan.satuan as satuan_barang_tujuan')
-            ->leftJoin('barang as barang_asal', function($join) {
-                $join->on('pemakaian_barangs.barang_asal', '=', 'barang_asal.kode');
-            })
-            ->leftJoin('barang as barang_tujuan', function($join) {
-                $join->on('pemakaian_barangs.barang_tujuan', '=', 'barang_tujuan.kode');
-            })
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.total', 'pemakaian_barangs.operator', 'itempemakaian.kode_pemakaian', 'itempemakaian.barang_asal as barang_asal', 'itempemakaian.qty_asal as qty_asal', 'itempemakaian.barang_tujuan as barang_tujuan', 'itempemakaian.qty_tujuan as qty_tujuan', 'itempemakaian.harga', 'itempemakaian.supplier', 
+                'barang_asal.kode as kode_barang_asal', 
+                'barang_asal.toko as stok_barang_asal', 
+                'barang_asal.supplier as barang_supplier_asal',
+                'barang_tujuan.kode as kode_barang_tujuan', 
+                'barang_tujuan.toko as stok_barang_tujuan', 
+                'barang_tujuan.supplier as barang_supplier_tujuan'
+            )
+            ->leftJoin('itempemakaian', 'pemakaian_barangs.kode', '=', 'itempemakaian.kode_pemakaian')
+            ->leftJoin('barang as barang_asal', 'itempemakaian.barang_asal', '=', 'barang_asal.kode')
+            ->leftJoin('barang as barang_tujuan', 'itempemakaian.barang_tujuan', '=', 'barang_tujuan.kode')
             ->where('pemakaian_barangs.id', $id);
 
-            $pemakaian_barang = $query->first();
+            $pemakaian_barang = $pemakaianBarang->first();
+
+            $itemPemakaian = ItemPemakaian::query()
+            ->select('itempemakaian.id', 'itempemakaian.kode_pemakaian', 'itempemakaian.barang_asal as barang_asal', 'itempemakaian.qty_asal as qty_asal', 'itempemakaian.barang_tujuan as barang_tujuan', 'itempemakaian.qty_tujuan as qty_tujuan', 'itempemakaian.harga', 'itempemakaian.total', 'itempemakaian.supplier', 
+                'barang_asal.kode as kode_barang_asal',
+                'barang_asal.nama as nama_barang_asal', 
+                'barang_asal.toko as stok_barang_asal', 
+                'barang_asal.satuan as satuan_barang_asal',
+                'barang_asal.supplier as barang_supplier_asal',
+                'barang_tujuan.kode as kode_barang_tujuan', 
+                'barang_tujuan.nama as nama_barang_tujuan',
+                'barang_tujuan.toko as stok_barang_tujuan',
+                'barang_tujuan.satuan as satuan_barang_tujuan',
+                'barang_tujuan.supplier as barang_supplier_tujuan'
+            )
+            ->leftJoin('barang as barang_asal', 'itempemakaian.barang_asal', '=', 'barang_asal.kode')
+            ->leftJoin('barang as barang_tujuan', 'itempemakaian.barang_tujuan', '=', 'barang_tujuan.kode')
+            ->where('itempemakaian.kode_pemakaian', '=', $pemakaian_barang->kode);
+            $items = $itemPemakaian->get();
             
             return response()->Json([
                 'success' => true,
                 'message' => "Detail pemakaian barang {$pemakaian_barang->kode}",
-                'data' => $pemakaian_barang
+                'data' => $pemakaian_barang,
+                'items' => $items
             ]);
         } catch (\Throwable $th) {
             throw $th;

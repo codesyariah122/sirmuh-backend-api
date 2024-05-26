@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{ItemPemakaian,  Barang, Supplier};
+use App\Models\{ItemPemakaian,  Barang, Supplier, PemakaianBarang};
 use Auth;
 
 class DataItemPemakaianBarangController extends Controller
@@ -47,27 +47,25 @@ class DataItemPemakaianBarangController extends Controller
         try {
             $data = $request->all();
 
-            // dd($data); die;
+            foreach($data['barangs'] as $item) {
+                $newItem = new ItemPemakaian;
+                $dataSupplier = Supplier::findOrFail($item['supplier_id']);
+                $newItem->kode_pemakaian = $data['kode'];
+                $newItem->barang_asal = $item['kode_barang'];
+                $newItem->harga = $item['harga'];
+                $newItem->total = $item['qty'] > 0 ? intval($item['harga']) * $item['qty'] : intval($item['harga']);
+                $newItem->supplier = $dataSupplier->kode;
+                $newItem->save();
 
-            $dataSupplier = Supplier::findOrFail($data['barang']['supplier_id']);
+                return response()->json([
+                    'success' => true,
+                    'message' => "New item pemakaian {$newItem->barang_asal}, successfully added✨",
+                    'draft' => true,
+                    'item_pemakaian_id' => $newItem->id,
+                    'data' => $newItem
+                ]);
+            }
 
-            $newItem = new ItemPemakaian;
-
-            $newItem->kode_pemakaian = $data['kode'];
-            $newItem->draft = $data['draft'];
-            $newItem->barang_asal = $data['barang']['kode_barang'];
-            $newItem->harga = $data['barang']['harga'];
-            $newItem->total = $data['barang']['qty'] > 0 ? intval($data['barang']['harga']) * $data['barang']['qty'] : intval($data['barang']['harga']);
-            $newItem->supplier = $dataSupplier->kode;
-            $newItem->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => "New item pemakaian {$newItem->barang_asal}, successfully added✨",
-                'draft' => true,
-                'item_pemakaian_id' => $newItem->id,
-                'data' => $newItem
-            ]);
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -82,17 +80,26 @@ class DataItemPemakaianBarangController extends Controller
     public function show($id)
     {
      try {
-        $dataItem = ItemPemakaian::whereKodePemakaian($id)->first();
-        $item = ItemPemakaian::query()
-        ->select('itempemakaian.id','itempemakaian.kode_pemakaian', 'itempemakaian.draft', 'itempemakaian.barang_asal', 'itempemakaian.qty_asal', 'itempemakaian.barang_tujuan', 'itempemakaian.qty_tujuan', 'itempemakaian.harga', 'itempemakaian.biaya', 'itempemakaian.total', 'itempemakaian.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+        $detailPemakaian = PemakaianBarang::whereKode($id)->first();
+        $dataPemakaian = PemakaianBarang::findOrFail($detailPemakaian->id);
+
+        $items = ItemPemakaian::query()
+        ->select('itempemakaian.id','itempemakaian.kode_pemakaian', 'itempemakaian.barang_asal', 'itempemakaian.qty_asal', 'itempemakaian.barang_tujuan', 'itempemakaian.qty_tujuan', 'itempemakaian.harga', 'itempemakaian.biaya', 'itempemakaian.total', 'itempemakaian.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
         ->leftJoin('barang', 'itempemakaian.barang_asal', '=', 'barang.kode')
         ->leftJoin('supplier', 'itempemakaian.supplier', '=', 'supplier.kode')
-        ->findOrFail($dataItem->id);
+        ->where('itempemakaian.kode_pemakaian', $id)
+        ->get();
+
+        $lastItem = $items->last();
+
+        $lastItemId = $lastItem ? $lastItem->id : null;
 
         return response()->json([
             'success' => true,
-            'message' => "Show item pemakaian barang {$item->kode}",
-            'data' => $item
+            'message' => "Show item pemakaian barang {$id}",
+            'data' => $items,
+            'detail' => $dataPemakaian,
+            'last_item_pemakaian_id' => $lastItemId
         ]);
     } catch (\Throwable $th) {
         throw $th;
@@ -124,7 +131,7 @@ class DataItemPemakaianBarangController extends Controller
             $dataItemPemakaian = ItemPemakaian::findOrFail($id);
             $dataItemPemakaian->qty_asal = $data['qty'];
             $dataItemPemakaian->harga = $data['harga'];
-            $dataItemPemakaian->total = $dataItemPemakaian->harga * $data['qty'];
+            $dataItemPemakaian->total = intval($data['qty']) * intval($data['harga']);
             $dataItemPemakaian->save();
 
             return response()->json([
@@ -145,6 +152,17 @@ class DataItemPemakaianBarangController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $itemPemakaian = ItemPemakaian::findOrFail($id);
+            $itemPemakaian->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Item pemakaian {$itemPemakaian->kode}, successfully deleted✨",
+                'data' => $itemPemakaian
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

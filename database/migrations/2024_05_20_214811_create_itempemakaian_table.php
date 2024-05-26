@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('itempemakaian', function (Blueprint $table) {
             $table->id();
             $table->string('kode_pemakaian')->nullable();
-            $table->boolean('draft')->nullable();
             $table->string('barang_asal')->nullable();
             $table->decimal('qty_asal', 15,2)->nullable();
             $table->string('barang_tujuan')->nullable();

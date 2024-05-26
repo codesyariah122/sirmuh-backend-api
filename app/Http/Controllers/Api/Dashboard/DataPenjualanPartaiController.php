@@ -156,6 +156,13 @@ class DataPenjualanPartaiController extends Controller
             $newPenjualanToko->draft = $data['draft'] ? 1 : 0;
             $newPenjualanToko->kode_kas = $kas->kode;
             $newPenjualanToko->diskon = $data['diskon'];
+            $newPenjualanToko->tax = $data['ppn'];
+
+            if($data['ppn'] > 0) {
+                $ppnAmount = ($data['ppn'] / 100) * $data['jumlah'];
+                $totalSetelahPPN = $data['jumlah'] - $ppnAmount;
+                $newPenjualanToko->tax_rupiah = $totalSetelahPPN;
+            }
 
             if(isset($data['jumlah']) && is_numeric($data['jumlah'])) {
                 $newPenjualanToko->jumlah = $data['jumlah'];
@@ -413,7 +420,7 @@ class DataPenjualanPartaiController extends Controller
         try {
             $penjualan = Penjualan::query()
             ->select(
-                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali', 'penjualan.dikirim', 'penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'penjualan.receive', 'penjualan.status','penjualan.biayakirim', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
+                'penjualan.id','penjualan.kode', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.diskon','penjualan.tax', 'penjualan.tax_rupiah','penjualan.jumlah', 'penjualan.bayar', 'penjualan.kembali',  'penjualan.dikirim', 'penjualan.operator', 'penjualan.jt as tempo' ,'penjualan.lunas', 'penjualan.visa', 'penjualan.piutang', 'penjualan.po', 'penjualan.receive', 'penjualan.status','penjualan.biayakirim',  'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','pelanggan.id as id_pelanggan','pelanggan.kode as kode_pelanggan','pelanggan.nama as nama_pelanggan', 'pelanggan.alamat'
             )
             ->leftJoin('pelanggan', 'penjualan.pelanggan', '=',  'pelanggan.kode')
             ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')

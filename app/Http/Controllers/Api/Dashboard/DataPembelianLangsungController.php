@@ -383,7 +383,7 @@ class DataPembelianLangsungController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.kas_biaya', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'pembelian.biayabongkar', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.kas_biaya', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'pembelian.biayabongkar', 'pembelian.created_at', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->leftJoin('return_pembelian', 'pembelian.kode', '=', 'return_pembelian.no_faktur')
@@ -554,11 +554,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
