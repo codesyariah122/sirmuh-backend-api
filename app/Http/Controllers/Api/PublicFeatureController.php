@@ -49,9 +49,8 @@ class PublicFeatureController extends Controller
             return view('detail', compact('helpers'), ['detail' => $detailData, 'type' => $type, 'nama' => "Detail Barang {$detailData->nama}"]);
 
         } catch (\Throwable $th) {
-            // return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
-            throw $th;
-            
+            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
+            // throw $th;
         }
     }
 
