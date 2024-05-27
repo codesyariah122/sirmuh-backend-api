@@ -218,33 +218,33 @@ class DataBarangController extends Controller
     public function barang_by_warehouse(Request $request)
     {
         try {
-         $keywords = $request->query('keywords');
-         $kategori = $request->query('kategori');
-         $endDate = $request->query('tgl_terakhir');
-         $barcode = $request->query('barcode');
-         $startDate = $request->query('start_date');
-         $sortName = $request->query('sort_name');
-         $sortType = $request->query('sort_type');
+           $keywords = $request->query('keywords');
+           $kategori = $request->query('kategori');
+           $endDate = $request->query('tgl_terakhir');
+           $barcode = $request->query('barcode');
+           $startDate = $request->query('start_date');
+           $sortName = $request->query('sort_name');
+           $sortType = $request->query('sort_type');
 
-         $query = Barang::select('kategori_barang as nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
-         ->whereNull('deleted_at')
-         ->groupBy('kategori_barang','satuan')
-         ->when($keywords, function ($query) use ($keywords) {
+           $query = Barang::select('kategori_barang as nama', 'satuan', DB::raw('SUM(toko) as total_stok'))
+           ->whereNull('deleted_at')
+           ->groupBy('kategori_barang','satuan')
+           ->when($keywords, function ($query) use ($keywords) {
             return $query->where(function ($query) use ($keywords) {
                 $query->where('nama', 'like', '%' . $keywords . '%')
                 ->orWhere('kode', 'like', '%' . $keywords . '%');
             });
         })
-         ->when($kategori, function ($query) use ($kategori) {
+           ->when($kategori, function ($query) use ($kategori) {
             return $query->where('kategori', $kategori );
         });
 
 
-         if($sortName && $sortType) {
-             $barangs = $query
-             ->orderBy($sortName, $sortType)
-             ->paginate(10);
-         } else {
+           if($sortName && $sortType) {
+               $barangs = $query
+               ->orderBy($sortName, $sortType)
+               ->paginate(10);
+           } else {
             $barangs =$query
             ->orderBy('nama', 'ASC')
             ->paginate(10);
@@ -258,32 +258,32 @@ class DataBarangController extends Controller
 public function barang_all(Request $request)
 {
     try {
-     $keywords = $request->query('keywords');
-     $kategori = $request->query('kategori');
-     $endDate = $request->query('tgl_terakhir');
-     $barcode = $request->query('barcode');
-     $startDate = $request->query('start_date');
-     $sortName = $request->query('sort_name');
-     $sortType = $request->query('sort_type');
+       $keywords = $request->query('keywords');
+       $kategori = $request->query('kategori');
+       $endDate = $request->query('tgl_terakhir');
+       $barcode = $request->query('barcode');
+       $startDate = $request->query('start_date');
+       $sortName = $request->query('sort_name');
+       $sortType = $request->query('sort_type');
 
-     $query = Barang::select('id', 'kode', 'nama','kategori_barang', 'satuan', 'toko as total_stok')
-     ->whereNull('deleted_at')
-     ->when($keywords, function ($query) use ($keywords) {
+       $query = Barang::select('id', 'kode', 'nama','kategori_barang', 'satuan', 'toko as total_stok')
+       ->whereNull('deleted_at')
+       ->when($keywords, function ($query) use ($keywords) {
         return $query->where(function ($query) use ($keywords) {
             $query->where('nama', 'like', '%' . $keywords . '%')
             ->orWhere('kode', 'like', '%' . $keywords . '%');
         });
     })
-     ->when($kategori, function ($query) use ($kategori) {
+       ->when($kategori, function ($query) use ($kategori) {
         return $query->where('kategori', $kategori );
     });
 
 
-     if($sortName && $sortType) {
-         $barangs = $query
-         ->orderBy($sortName, $sortType)
-         ->paginate(10);
-     } else {
+       if($sortName && $sortType) {
+           $barangs = $query
+           ->orderBy($sortName, $sortType)
+           ->paginate(10);
+       } else {
         $barangs =$query
         ->orderBy('nama', 'ASC')
         ->paginate(10);
@@ -437,9 +437,10 @@ public function detail_by_barcode($barcode)
             
             $newBarang->isi = $request->isi !== null ? $request->isi : null;
             $newBarang->toko = $request->stok !== null ? $request->stok : null;
-            $newBarang->hpp = $request->hargabeli !== null ? $request->hargabeli : null;
-            $newBarang->harga_toko = $request->hargajual !== 'null' ? $request->hargajual : null;
-            $newBarang->diskon = $request->diskon !== 'null' ? $request->diskon : null;
+            $newBarang->hpp = $request->hargabeli !== null ? $request->hargabeli : NULL;
+            $newBarang->harga_toko = $request->hargajual !== 'null' ? $request->hargajual : NULL;
+            $newBarang->harga_partai = $request->hargapartai !== 'null' ? $request->hargapartai : NULL;
+            $newBarang->diskon = $request->diskon !== 'null' ? $request->diskon : NULL;
 
             $checkSupplier = Supplier::where('kode', $request->kategori)->count();
             if($checkSupplier > 0) {
@@ -765,7 +766,7 @@ public function detail_by_barcode($barcode)
 
         public function destroy($id)
         {
-           try {
+         try {
             $user = Auth::user();
 
             $userRole = Roles::findOrFail($user->role);
@@ -833,18 +834,18 @@ public function detail_by_barcode($barcode)
     public function barang_by_suppliers(Request $request, $id) 
     {   
         try {
-         $query = DB::table('barang')
-         ->whereNull('barang.deleted_at')
-         ->join('supplier', 'barang.supplier', '=', 'supplier.kode')
-         ->where('supplier.id', $id)
-         ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat');
+           $query = DB::table('barang')
+           ->whereNull('barang.deleted_at')
+           ->join('supplier', 'barang.supplier', '=', 'supplier.kode')
+           ->where('supplier.id', $id)
+           ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko','barang.hpp', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat');
 
-         $barangs = $query
-         ->orderByDesc('barang.id')
-         ->get();
+           $barangs = $query
+           ->orderByDesc('barang.id')
+           ->get();
 
-         return new ResponseDataCollect($barangs);
-     }catch (\Throwable $th) {
+           return new ResponseDataCollect($barangs);
+       }catch (\Throwable $th) {
         throw $th;
     }
 }

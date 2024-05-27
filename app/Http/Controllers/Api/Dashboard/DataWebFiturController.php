@@ -1481,8 +1481,8 @@ class DataWebFiturController extends Controller
             $type = $request->type;
 
             switch($type) {
-               case "pembelian":
-               foreach ($barangs as $barang) {
+             case "pembelian":
+             foreach ($barangs as $barang) {
                 $updateBarang = Barang::findOrFail($barang['id']);
                 if($barang['qty'] > $updateBarang->last_qty){
                     $bindStok = $barang['qty'] + $updateBarang->last_qty;
@@ -1581,8 +1581,8 @@ public function edit_stok_data_barang(Request $request)
         $type = $request->type;
 
         switch($type) {
-           case "pembelian":
-           foreach ($barangs as $barang) {
+         case "pembelian":
+         foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
                 // if($barang['qty'] > $updateBarang->last_qty){
                 //     $newStok = $updateBarang->toko + $barang['qty'];
@@ -1646,8 +1646,8 @@ public function update_stok_barang_all(Request $request)
         $type = $request->type;
 
         switch($type) {
-           case "pembelian":
-           foreach ($barangs as $barang) {
+         case "pembelian":
+         foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
                 // if($barang['qty'] > $updateBarang->last_qty){
                 //     $newStok = $updateBarang->toko + $barang['qty'];
@@ -2019,8 +2019,11 @@ public function update_item_penjualan(Request $request)
                 ->where('draft', 1)
                 ->first();
 
-
-                $harga = $barang['harga_partai'];
+                if($barang['harga_toko'] !== NULL) {
+                    $harga = $barang['harga_toko'];
+                } else {
+                    $harga = $barang['harga_partai'];
+                }
 
                 if ($existingItem) {
                     $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
@@ -2092,7 +2095,11 @@ public function update_item_penjualan(Request $request)
                 ->where('draft', 1)
                 ->first();
 
-                $harga = $barang['harga_partai'];
+                if($barang['harga_toko'] !== NULL) {
+                    $harga = $barang['harga_toko'];
+                } else {
+                    $harga = $barang['harga_partai'];
+                }
 
                 if ($existingItem) {
                     $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
@@ -2310,18 +2317,18 @@ public function update_faktur_terakhir(Request $request)
             $updateFakturTerakhir->save();
 
         } else {
-           $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
-           ->first();
-           $updateFakturTerakhir->faktur = $request->faktur;
-           $updateFakturTerakhir->tanggal = $today;
-           $updateFakturTerakhir->save();
+         $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+         ->first();
+         $updateFakturTerakhir->faktur = $request->faktur;
+         $updateFakturTerakhir->tanggal = $today;
+         $updateFakturTerakhir->save();
 
-       }
-       return response()->json([
+     }
+     return response()->json([
         'success' => true,
         'message' => 'Faktur terakhir terupdate!'
     ], 200);
-   } catch (\Throwable $th) {
+ } catch (\Throwable $th) {
     throw $th;
 }
 }

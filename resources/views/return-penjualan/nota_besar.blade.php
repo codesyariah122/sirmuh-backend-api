@@ -48,15 +48,15 @@
                 Kepada
             </td>
             <td rowspan="6" width="40%" style="vertical-align: top;">
-             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-             @else
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-             @endif
-             <br>
-             <span>{{ $toko['name'] }} </span>                
-             <br>
-             <address>
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
+               <span>{{ $toko['name'] }} </span>                
+               <br>
+               <address>
                 {{ $toko['address'] }}
             </address>
             <br>
@@ -100,7 +100,7 @@
             <td class="text-left">{{ $penjualan->nama_barang }} ({{$penjualan->kode_barang}})</td>
             <td class="text-left">{{ $penjualan->nama_supplier }} ({{$penjualan->supplier}})</td>
             <td class="text-right">{{ $helpers->format_uang($penjualan->harga) }}</td>
-            <td class="text-center">{{ $penjualan->qty."".$penjualan->satuan }}</td>
+            <td class="text-center">{{ intval($penjualan->qty)."".$penjualan->satuan }}</td>
             <td class="text-center">{{ $penjualan->kembali !== 'True' ? "Belum Diterima" : "Sudah Diterima" }}</td>
             <td class="text-right">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
         </tr>
