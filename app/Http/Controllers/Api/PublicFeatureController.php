@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\{WebFeatureHelpers};
@@ -24,14 +25,17 @@ class PublicFeatureController extends Controller
         try {
             $type = $request->query('type');
             $query = $request->query('query');
+            $helpers = $this->feature_helpers;
 
             switch($type) {
                 case "barang":
-                $detailData = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier', 'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
-                ->where('kode_barcode', $query)
+                $detailData = Barang::query()
+                ->whereNull('barang.deleted_at')
+                ->select('barang.id', 'barang.kode as kode_barang', 'barang.nama as nama_barang', 'barang.photo', 'barang.kategori_barang', 'barang.satuanbeli', 'barang.satuan', 'barang.isi', 'barang.toko',  'barang.hpp', 'barang.harga_toko', 'barang.diskon', 'barang.jenis', 'barang.supplier', 'barang.kode_barcode', 'barang.tgl_terakhir', 'barang.harga_terakhir', 'barang.ket', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+                ->leftJoin('supplier', 'barang.supplier', 'supplier.kode')
+                ->where('barang.kode_barcode', $query)
                 ->with("kategoris")
-                ->with('suppliers')
+                // ->with('suppliers')
                 ->first();
                 break;
 
@@ -39,10 +43,15 @@ class PublicFeatureController extends Controller
                 $detailData = [];
             }
 
-            return view('detail', ['detail' => $detailData, 'type' => $type, 'nama' => "Detail Barang {$detailData->nama}"]);
+            $barcodeFileName = $helpers->generateBarcode($detailData->kode_barcode);
+            $detailData->kode_barcode = Storage::url("barcodes/{$detailData->kode_barcode}_barcode.png");
+
+            return view('detail', compact('helpers'), ['detail' => $detailData, 'type' => $type, 'nama' => "Detail Barang {$detailData->nama}"]);
 
         } catch (\Throwable $th) {
+            // return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
             throw $th;
+            
         }
     }
 
@@ -55,7 +64,7 @@ class PublicFeatureController extends Controller
             switch($type) {
             	case "barang":
             	$detailData = Barang::whereNull('deleted_at')
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier',  'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'kategori_barang', 'satuanbeli', 'satuan', 'isi', 'toko',  'hpp', 'harga_toko', 'diskon', 'jenis', 'supplier',  'kode_barcode', 'tgl_terakhir', 'harga_terakhir', 'ket')
                 ->whereKodeBarcode($query)
                 ->with("kategoris")
                 ->with('suppliers')

@@ -477,75 +477,71 @@ class DataHutangController extends Controller
 
     public function cetak_nota($type, $kode, $id_perusahaan)
     {
-        $ref_code = $kode;
-        $nota_type = $type === 'nota-kecil' ? "Nota Kecil" : "Nota Besar";
-        $helpers = $this->helpers;
-        $today = now()->toDateString();
-        $toko = Toko::whereId($id_perusahaan)
-        ->select("name", "logo", "address", "kota", "provinsi")
-        ->first();
+        try {
+            $ref_code = $kode;
+            $nota_type = $type === 'nota-kecil' ? "Nota Kecil" : "Nota Besar";
+            $helpers = $this->helpers;
+            $today = now()->toDateString();
+            $toko = Toko::whereId($id_perusahaan)
+            ->select("name", "logo", "address", "kota", "provinsi")
+            ->first();
 
-        $query = Hutang::query()
-        ->select(
-            'hutang.kode', 'hutang.tanggal','hutang.supplier','hutang.jumlah as jml_hutang','hutang.bayar as byr_hutang','hutang.operator',
-            'itemhutang.jumlah as hutang_jumlah',
-            'itemhutang.jumlah_hutang as jumlah_hutang',
-            'pembelian.kode as kode_transaksi',
-            'pembelian.tanggal as tanggal_pembelian',
-            'pembelian.kode_kas',
-            'pembelian.jumlah as jumlah_pembelian',
-            'pembelian.bayar as bayar_pembelian',
-            'pembelian.diterima',
-            'pembelian.visa',
-            'pembelian.po',
-            'pembelian.jt',
-            'pembelian.lunas',
-            'pembelian.hutang',
-            'pembelian.biayabongkar',
-            'itempembelian.kode_barang',
-            'itempembelian.nama_barang',
-            'itempembelian.qty',
-            'itempembelian.satuan',
-            'itempembelian.harga_beli',
-            'itempembelian.supplier',
-            'supplier.nama as nama_supplier',
-            'supplier.kode as kode_supplier',
-            'kas.kode as kode_kas',
-            'kas.nama',
-            'kas.saldo',
-            'pembayaran_angsuran.*'
-        )
-        ->leftJoin('itemhutang', 'hutang.kd_beli', '=', 'itemhutang.kode')
-        ->leftJoin('pembelian', 'pembelian.kode', '=', 'hutang.kd_beli')
-        ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
-        ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
-        ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
-        ->leftJoin('pembayaran_angsuran', 'hutang.kode', '=', 'pembayaran_angsuran.kode')
-        ->where('hutang.kode', $kode);
+            $query = Hutang::query()
+            ->select(
+                'hutang.kode', 'hutang.tanggal','hutang.supplier','hutang.jumlah as jml_hutang','hutang.bayar as byr_hutang','hutang.operator',
+                'itemhutang.jumlah as hutang_jumlah',
+                'itemhutang.jumlah_hutang as jumlah_hutang',
+                'pembelian.kode as kode_transaksi',
+                'pembelian.tanggal as tanggal_pembelian',
+                'pembelian.kode_kas',
+                'pembelian.jumlah as jumlah_pembelian',
+                'pembelian.bayar as bayar_pembelian',
+                'pembelian.diterima',
+                'pembelian.visa',
+                'pembelian.po',
+                'pembelian.jt',
+                'pembelian.lunas',
+                'pembelian.hutang',
+                'pembelian.biayabongkar',
+                'itempembelian.kode_barang',
+                'itempembelian.nama_barang',
+                'itempembelian.qty',
+                'itempembelian.satuan',
+                'itempembelian.harga_beli',
+                'itempembelian.supplier',
+                'supplier.nama as nama_supplier',
+                'supplier.kode as kode_supplier',
+                'kas.kode as kode_kas',
+                'kas.nama',
+                'kas.saldo',
+                'pembayaran_angsuran.*'
+            )
+            ->leftJoin('itemhutang', 'hutang.kd_beli', '=', 'itemhutang.kode')
+            ->leftJoin('pembelian', 'pembelian.kode', '=', 'hutang.kd_beli')
+            ->leftJoin('itempembelian', 'itempembelian.kode', '=', 'pembelian.kode')
+            ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
+            ->leftJoin('pembayaran_angsuran', 'hutang.kode', '=', 'pembayaran_angsuran.kode')
+            ->where('hutang.kode', $kode);
 
-        $hutang = $query->first();
-        $angsurans = PembayaranAngsuran::whereKode($hutang->kode)->get();
-        $angsuran_awal = PembayaranAngsuran::whereKode($hutang->kode)->first();
+            $hutang = $query->first();
+            $angsurans = PembayaranAngsuran::whereKode($hutang->kode)->get();
+            $angsuran_awal = PembayaranAngsuran::whereKode($hutang->kode)->first();
 
-        $setting = "";
-        // echo "<pre>";
-        // var_dump($hutang);
-        // var_dump($hutang->hutang);
-        // var_dump($hutang->jml_hutang);
-        // var_dump($hutang->angsuran_ke);
-        // var_dump($hutang->bayar_angsuran); 
-        // echo "</pre>";
-        // die;
+            $setting = "";
 
-        switch ($type) {
-            case "nota-kecil":
-            return view('bayar-hutang.nota_kecil', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
-            break;
-            case "nota-besar":
-            $pdf = PDF::loadView('bayar-hutang.nota_besar', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
-            $pdf->setPaper(0, 0, 609, 440, 'portrait');
-            return $pdf->stream('Bayar-Hutang-' . $hutang->kode . '.pdf');
-            break;
+            switch ($type) {
+                case "nota-kecil":
+                return view('bayar-hutang.nota_kecil', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
+                break;
+                case "nota-besar":
+                $pdf = PDF::loadView('bayar-hutang.nota_besar', compact('hutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
+                $pdf->setPaper(0, 0, 609, 440, 'portrait');
+                return $pdf->stream('Bayar-Hutang-' . $hutang->kode . '.pdf');
+                break;
+            }
+        } catch (\Throwable $th) {
+            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
         }
     }
 }

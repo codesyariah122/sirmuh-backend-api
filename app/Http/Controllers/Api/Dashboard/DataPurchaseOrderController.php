@@ -450,7 +450,7 @@ class DataPurchaseOrderController extends Controller
                 $angsuran->kode_faktur = $updatePembelian->kode;
                 $angsuran->bayar_angsuran = $data['bayar'] ? $bayar - $data['jumlah_saldo'] : 0;
                 $angsuran->jumlah = $item_hutang->jumlah_hutang;
-                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$updatePembelian->kode_kas}";
+                $angsuran->keterangan = "Pembayaran angsuran awal melalui kas : {$updatePembelian->kode_kas}";
                 $angsuran->save();
 
                 // $updateKas = Kas::findOrFail($kas->id);
@@ -562,11 +562,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();

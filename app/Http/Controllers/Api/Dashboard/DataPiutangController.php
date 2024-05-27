@@ -242,7 +242,7 @@ class DataPiutangController extends Controller
                     $updatePiutang->jumlah = $jmlHutang - $bayar;
                     $updatePiutang->bayar = intval($piutang->bayar) + $bayar;
                 }
-                $updatePiutang->ket = $request->ket ?? "";
+                $updatePiutang->ket = $request->keterangan ?? "";
                 $updatePiutang->save();
 
                 $dataItemHutang = ItemPiutang::whereKode($updatePiutang->kode)->first();
@@ -377,75 +377,70 @@ class DataPiutangController extends Controller
 
     public function cetak_nota($type, $kode, $id_perusahaan)
     {
-        $ref_code = $kode;
-        $nota_type = $type === 'nota-kecil' ? "Nota Kecil" : "Nota Besar";
-        $helpers = $this->helpers;
-        $today = now()->toDateString();
-        $toko = Toko::whereId($id_perusahaan)
-        ->select("name", "logo", "address", "kota", "provinsi")
-        ->first();
+        try {
+            $ref_code = $kode;
+            $nota_type = $type === 'nota-kecil' ? "Nota Kecil" : "Nota Besar";
+            $helpers = $this->helpers;
+            $today = now()->toDateString();
+            $toko = Toko::whereId($id_perusahaan)
+            ->select("name", "logo", "address", "kota", "provinsi")
+            ->first();
 
-        $query = Piutang::query()
-        ->select(
-            'piutang.kode', 'piutang.tanggal','piutang.pelanggan','piutang.jumlah as jml_piutang','piutang.bayar as byr_piutang','piutang.operator',
-            'itempiutang.jumlah as piutang_jumlah',
-            'itempiutang.jumlah_piutang as jumlah_piutang',
-            'penjualan.kode as kode_transaksi',
-            'penjualan.tanggal as tanggal_penjualan',
-            'penjualan.kode_kas',
-            'penjualan.jumlah as jumlah_penjualan',
-            'penjualan.bayar as bayar_penjualan',
-            'penjualan.kembali',
-            'penjualan.visa',
-            'penjualan.po',
-            'penjualan.jenis as jenis_penjualan',
-            'penjualan.jt',
-            'penjualan.lunas as status_lunas',
-            'penjualan.piutang as piutang_penjualan',
-            'itempenjualan.kode_barang',
-            'itempenjualan.nama_barang',
-            'itempenjualan.qty',
-            'itempenjualan.satuan',
-            'itempenjualan.harga',
-            'itempenjualan.pelanggan',
-            'pelanggan.nama as nama_pelanggan',
-            'pelanggan.kode as kode_pelanggan',
-            'kas.kode as kode_kas',
-            'kas.nama',
-            'kas.saldo',
-            'pembayaran_angsuran.*'
-        )
-        ->leftJoin('itempiutang', 'piutang.kd_jual', '=', 'itempiutang.kode')
-        ->leftJoin('penjualan', 'penjualan.kode', '=', 'piutang.kd_jual')
-        ->leftJoin('itempenjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
-        ->leftJoin('pelanggan', 'itempenjualan.pelanggan', '=', 'pelanggan.kode')
-        ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-        ->leftJoin('pembayaran_angsuran', 'piutang.kode', '=', 'pembayaran_angsuran.kode')
-        ->where('piutang.kode', $kode);
+            $query = Piutang::query()
+            ->select(
+                'piutang.kode', 'piutang.tanggal','piutang.pelanggan','piutang.jumlah as jml_piutang','piutang.bayar as byr_piutang','piutang.operator',
+                'itempiutang.jumlah as piutang_jumlah',
+                'itempiutang.jumlah_piutang as jumlah_piutang',
+                'penjualan.kode as kode_transaksi',
+                'penjualan.tanggal as tanggal_penjualan',
+                'penjualan.kode_kas',
+                'penjualan.jumlah as jumlah_penjualan',
+                'penjualan.bayar as bayar_penjualan',
+                'penjualan.kembali',
+                'penjualan.visa',
+                'penjualan.po',
+                'penjualan.jenis as jenis_penjualan',
+                'penjualan.jt',
+                'penjualan.lunas as status_lunas',
+                'penjualan.piutang as piutang_penjualan',
+                'itempenjualan.kode_barang',
+                'itempenjualan.nama_barang',
+                'itempenjualan.qty',
+                'itempenjualan.satuan',
+                'itempenjualan.harga',
+                'itempenjualan.pelanggan',
+                'pelanggan.nama as nama_pelanggan',
+                'pelanggan.kode as kode_pelanggan',
+                'kas.kode as kode_kas',
+                'kas.nama',
+                'kas.saldo',
+                'pembayaran_angsuran.*'
+            )
+            ->leftJoin('itempiutang', 'piutang.kd_jual', '=', 'itempiutang.kode')
+            ->leftJoin('penjualan', 'penjualan.kode', '=', 'piutang.kd_jual')
+            ->leftJoin('itempenjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
+            ->leftJoin('pelanggan', 'itempenjualan.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+            ->leftJoin('pembayaran_angsuran', 'piutang.kode', '=', 'pembayaran_angsuran.kode')
+            ->where('piutang.kode', $kode);
 
-        $piutang = $query->first();
-        $angsurans = PembayaranAngsuran::whereKode($piutang->kode)->get();
+            $piutang = $query->first();
+            $angsurans = PembayaranAngsuran::whereKode($piutang->kode)->get();
 
-        $setting = "";
+            $setting = "";
 
-        // echo "<pre>";
-        // var_dump($piutang);
-        // var_dump($piutang->hutang);
-        // var_dump($piutang->jml_hutang);
-        // var_dump($piutang->angsuran_ke);
-        // var_dump($piutang->bayar_angsuran); 
-        // echo "</pre>";
-        // die;
-
-        switch ($type) {
-            case "nota-kecil":
-            return view('terima-piutang.nota_kecil', compact('piutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
-            break;
-            case "nota-besar":
-            $pdf = PDF::loadView('terima-piutang.nota_besar', compact('piutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
-            $pdf->setPaper(0, 0, 609, 440, 'portrait');
-            return $pdf->stream('Terima-Piutang-' . $piutang->kode . '.pdf');
-            break;
+            switch ($type) {
+                case "nota-kecil":
+                return view('terima-piutang.nota_kecil', compact('piutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
+                break;
+                case "nota-besar":
+                $pdf = PDF::loadView('terima-piutang.nota_besar', compact('piutang', 'angsurans', 'kode', 'toko', 'nota_type', 'helpers'));
+                $pdf->setPaper(0, 0, 609, 440, 'portrait');
+                return $pdf->stream('Terima-Piutang-' . $piutang->kode . '.pdf');
+                break;
+            }
+        } catch (\Throwable $th) {
+            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
         }
     }
 }

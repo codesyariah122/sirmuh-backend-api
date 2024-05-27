@@ -1,68 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {{-- @php
-    var_dump($detail->suppliers); die;
-    @endphp --}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{$nama}}</title>
+    <title>{{ $detail->nama }}</title>
     @vite(['resources/css/app.css'])
 </head>
 <body class="bg-gray-100">
-    <div class="container mx-auto my-10 p-5 bg-white rounded shadow-md">
-        <h1 class="text-2xl font-bold mb-5">{{ $detail->nama }}</h1>
+    <div class="container mx-auto my-10 p-5 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold mb-6 text-center">{{ $detail->nama }}</h1>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div>
+            <div class="flex justify-center">
                 @if($detail->photo)
-                <img src="{{ Storage::url($detail->photo) }}" alt="{{ $detail->nama }}" class="w-full h-auto rounded shadow-md">
+                <img src="{{ Storage::url($detail->photo) }}" alt="{{ $detail->nama }}" class="w-full max-w-md h-auto rounded-lg shadow-md">
                 @else
-                <img src="{{ asset('assets/images/default.png') }}" alt="{{ $detail->nama }}" class="w-full h-auto rounded shadow-md">
+                <img src="{{ asset('assets/images/default.png') }}" alt="{{ $detail->nama }}" class="w-full max-w-md h-auto rounded-lg shadow-md">
                 @endif
             </div>
             <div>
-                <table class="min-w-full bg-white">
+                <table class="min-w-full bg-white border-collapse">
                     <tbody>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Kode</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->kode }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Kategori</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->kategori }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Stok</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->toko }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Satuan Beli</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->satuanbeli }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Harga Toko</td>
-                            <td class="px-6 py-4 border-b border-gray-200">Rp {{ number_format($detail->harga_toko, 0, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Diskon</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->diskon }}%</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Supplier</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->supplier }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Kode Barcode</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->kode_barcode }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 border-b border-gray-200 font-bold">Keterangan</td>
-                            <td class="px-6 py-4 border-b border-gray-200">{{ $detail->ket }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                        @foreach ([
+                            'Kode' => $detail->kode_barang,
+                            'Kategori' => $detail->kategori_barang,
+                            'Stok' => intval($detail->toko).$detail->satuanbeli,
+                            'Harga Toko' => 'Rp ' . number_format($detail->harga_toko, 0, ',', '.'),
+                            'Diskon' => $detail->diskon . '%',
+                            'Supplier' => $detail->nama_supplier,
+                            'Kode Barcode' => '<img src="' . $detail->kode_barcode . '" class="w-[85px] h-[50px]" alt="barcode"/> <small class="font-semibold">'.$detail->kode_barang.'</small>'
+                            ] as $label => $value)
+                            <tr>
+                                <td class="px-6 py-4 border-b border-gray-200 font-bold text-gray-700">{{ $label }}</td>
+                                <td class="px-6 py-4 border-b border-gray-200">{!! $value !!}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-10 flex justify-center">
+                <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition duration-300">
+                    Add to Cart
+                </button>
             </div>
         </div>
-    </div>
-</body>
-</html>
+    </body>
+    </html>

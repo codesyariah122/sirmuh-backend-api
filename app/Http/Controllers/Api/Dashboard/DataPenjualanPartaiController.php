@@ -33,27 +33,27 @@ class DataPenjualanPartaiController extends Controller
     public function index(Request $request)
     {
         try {
-         $keywords = $request->query('keywords');
-         $today = now()->toDateString();
-         $now = now();
-         $startOfMonth = $now->startOfMonth()->toDateString();
-         $endOfMonth = $now->endOfMonth()->toDateString();
-         $pelanggan = $request->query('pelanggan');
-         $dateTransaction = $request->query('date_transaction');
-         $viewAll = $request->query('view_all');
-         $user = Auth::user();
+           $keywords = $request->query('keywords');
+           $today = now()->toDateString();
+           $now = now();
+           $startOfMonth = $now->startOfMonth()->toDateString();
+           $endOfMonth = $now->endOfMonth()->toDateString();
+           $pelanggan = $request->query('pelanggan');
+           $dateTransaction = $request->query('date_transaction');
+           $viewAll = $request->query('view_all');
+           $user = Auth::user();
 
-         $query = Penjualan::query()
-         ->select(
+           $query = Penjualan::query()
+           ->select(
             'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.tax', 'penjualan.tax_rupiah', 'penjualan.jumlah','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.biayakirim', 'penjualan.status', 'penjualan.receive', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
-         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-         ->orderByDesc('penjualan.id')
-         ->where('penjualan.jenis', 'PENJUALAN PARTAI')
-         ->limit(10);
+           ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+           ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+           ->orderByDesc('penjualan.id')
+           ->where('penjualan.jenis', 'PENJUALAN PARTAI')
+           ->limit(10);
 
-         if ($dateTransaction) {
+           if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
         }
 
@@ -219,7 +219,7 @@ class DataPenjualanPartaiController extends Controller
                 $angsuran->kode_faktur = $data['ref_code'];
                 $angsuran->bayar_angsuran = $data['diterima'];
                 $angsuran->jumlah = $item_piutang->jumlah;
-                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$newPenjualanToko->kode_kas}";
+                $angsuran->keterangan = "Pembayaran angsuran awal melalui kas : {$newPenjualanToko->kode_kas}";
                 $angsuran->save();
             } else {
                 if(intval($data['bayar']) >= intval($data['jumlah'])) {
@@ -352,60 +352,54 @@ class DataPenjualanPartaiController extends Controller
 
     public function cetak_nota($type, $kode, $id_perusahaan)
     {
-        $ref_code = $kode;
-        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
-        $helpers = $this->helpers;
-        $today = now()->toDateString();
-        $toko = Toko::whereId($id_perusahaan)
-        ->select("name","logo","address","kota","provinsi")
-        ->first();
+        try {
+            $ref_code = $kode;
+            $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+            $helpers = $this->helpers;
+            $today = now()->toDateString();
+            $toko = Toko::whereId($id_perusahaan)
+            ->select("name","logo","address","kota","provinsi")
+            ->first();
 
-            // echo "<pre>";
-            // var_dump($toko['name']); die;
-            // echo "</pre>";
-
-        $query = Penjualan::query()
-        ->select(
-            'penjualan.kode', 'penjualan.no_po', 'penjualan.draft', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.nama_pelanggan', 'penjualan.alamat_pelanggan', 'penjualan.member', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.angsuran', 'penjualan.subtotal', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.diskon', 'penjualan.diskon_rupiah','penjualan.tax','penjualan.tax_rupiah','penjualan.operator',
-            'itempenjualan.kode as kode_itempenjualan', 'itempenjualan.satuan', 'itempenjualan.qty', 'itempenjualan.harga',
-            'pelanggan.nama as pelanggan_nama',
-            'pelanggan.alamat as pelanggan_alamat',
-            'barang.kode as kode_barang',
-            'barang.nama as barang_nama',
-            'barang.satuan as barang_satuan',
-            'barang.harga_toko as harga_toko',
-            'kas.kode', 'kas.nama as nama_kas',
-            'kas.no_rek',
-            DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
-        )
-        ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-        ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
-        ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-        ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
+            $query = Penjualan::query()
+            ->select(
+                'penjualan.kode', 'penjualan.no_po', 'penjualan.draft', 'penjualan.tanggal', 'penjualan.pelanggan', 'penjualan.nama_pelanggan', 'penjualan.alamat_pelanggan', 'penjualan.member', 'penjualan.kode_kas', 'penjualan.keterangan', 'penjualan.angsuran', 'penjualan.subtotal', 'penjualan.jumlah', 'penjualan.bayar', 'penjualan.diskon', 'penjualan.diskon_rupiah','penjualan.tax','penjualan.tax_rupiah','penjualan.operator',
+                'itempenjualan.kode as kode_itempenjualan', 'itempenjualan.satuan', 'itempenjualan.qty', 'itempenjualan.harga',
+                'pelanggan.nama as pelanggan_nama',
+                'pelanggan.alamat as pelanggan_alamat',
+                'barang.kode as kode_barang',
+                'barang.nama as barang_nama',
+                'barang.satuan as barang_satuan',
+                'barang.harga_toko as harga_toko',
+                'kas.kode', 'kas.nama as nama_kas',
+                'kas.no_rek',
+                DB::raw('COALESCE(itempenjualan.kode, penjualan.kode) as kode')
+            )
+            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+            ->leftJoin('itempenjualan', 'penjualan.kode', '=', 'itempenjualan.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('barang', 'itempenjualan.kode_barang', '=', 'barang.kode')
                 // ->whereDate('pembelian.tanggal', '=', $today)
-        ->where('penjualan.jenis', 'PENJUALAN PARTAI')
-        ->where('penjualan.kode', $kode);
+            ->where('penjualan.jenis', 'PENJUALAN PARTAI')
+            ->where('penjualan.kode', $kode);
 
-        $barangs = $query->get();
-        $penjualan = $query->first();
+            $barangs = $query->get();
+            $penjualan = $query->first();
 
+            $setting = "";
 
-        // echo "<pre>";
-        // var_dump($query->get());
-        // echo "</pre>";
-        // die;
-
-        $setting = "";
-
-        switch($type) {
-            case "nota-kecil":
-            return view('penjualan.partai.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-            break;
-            case "nota-besar":
-            $pdf = PDF::loadView('penjualan.partai.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
-            $pdf->setPaper(0,0,350,440, 'potrait');
-            return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
-            break;
+            switch($type) {
+                case "nota-kecil":
+                return view('penjualan.partai.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+                break;
+                case "nota-besar":
+                $pdf = PDF::loadView('penjualan.partai.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
+                $pdf->setPaper(0,0,350,440, 'potrait');
+                return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
+                break;
+            }
+        } catch (\Throwable $th) {
+            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
         }
     }
 
@@ -608,11 +602,11 @@ class DataPenjualanPartaiController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
             $delete_penjualan = Penjualan::whereNull('deleted_at')
             ->where('jenis', 'PENJUALAN PARTAI')
             ->findOrFail($id);

@@ -302,50 +302,49 @@ class DataReturnPenjualanController extends Controller
 
     public function cetak_nota($type, $kode, $id_perusahaan)
     {
-        $ref_code = $kode;
-        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
-        $helpers = $this->helpers;
-        $today = now()->toDateString();
-        $toko = Toko::whereId($id_perusahaan)
-        ->select("name","logo","address","kota","provinsi")
-        ->first();
+        try {
+            $ref_code = $kode;
+            $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+            $helpers = $this->helpers;
+            $today = now()->toDateString();
+            $toko = Toko::whereId($id_perusahaan)
+            ->select("name","logo","address","kota","provinsi")
+            ->first();
 
-        $query = ReturnPenjualan::query()
-        ->select(
-            'return_penjualan.*',
-            'penjualan.tanggal as tanggal_penjualan', 'itempenjualan.kode as kode_item', 'itempenjualan.qty as qty_item', 'itempenjualan.last_qty', 'itempenjualan.harga as item_harga', 'itempenjualan.subtotal', 'itempenjualan.supplier',
-            'pelanggan.kode as kode_pelanggan',
-            'pelanggan.nama as nama_pelanggan',
-            'pelanggan.alamat as alamat_pelanggan',
-            'barang.nama as nama_barang',
-            'barang.satuan as satuan_barang',
-            'supplier.nama as nama_supplier'
-        )
-        ->leftJoin('penjualan', 'return_penjualan.no_faktur', '=', 'penjualan.kode')
-        ->leftJoin('itempenjualan', 'return_penjualan.no_faktur', '=', 'itempenjualan.kode')
-        ->leftJoin('pelanggan', 'return_penjualan.pelanggan', '=', 'pelanggan.kode')
-        ->leftJoin('supplier', 'itempenjualan.supplier', '=', 'supplier.kode')
-        ->leftJoin('barang', 'return_penjualan.kode_barang', '=', 'barang.kode')
-        ->orderByDesc('return_penjualan.id')
+            $query = ReturnPenjualan::query()
+            ->select(
+                'return_penjualan.*',
+                'penjualan.tanggal as tanggal_penjualan', 'itempenjualan.kode as kode_item', 'itempenjualan.qty as qty_item', 'itempenjualan.last_qty', 'itempenjualan.harga as item_harga', 'itempenjualan.subtotal', 'itempenjualan.supplier',
+                'pelanggan.kode as kode_pelanggan',
+                'pelanggan.nama as nama_pelanggan',
+                'pelanggan.alamat as alamat_pelanggan',
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang',
+                'supplier.nama as nama_supplier'
+            )
+            ->leftJoin('penjualan', 'return_penjualan.no_faktur', '=', 'penjualan.kode')
+            ->leftJoin('itempenjualan', 'return_penjualan.no_faktur', '=', 'itempenjualan.kode')
+            ->leftJoin('pelanggan', 'return_penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('supplier', 'itempenjualan.supplier', '=', 'supplier.kode')
+            ->leftJoin('barang', 'return_penjualan.kode_barang', '=', 'barang.kode')
+            ->orderByDesc('return_penjualan.id')
             // ->whereDate('penjualan.tanggal', '=', $today)
-        ->where('return_penjualan.kode', $kode);
+            ->where('return_penjualan.kode', $kode);
 
-        $penjualan = $query->first();
-
-        // echo "<pre>";
-        // var_dump($orders);
-        // echo "</pre>";
-        // die;
-
-        switch($type) {
-            case "nota-kecil":
-            return view('return-penjualan.nota_kecil', compact('penjualan', 'kode', 'toko', 'nota_type', 'helpers'));
-            break;
-            case "nota-besar":
-            $pdf = PDF::loadView('return-penjualan.nota_besar', compact('penjualan','kode', 'toko', 'nota_type', 'helpers'));
-            $pdf->setPaper(0,0,609,440, 'potrait');
-            return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
-            break;
+            $penjualan = $query->first();
+            
+            switch($type) {
+                case "nota-kecil":
+                return view('return-penjualan.nota_kecil', compact('penjualan', 'kode', 'toko', 'nota_type', 'helpers'));
+                break;
+                case "nota-besar":
+                $pdf = PDF::loadView('return-penjualan.nota_besar', compact('penjualan','kode', 'toko', 'nota_type', 'helpers'));
+                $pdf->setPaper(0,0,609,440, 'potrait');
+                return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
+                break;
+            }
+        } catch (\Throwable $th) {
+            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
         }
     }
 

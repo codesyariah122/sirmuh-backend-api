@@ -236,7 +236,7 @@ class DataPembelianLangsungController extends Controller
                 $angsuran->kode_faktur = $data['ref_code'];
                 $angsuran->bayar_angsuran = intval($data['bayar']) !== 0 ? $data['diterima'] : $data['bayar'];
                 $angsuran->jumlah = intval($data['bayar']) !== 0 ? $item_hutang->jumlah_hutang : $data['diterima'];
-                $angsuran->keterangan = "Pembayaran angsuran melalui kas : {$newPembelian->kode_kas}";
+                $angsuran->keterangan = "Pembayaran angsuran awal melalui kas : {$newPembelian->kode_kas}";
                 $angsuran->save();
 
                 $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
@@ -319,56 +319,56 @@ class DataPembelianLangsungController extends Controller
 
     public function cetak_nota($type, $kode, $id_perusahaan)
     {
-        $ref_code = $kode;
-        $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
-        $helpers = $this->helpers;
-        $today = now()->toDateString();
-        $toko = Toko::whereId($id_perusahaan)
-        ->select("name","logo","address","kota","provinsi")
-        ->first();
+        try {
+            $ref_code = $kode;
+            $nota_type = $type === 'nota-kecil' ? "Nota Kecil": "Nota Besar";
+            $helpers = $this->helpers;
+            $today = now()->toDateString();
+            $toko = Toko::whereId($id_perusahaan)
+            ->select("name","logo","address","kota","provinsi")
+            ->first();
 
-        // echo "<pre>";
-        // var_dump($toko['name']); die;
-        // echo "</pre>";
-
-        $query = Pembelian::query()
-        ->select(
-            'pembelian.*',
-            'itempembelian.*',
-            'supplier.kode as kode_supplier',
-            'supplier.nama as nama_supplier',
-            'supplier.alamat as alamat_supplier',
-            'supplier.saldo_hutang as saldo_hutang',
-            'supplier.alamat as alamat_supplier',
-            'barang.nama as nama_barang',
-            'barang.satuan as satuan_barang'
-        )
-        ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-        ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
-        ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
-        ->orderByDesc('pembelian.id')
+            $query = Pembelian::query()
+            ->select(
+                'pembelian.*',
+                'itempembelian.*',
+                'supplier.kode as kode_supplier',
+                'supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier',
+                'supplier.saldo_hutang as saldo_hutang',
+                'supplier.alamat as alamat_supplier',
+                'barang.nama as nama_barang',
+                'barang.satuan as satuan_barang'
+            )
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->leftJoin('supplier', 'itempembelian.supplier', '=', 'supplier.kode')
+            ->leftJoin('barang', 'itempembelian.kode_barang', '=', 'barang.kode')
+            ->orderByDesc('pembelian.id')
             // ->whereDate('pembelian.tanggal', '=', $today)
-        ->where('pembelian.kode', $kode);
+            ->where('pembelian.kode', $kode);
 
-        $barangs = $query->get();
-        $pembelian = $query->get()[0];
+            $barangs = $query->get();
+            $pembelian = $query->get()[0];
 
-        foreach($barangs as $barang) {            
-            $orders = PurchaseOrder::where('kode_po', $kode)
-            ->where('kode_barang', $barang->kode_barang)
-            ->get()->sum('qty');
-        }
-        $setting = "";
+            foreach($barangs as $barang) {            
+                $orders = PurchaseOrder::where('kode_po', $kode)
+                ->where('kode_barang', $barang->kode_barang)
+                ->get()->sum('qty');
+            }
+            $setting = "";
 
-        switch($type) {
-            case "nota-kecil":
-            return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
-            break;
-            case "nota-besar":
-            $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
-            $pdf->setPaper(0,0,609,440, 'potrait');
-            return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
-            break;
+            switch($type) {
+                case "nota-kecil":
+                return view('pembelian.nota_kecil', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
+                break;
+                case "nota-besar":
+                $pdf = PDF::loadView('pembelian.nota_besar', compact('pembelian', 'barangs', 'orders', 'kode', 'toko', 'nota_type', 'helpers'));
+                $pdf->setPaper(0,0,609,440, 'potrait');
+                return $pdf->stream('Transaksi-'. $pembelian->kode .'.pdf');
+                break;
+            }
+        } catch (\Throwable $th) {
+            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
         }
     }
 
@@ -554,11 +554,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
