@@ -44,16 +44,18 @@ class ItemPenjualan extends Model
 		}, 'top_selling', function ($join) {
 			$join->on('barang.kode', '=', 'top_selling.kode_barang');
 		})
-		->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan')
+		->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
 		->join('itempenjualan', 'barang.kode', '=', 'itempenjualan.kode_barang')
 		->join('penjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
+		->leftJoin('supplier', 'barang.supplier', 'supplier.kode')
 		->orderByDesc('total_penjualan')
 		->latest('penjualan.tanggal')
 		->first();
 
-	    Cache::put('top_selling_item', $topSellingItem, now()->addHours(1));
+		// Cache::put('top_selling_item', $topSellingItem, now()->addHours(1));
+		Cache::put('top_selling_item', $topSellingItem, now()->addMinutes(10));
 
-	    return $topSellingItem;
+		return $topSellingItem;
 	}
 
 	// public static function penjualanTerbaikSatuBulanKedepan()
@@ -93,33 +95,33 @@ class ItemPenjualan extends Model
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
 		->limit(10)
-        ->get();
+		->get();
 
-        $listBarangTerlaris = [];
+		$listBarangTerlaris = [];
 
-        foreach ($barangTerlaris as $barang) {
-        	$kodeBarang = $barang->kode_barang;
-        	$totalQty = $barang->total_qty;
-        	$totalPenjualan = $barang->total_penjualan;
+		foreach ($barangTerlaris as $barang) {
+			$kodeBarang = $barang->kode_barang;
+			$totalQty = $barang->total_qty;
+			$totalPenjualan = $barang->total_penjualan;
 
-        	$barangDetail = DB::table('barang')
-        	->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'supplier.nama as nama_supplier')
-        	->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
-        	->where('barang.kode', $kodeBarang)
-        	->first();
+			$barangDetail = DB::table('barang')
+			->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'supplier.nama as nama_supplier')
+			->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
+			->where('barang.kode', $kodeBarang)
+			->first();
 
-        	$listBarangTerlaris[] = [
-        		'kode' => $barangDetail->kode,
-        		'nama' => $barangDetail->nama,
-        		'satuan' => $barangDetail->satuan,
-        		'satuanbeli' => $barangDetail->satuanbeli,
-        		'toko' => $barangDetail->toko,
-        		'supplier' => $barangDetail->nama_supplier,
-        		'total_qty' => $totalQty,
-        		'total_penjualan' => $totalPenjualan,
-        	];
-        }
+			$listBarangTerlaris[] = [
+				'kode' => $barangDetail->kode,
+				'nama' => $barangDetail->nama,
+				'satuan' => $barangDetail->satuan,
+				'satuanbeli' => $barangDetail->satuanbeli,
+				'toko' => $barangDetail->toko,
+				'supplier' => $barangDetail->nama_supplier,
+				'total_qty' => $totalQty,
+				'total_penjualan' => $totalPenjualan,
+			];
+		}
 
-        return $listBarangTerlaris;
-    }
+		return $listBarangTerlaris;
+	}
 }
