@@ -81,11 +81,11 @@ class DataItemPemakaianDestBarangController extends Controller
     public function item_pemakaian_result($id)
     {
         try {
-            $items = ItemPemakaianOrigin::query()
-            ->select('itempemakaianorigin.id','itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang', 'itempemakaianorigin.qty', 'itempemakaianorigin.harga', 'itempemakaianorigin.total', 'itempemakaianorigin.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp as harga_beli', 'supplier.id as supplier_id','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
-            ->leftJoin('barang', 'itempemakaianorigin.barang', '=', 'barang.kode')
-            ->leftJoin('supplier', 'itempemakaianorigin.supplier', '=', 'supplier.kode')
-            ->where('itempemakaianorigin.kode_pemakaian', $id)
+            $items = ItemPemakaianDest::query()
+            ->select('itempemakaiandest.id','itempemakaiandest.kode_pemakaian', 'itempemakaiandest.barang', 'itempemakaiandest.qty', 'itempemakaiandest.harga', 'itempemakaiandest.total', 'itempemakaiandest.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp as harga_beli', 'supplier.id as supplier_id','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+            ->leftJoin('barang', 'itempemakaiandest.barang', '=', 'barang.kode')
+            ->leftJoin('supplier', 'itempemakaiandest.supplier', '=', 'supplier.kode')
+            ->where('itempemakaiandest.kode_pemakaian', $id)
             ->get();
 
             $detailPemakaian = PemakaianBarang::whereKode($id)->first();
@@ -106,7 +106,7 @@ class DataItemPemakaianDestBarangController extends Controller
             throw $th;
         }
     }
-    
+
     public function show($id)
     {
        try {
@@ -156,7 +156,22 @@ class DataItemPemakaianDestBarangController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $data = $request->all();
+            $dataItemPemakaianOrigin = ItemPemakaianDest::findOrFail($id);
+            $dataItemPemakaianOrigin->qty = $data['qty'];
+            $dataItemPemakaianOrigin->harga = $data['harga'];
+            $dataItemPemakaianOrigin->total = intval($data['qty']) * intval($data['harga']);
+            $dataItemPemakaianOrigin->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => "successfully update new qty item pemakaian {$dataItemPemakaianOrigin->kode}",
+                'data' => $dataItemPemakaianOrigin
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
@@ -167,6 +182,17 @@ class DataItemPemakaianDestBarangController extends Controller
      */
     public function destroy($id)
     {
-        //
+        try {
+            $ItemPemakaianOrigin = ItemPemakaianDest::findOrFail($id);
+            $ItemPemakaianOrigin->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Item pemakaian {$ItemPemakaianOrigin->kode}, successfully deleted✨",
+                'data' => $ItemPemakaianOrigin
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }
