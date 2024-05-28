@@ -77,7 +77,7 @@ class DataPemakaianBarangController extends Controller
 
             $userOnNotif = Auth::user();
 
-            $currentDate = now()->format('dmy');
+            $currentDate = now('Asia/Jakarta')->toDateTimeString();
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $pemakaianKode = "PEM-".$currentDate.$randomNumber;
 
@@ -97,7 +97,9 @@ class DataPemakaianBarangController extends Controller
             $newPemakaian->tanggal = $currentDate;
             $newPemakaian->keperluan = $request->keperluan ?? NULL;
             $newPemakaian->keterangan = $request->keterangan ?? NULL;
-            $newPemakaian->total = $request->total ?? NULL;
+            $newPemakaian->total = $request->total ?? 0;
+            $newPemakaian->biaya_operasional = $request->biaya_operasional ?? 0;
+            $newPemakaian->harga_proses = $request->harga_proses ?? 0;
             $newPemakaian->operator = $userOnNotif->name;
             $newPemakaian->save();
 
@@ -199,7 +201,37 @@ class DataPemakaianBarangController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $userOnNotif = Auth::user();
+
+            $updatePemakaian = PemakaianBarang::findOrFail($id);
+            $updatePemakaian->draft = 0;
+            $updatePemakaian->keperluan = $request->keperluan ?? NULL;
+            $updatePemakaian->keterangan = $request->keterangan ?? NULL;
+            $updatePemakaian->total = $request->total ?? 0;
+            $updatePemakaian->biaya_operasional = $request->biaya_operasional ?? 0;
+            $updatePemakaian->harga_proses = $request->harga_proses ?? 0;
+            $updatePemakaian->save();
+
+            $data_event = [
+                'routes' => 'pemakaian-barang',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "Pemakaian barang {$updatePemakaian->kode}, successfully added 🤙!",
+                'data' =>$updatePemakaian,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+
+            return response()->json([
+                'success' => true,
+                'message' => "Pemakaian barang {$updatePemakaian->kode}, successfully updated ✨!",
+                'data' => $updatePemakaian
+            ], 200);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**
