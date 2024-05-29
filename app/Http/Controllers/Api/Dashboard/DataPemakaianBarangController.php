@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{PemakaianBarang, Barang, ItemPemakaian};
+use App\Models\{PemakaianBarang, Barang, ItemPemakaianOrigin, ItemPemakaianDest};
 use Auth;
 
 class DataPemakaianBarangController extends Controller
@@ -137,37 +137,27 @@ class DataPemakaianBarangController extends Controller
         try {
             $pemakaianBarang = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.total', 'pemakaian_barangs.operator', 'itempemakaian.kode_pemakaian', 'itempemakaian.barang_asal as barang_asal', 'itempemakaian.qty_asal as qty_asal', 'itempemakaian.barang_tujuan as barang_tujuan', 'itempemakaian.qty_tujuan as qty_tujuan', 'itempemakaian.harga', 'itempemakaian.supplier', 
+            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.total', 'pemakaian_barangs.operator', 'itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang as barang_asal', 'itempemakaianorigin.qty as qty_asal', 'itempemakaianorigin.harga', 'itempemakaianorigin.total','itempemakaianorigin.supplier',
                 'barang_asal.kode as kode_barang_asal', 
                 'barang_asal.toko as stok_barang_asal', 
-                'barang_asal.supplier as barang_supplier_asal',
-                'barang_tujuan.kode as kode_barang_tujuan', 
-                'barang_tujuan.toko as stok_barang_tujuan', 
-                'barang_tujuan.supplier as barang_supplier_tujuan'
+                'barang_asal.supplier as barang_supplier_asal'
             )
-            ->leftJoin('itempemakaian', 'pemakaian_barangs.kode', '=', 'itempemakaian.kode_pemakaian')
-            ->leftJoin('barang as barang_asal', 'itempemakaian.barang_asal', '=', 'barang_asal.kode')
-            ->leftJoin('barang as barang_tujuan', 'itempemakaian.barang_tujuan', '=', 'barang_tujuan.kode')
+            ->leftJoin('itempemakaianorigin', 'pemakaian_barangs.kode', '=', 'itempemakaianorigin.kode_pemakaian')
+            ->leftJoin('barang as barang_asal', 'itempemakaianorigin.barang', '=', 'barang_asal.kode')
             ->where('pemakaian_barangs.id', $id);
 
             $pemakaian_barang = $pemakaianBarang->first();
 
-            $itemPemakaian = ItemPemakaian::query()
-            ->select('itempemakaian.id', 'itempemakaian.kode_pemakaian', 'itempemakaian.barang_asal as barang_asal', 'itempemakaian.qty_asal as qty_asal', 'itempemakaian.barang_tujuan as barang_tujuan', 'itempemakaian.qty_tujuan as qty_tujuan', 'itempemakaian.harga', 'itempemakaian.total', 'itempemakaian.supplier', 
+            $itemPemakaian = ItemPemakaianOrigin::query()
+            ->select('itempemakaianorigin.id', 'itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang as barang_asal', 'itempemakaianorigin.qty as qty_asal', 'itempemakaianorigin.harga', 'itempemakaianorigin.total', 'itempemakaianorigin.supplier', 
                 'barang_asal.kode as kode_barang_asal',
                 'barang_asal.nama as nama_barang_asal', 
                 'barang_asal.toko as stok_barang_asal', 
                 'barang_asal.satuan as satuan_barang_asal',
-                'barang_asal.supplier as barang_supplier_asal',
-                'barang_tujuan.kode as kode_barang_tujuan', 
-                'barang_tujuan.nama as nama_barang_tujuan',
-                'barang_tujuan.toko as stok_barang_tujuan',
-                'barang_tujuan.satuan as satuan_barang_tujuan',
-                'barang_tujuan.supplier as barang_supplier_tujuan'
+                'barang_asal.supplier as barang_supplier_asal'
             )
-            ->leftJoin('barang as barang_asal', 'itempemakaian.barang_asal', '=', 'barang_asal.kode')
-            ->leftJoin('barang as barang_tujuan', 'itempemakaian.barang_tujuan', '=', 'barang_tujuan.kode')
-            ->where('itempemakaian.kode_pemakaian', '=', $pemakaian_barang->kode);
+            ->leftJoin('barang as barang_asal', 'itempemakaianorigin.barang', '=', 'barang_asal.kode')
+            ->where('itempemakaianorigin.kode_pemakaian', '=', $pemakaian_barang->kode);
             $items = $itemPemakaian->get();
             
             return response()->Json([
