@@ -201,6 +201,7 @@ class DataPemakaianBarangController extends Controller
             $updatePemakaian->total = $request->total ?? 0;
             $updatePemakaian->biaya_operasional = $request->biaya_operasional ?? 0;
             $updatePemakaian->harga_proses = $request->harga_proses ?? 0;
+            $updatePemakaian->harga_cetak = $request->harga_cetak ?? 0;
             $updatePemakaian->save();
 
             $data_event = [

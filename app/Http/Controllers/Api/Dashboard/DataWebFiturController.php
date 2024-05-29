@@ -1419,8 +1419,8 @@ class DataWebFiturController extends Controller
 
     public function loadFormPenjualan($diskon = 0, $total = 0, $bayar = 0)
     {
-        $diterima   = $total - ($diskon / 100 * $total);
-        $kembali = ($bayar != 0) ? $bayar - $diterima : 0;
+        $diterima   = intval($total) - ($diskon / 100 * $total);
+        $kembali = ($bayar != 0) ? intval($bayar) - $diterima : 0;
         $data    = [
             'total' => $total,
             'totalrp' => $this->helpers->format_uang($total),
