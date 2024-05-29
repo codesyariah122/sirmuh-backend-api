@@ -20,69 +20,69 @@ class ItemPenjualan extends Model
 		return $this->belongsTo("App\Models\Barang", 'kode', 'kode_barang');
 	}
 
-	public static function penjualanTerbaikSatuBulanKedepan()
-	{
-		$cachedResult = Cache::get('top_selling_item');
-
-		if ($cachedResult) {
-			return $cachedResult;
-		}
-
-		$tanggalMulai = now();
-		$tanggalAkhir = now()->addMonth();
-
-		$topSellingItemQuery = DB::table('itempenjualan')
-		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
-		->groupBy('kode_barang')
-		->orderByDesc('total_penjualan')
-		->limit(1);
-
-		$topSellingItem = DB::table('barang')
-		->joinSub(function ($query) use ($topSellingItemQuery) {
-			$query->from(DB::raw("({$topSellingItemQuery->toSql()}) as top_selling_subquery"))
-			->mergeBindings($topSellingItemQuery);
-		}, 'top_selling', function ($join) {
-			$join->on('barang.kode', '=', 'top_selling.kode_barang');
-		})
-		->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
-		->join('itempenjualan', 'barang.kode', '=', 'itempenjualan.kode_barang')
-		->join('penjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
-		->leftJoin('supplier', 'barang.supplier', 'supplier.kode')
-		->orderByDesc('total_penjualan')
-		->latest('penjualan.tanggal')
-		->first();
-
-		// Cache::put('top_selling_item', $topSellingItem, now()->addHours(1));
-		Cache::put('top_selling_item', $topSellingItem, now()->addMinutes(10));
-
-		return $topSellingItem;
-	}
-
 	// public static function penjualanTerbaikSatuBulanKedepan()
 	// {
+	// 	$cachedResult = Cache::get('top_selling_item');
+
+	// 	if ($cachedResult) {
+	// 		return $cachedResult;
+	// 	}
+
 	// 	$tanggalMulai = now();
 	// 	$tanggalAkhir = now()->addMonth();
 
-	// 	$topSellingItem = DB::table('itempenjualan')
+	// 	$topSellingItemQuery = DB::table('itempenjualan')
 	// 	->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
-	// 	// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
 	// 	->groupBy('kode_barang')
 	// 	->orderByDesc('total_penjualan')
 	// 	->limit(1);
 
-	// 	$result = DB::table('barang')
-	// 	->joinSub($topSellingItem, 'top_selling', function ($join) {
+	// 	$topSellingItem = DB::table('barang')
+	// 	->joinSub(function ($query) use ($topSellingItemQuery) {
+	// 		$query->from(DB::raw("({$topSellingItemQuery->toSql()}) as top_selling_subquery"))
+	// 		->mergeBindings($topSellingItemQuery);
+	// 	}, 'top_selling', function ($join) {
 	// 		$join->on('barang.kode', '=', 'top_selling.kode_barang');
 	// 	})
-	// 	->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan')
+	// 	->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan', 'supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
 	// 	->join('itempenjualan', 'barang.kode', '=', 'itempenjualan.kode_barang')
 	// 	->join('penjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
+	// 	->leftJoin('supplier', 'barang.supplier', 'supplier.kode')
 	// 	->orderByDesc('total_penjualan')
 	// 	->latest('penjualan.tanggal')
 	// 	->first();
 
-	// 	return $result;
+	// 	// Cache::put('top_selling_item', $topSellingItem, now()->addHours(1));
+	// 	Cache::put('top_selling_item', $topSellingItem, now()->addMinutes(10));
+
+	// 	return $topSellingItem;
 	// }
+
+	public static function penjualanTerbaikSatuBulanKedepan()
+	{
+		$tanggalMulai = now();
+		$tanggalAkhir = now()->addMonth();
+
+		$topSellingItem = DB::table('itempenjualan')
+		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
+		// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
+		->groupBy('kode_barang')
+		->orderByDesc('total_penjualan')
+		->limit(1);
+
+		$result = DB::table('barang')
+		->joinSub($topSellingItem, 'top_selling', function ($join) {
+			$join->on('barang.kode', '=', 'top_selling.kode_barang');
+		})
+		->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'penjualan.tanggal', 'total_qty', 'total_penjualan')
+		->join('itempenjualan', 'barang.kode', '=', 'itempenjualan.kode_barang')
+		->join('penjualan', 'itempenjualan.kode', '=', 'penjualan.kode')
+		->orderByDesc('total_penjualan')
+		->latest('penjualan.tanggal')
+		->first();
+
+		return $result;
+	}
 
 	public static function barangTerlaris()
 	{
