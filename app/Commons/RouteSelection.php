@@ -280,6 +280,8 @@ class RouteSelection {
             'method' => 'resource',
             'controllers' => DataItemPenjualanController::class
         ],
+
+
         [
             'endPoint' => '/penjualan-terbaik',
             'method' => 'get',
@@ -401,6 +403,13 @@ class RouteSelection {
             'endPoint' => '/item-pemakaian-result/{id}',
             'method' => 'get',
             'controllers' => [DataItemPemakaianOriginBarangController::class, 'item_pemakaian_result']
+        ],
+
+        [
+
+            'endPoint' => '/item-pemakaian-result-before/{id}',
+            'method' => 'get',
+            'controllers' => [DataItemPemakaianOriginBarangController::class, 'item_pemakaian_result_before']
         ],
 
         [

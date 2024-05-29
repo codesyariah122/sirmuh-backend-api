@@ -88,8 +88,34 @@ class DataItemPemakaianOriginBarangController extends Controller
             ->where('itempemakaianorigin.kode_pemakaian', $id)
             ->get();
 
-            // $detailPemakaian = PemakaianBarang::whereKode($id)->first();
-            // $detail = PemakaianBarang::findOrFail($detailPemakaian->id);
+            $detailPemakaian = PemakaianBarang::whereKode($id)->first();
+            $detail = PemakaianBarang::findOrFail($detailPemakaian->id);
+
+            $lastItem = $items->last();
+
+            $lastItemId = $lastItem ? $lastItem->id : null;
+
+            return response()->json([
+                'success' => true,
+                'message' => "Show item pemakaian barang {$id}",
+                'data' => $items,
+                'detail' => $detail,
+                'last_item_pemakaian_id' => $lastItemId
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function item_pemakaian_result_before($id)
+    {
+        try {
+            $items = ItemPemakaianOrigin::query()
+            ->select('itempemakaianorigin.id','itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang', 'itempemakaianorigin.qty', 'itempemakaianorigin.harga', 'itempemakaianorigin.total', 'itempemakaianorigin.supplier', 'barang.id as id_barang', 'barang.kode as kode', 'barang.nama as nama', 'barang.toko as stok_barang', 'barang.satuan', 'barang.hpp as harga_beli', 'supplier.id as supplier_id','supplier.kode as kode_supplier', 'supplier.nama as nama_supplier')
+            ->leftJoin('barang', 'itempemakaianorigin.barang', '=', 'barang.kode')
+            ->leftJoin('supplier', 'itempemakaianorigin.supplier', '=', 'supplier.kode')
+            ->where('itempemakaianorigin.kode_pemakaian', $id)
+            ->get();
 
             $lastItem = $items->last();
 
@@ -116,6 +142,9 @@ class DataItemPemakaianOriginBarangController extends Controller
         ->leftJoin('supplier', 'itempemakaianorigin.supplier', '=', 'supplier.kode')
         ->where('itempemakaianorigin.kode_pemakaian', $id)
         ->get();
+
+        $detailPemakaian = PemakaianBarang::whereKode($id)->first();
+        $detail = PemakaianBarang::findOrFail($detailPemakaian->id);
 
         $lastItem = $items->last();
 
