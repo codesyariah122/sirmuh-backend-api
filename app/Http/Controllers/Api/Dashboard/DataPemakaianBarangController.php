@@ -137,18 +137,12 @@ class DataPemakaianBarangController extends Controller
         try {
             $pemakaianBarang = PemakaianBarang::query()
             ->whereNull('pemakaian_barangs.deleted_at')
-            ->select('pemakaian_barangs.id','pemakaian_barangs.kode', 'pemakaian_barangs.tanggal', 'pemakaian_barangs.keperluan', 'pemakaian_barangs.keterangan', 'pemakaian_barangs.total', 'pemakaian_barangs.operator', 'itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang as barang_asal', 'itempemakaianorigin.qty as qty_asal', 'itempemakaianorigin.harga', 'itempemakaianorigin.total','itempemakaianorigin.supplier',
-                'barang_asal.kode as kode_barang_asal', 
-                'barang_asal.toko as stok_barang_asal', 
-                'barang_asal.supplier as barang_supplier_asal'
-            )
-            ->leftJoin('itempemakaianorigin', 'pemakaian_barangs.kode', '=', 'itempemakaianorigin.kode_pemakaian')
-            ->leftJoin('barang as barang_asal', 'itempemakaianorigin.barang', '=', 'barang_asal.kode')
+            ->select('pemakaian_barangs.*')
             ->where('pemakaian_barangs.id', $id);
 
             $pemakaian_barang = $pemakaianBarang->first();
 
-            $itemPemakaian = ItemPemakaianOrigin::query()
+            $itemPemakaianOrigin = ItemPemakaianOrigin::query()
             ->select('itempemakaianorigin.id', 'itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang as barang_asal', 'itempemakaianorigin.qty as qty_asal', 'itempemakaianorigin.harga', 'itempemakaianorigin.total', 'itempemakaianorigin.supplier', 
                 'barang_asal.kode as kode_barang_asal',
                 'barang_asal.nama as nama_barang_asal', 
@@ -158,13 +152,29 @@ class DataPemakaianBarangController extends Controller
             )
             ->leftJoin('barang as barang_asal', 'itempemakaianorigin.barang', '=', 'barang_asal.kode')
             ->where('itempemakaianorigin.kode_pemakaian', '=', $pemakaian_barang->kode);
-            $items = $itemPemakaian->get();
+            $itemOrigins = $itemPemakaianOrigin->get();
+
+            $itemPemakaianDest = ItemPemakaianDest::query()
+            ->select('itempemakaiandest.id', 'itempemakaiandest.kode_pemakaian', 'itempemakaiandest.barang as barang_tujuan', 'itempemakaiandest.qty as qty_tujuan', 'itempemakaiandest.harga', 'itempemakaiandest.total', 'itempemakaiandest.supplier', 
+                'barang_dest.kode as kode_barang_dest',
+                'barang_dest.nama as nama_barang_dest', 
+                'barang_dest.toko as stok_barang_dest', 
+                'barang_dest.satuan as satuan_barang_dest',
+                'barang_dest.supplier as barang_supplier_asal'
+            )
+            ->leftJoin('barang as barang_dest', 'itempemakaiandest.barang', '=', 'barang_dest.kode')
+            ->where('itempemakaiandest.kode_pemakaian', '=', $pemakaian_barang->kode);
+            $itemDests = $itemPemakaianDest->get();
+
             
             return response()->Json([
                 'success' => true,
                 'message' => "Detail pemakaian barang {$pemakaian_barang->kode}",
                 'data' => $pemakaian_barang,
-                'items' => $items
+                'items' => [
+                    'origins' => $itemOrigins,
+                    'dests' => $itemDests
+                ]
             ]);
         } catch (\Throwable $th) {
             throw $th;
@@ -198,11 +208,24 @@ class DataPemakaianBarangController extends Controller
             $updatePemakaian->draft = 0;
             $updatePemakaian->keperluan = $request->keperluan ?? NULL;
             $updatePemakaian->keterangan = $request->keterangan ?? NULL;
-            $updatePemakaian->total = $request->total ?? 0;
+            // $updatePemakaian->total = $request->total ?? 0;
             $updatePemakaian->biaya_operasional = $request->biaya_operasional ?? 0;
             $updatePemakaian->harga_proses = $request->harga_proses ?? 0;
             $updatePemakaian->harga_cetak = $request->harga_cetak ?? 0;
             $updatePemakaian->save();
+
+            foreach($request->origins as $origin) {
+                $barangOriginUpdate = Barang::findOrFail($origin['id_barang']);
+                $barangOriginUpdate->toko = intval($barangOriginUpdate->toko) - $origin['qty'];
+                $barangOriginUpdate->save();
+            }
+
+            foreach($request->dests as $dest) {
+                $barangDestUpdate = Barang::findOrFail($dest['id_barang']);
+                $barangDestUpdate->toko = intval($barangDestUpdate->toko) + $dest['qty'];
+                $barangDestUpdate->hpp = $request->harga_cetak;
+                $barangDestUpdate->save();
+            }
 
             $data_event = [
                 'routes' => 'pemakaian-barang',
