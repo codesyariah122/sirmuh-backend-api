@@ -1078,6 +1078,7 @@ class DataWebFiturController extends Controller
 
                 $update_user_karyawan = Karyawan::whereKode($prepare_user->name)->first();
                 $user_karyawan_update = Karyawan::findOrFail($update_user_karyawan->id);
+                $user_karyawan_update->kode = $request->name ? $request->name : $user_karyawan_update->kode;
                 $user_karyawan_update->nama = $request->name ? $request->name : $update_user->name;
                 $user_karyawan_update->alamat = $request->alamat ? $request->alamat :$update_user_karyawan->alamat;
                 $user_karyawan_update->save();
