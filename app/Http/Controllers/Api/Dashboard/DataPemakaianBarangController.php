@@ -223,7 +223,8 @@ class DataPemakaianBarangController extends Controller
             foreach($request->dests as $dest) {
                 $barangDestUpdate = Barang::findOrFail($dest['id_barang']);
                 $barangDestUpdate->toko = intval($barangDestUpdate->toko) + $dest['qty'];
-                $barangDestUpdate->hpp = $request->harga_cetak;
+                $barangDestUpdate->harga_toko = $request->harga_cetak;
+                $barangDestUpdate->harga_partai = $request->harga_cetak;
                 $barangDestUpdate->save();
             }
 
