@@ -97,6 +97,30 @@ class DataLabaRugiController extends Controller
     {
         //
     }
+
+    public function labaRugiDaily(int $day) 
+    {
+        try {
+            $label = "Total Penjualan Harian";
+            $startDate = now()->subDays($day - 1)->startOfDay();
+            $endDate = now()->endOfDay();
+
+            $totalLabaPerDay = LabaRugi::whereBetween('tanggal', [$startDate, $endDate])
+            ->groupBy(\DB::raw('DATE(tanggal)'))
+            ->select(\DB::raw('DATE(tanggal) as date, SUM(labarugi) as total_laba'))
+            ->orderBy('date', 'ASC')
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'label' => $label,
+                'message' => 'Laba Harian untuk ' . $day . ' Hari Terakhir 📝',
+                'data' => $totalLabaPerDay,
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
     
     public function labaRugiLastMonth(int $jmlMonth)
     {

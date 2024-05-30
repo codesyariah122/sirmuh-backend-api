@@ -94,7 +94,7 @@ class ItemPenjualan extends Model
 		// ->whereBetween('expired', [$tanggalMulai, $tanggalAkhir])
 		->groupBy('kode_barang')
 		->orderByDesc('total_penjualan')
-		->limit(10)
+		// ->limit(10)
 		->get();
 
 		$listBarangTerlaris = [];

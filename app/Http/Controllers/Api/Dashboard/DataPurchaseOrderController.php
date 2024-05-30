@@ -25,6 +25,13 @@ class DataPurchaseOrderController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+    private $helpers;
+
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function list_item_po(Request $request)
     {
         try {
@@ -129,11 +136,9 @@ class DataPurchaseOrderController extends Controller
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 400);
             }
+            $userOnNotif = Auth::user();
 
             $data = $request->all();
-            // echo "<pre>";
-            // var_dump($data); die;
-            // echo "</pre>";
 
             $barangs = $data['barangs'];
             
@@ -195,8 +200,6 @@ class DataPurchaseOrderController extends Controller
             $updateKas = Kas::findOrFail($data['kode_kas']);
             $updateKas->saldo = intval($updateKas->saldo) - $newPembelian->jumlah;
             $updateKas->save();
-
-            $userOnNotif = Auth::user();
 
             if($newPembelian) {
 
@@ -275,6 +278,15 @@ class DataPurchaseOrderController extends Controller
                 ];
 
                 event(new EventNotification($data_event));
+
+                $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan transaksi purchase orders [{$newPembelian->kode}], sebesar {$this->helpers->format_uang($newPembelian->jumlah)}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/transaksi/beli/purchase-order',
+                    'route_name' => 'Purchase Order'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
 
                 return new RequestDataCollect($newPembelianSaved);
             }
@@ -541,6 +553,15 @@ class DataPurchaseOrderController extends Controller
                 ];
 
                 event(new EventNotification($data_event));
+
+                $historyKeterangan = "{$userOnNotif->name}, berhasil terima purchase orders [{$updatePembelian->kode}], sebesar {$this->helpers->format_uang($updatePembelian->diterima)}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/transaksi/beli/purchase-order',
+                    'route_name' => 'Purchase Order'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
 
                 return response()->json([
                     'success' => true,

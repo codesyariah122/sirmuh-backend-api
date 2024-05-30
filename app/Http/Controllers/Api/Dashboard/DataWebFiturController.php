@@ -111,7 +111,7 @@ class DataWebFiturController extends Controller
 
                 case 'DATA_BARANG':
                 $deleted = Barang::onlyTrashed()
-                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'gudang', 'hpp', 'harga_toko', 'diskon', 'supplier', 'kode_barcode', 'tgl_terakhir', 'ada_expired_date', 'expired')
+                ->select('id', 'kode', 'nama', 'photo', 'kategori', 'satuanbeli', 'satuan', 'isi', 'toko', 'last_qty', 'gudang', 'hpp', 'harga_toko', 'harga_partai','tgl_terakhir', 'ada_expired_date', 'expired')
                 ->paginate(10);
                 break;
 
@@ -486,7 +486,6 @@ class DataWebFiturController extends Controller
             $dataType = $request->query('type');
             switch ($dataType):
                 case 'USER_DATA':
-
                 $deleted = User::onlyTrashed()
                 ->with('profiles', function($profile) {
                     return $profile->withTrashed();
@@ -549,6 +548,15 @@ class DataWebFiturController extends Controller
                     'data' => $deleted->deleted_at,
                     'user' => Auth::user()
                 ];
+                $user = Auth::user();
+                $historyKeterangan = "{$user->name}, telah menghapus data barang : [{$deleted->nama}], Dari supplier : {$deleted->supplier}";
+                $dataHistory = [
+                    'user' => $user->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/master/barang/barang-by-suppliers',
+                    'route_name' => 'Data Barang'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
                 break;
 
                 case 'DATA_PELANGGAN':

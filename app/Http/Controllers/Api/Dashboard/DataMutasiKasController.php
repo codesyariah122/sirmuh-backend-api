@@ -22,6 +22,11 @@ class DataMutasiKasController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+    
     public function index(Request $request)
     {
         try {
@@ -92,14 +97,8 @@ class DataMutasiKasController extends Controller
             $kas_id = $request->kas_id;
             $destination = $request->destination;
             $jumlah = $request->jumlah;
-
             $ownKas = Kas::findOrFail($kas_id);
-            $ownKas->saldo = intval($ownKas->saldo) - intval($jumlah);
-            $ownKas->save();
-
             $destKas = Kas::findOrFail($destination);
-            $destKas->saldo = intval($destKas->saldo) + intval($jumlah);
-            $destKas->save();
 
             $newMutasiKas = new MutasiKas;
             $newMutasiKas->kode = $request->kode;
@@ -110,6 +109,12 @@ class DataMutasiKasController extends Controller
             $newMutasiKas->rupiah = $request->jumlah;
             $newMutasiKas->operator = $request->operator;
             $newMutasiKas->save();
+
+            $ownKas->saldo = intval($ownKas->saldo) - intval($jumlah);
+            $ownKas->save();
+
+            $destKas->saldo = intval($destKas->saldo) + intval($jumlah);
+            $destKas->save();
 
             $userOnNotif = Auth::user();
 
@@ -126,6 +131,15 @@ class DataMutasiKasController extends Controller
 
             $newOwnKas = Kas::findOrFail($kas_id);
             $newDestKas = Kas::findOrFail($destination);
+
+            $historyKeterangan = "{$userOnNotif->name}, melakukan mutasi kas dari kas : {$newOwnKas->kode}, ke kas : {$newDestKas->kode}, sebesar {$this->helpers->format_uang($newMutasiKas->rupiah)}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/backoffice/mutasi-kas',
+                'route_name' => 'Mutasi Kas'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return response()->json([
                 'success' => true,

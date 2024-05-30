@@ -307,6 +307,15 @@ class DataPembelianLangsungController extends Controller
 
                 event(new EventNotification($data_event));
 
+                $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan transaksi pembelian langsung [{$newPembelian->kode}], sebesar {$this->helpers->format_uang($newPembelian->jumlah)}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/transaksi/beli/pembelian-langsung',
+                    'route_name' => 'Pembelian Langsung'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
+
                 return new RequestDataCollect($newPembelianSaved);
             }
         } catch (\Throwable $th) {
@@ -554,11 +563,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);

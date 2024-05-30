@@ -22,6 +22,11 @@ class DataPemakaianBarangController extends Controller
      * @return \Illuminate\Http\Response
      */
 
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -114,6 +119,15 @@ class DataPemakaianBarangController extends Controller
             ];
 
             event(new EventNotification($data_event));
+
+            $historyKeterangan = "{$userOnNotif->name}, menambahkan pemakaian barang dengan kode : {$newPemakaian->kode}, sebesar {$newPemakaian->total}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/backoffice/pemakaian-barang',
+                'route_name' => 'Pemakaian Barang'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return response()->json([
                 'success' => true,
@@ -238,6 +252,15 @@ class DataPemakaianBarangController extends Controller
             ];
 
             event(new EventNotification($data_event));
+
+            $historyKeterangan = "{$userOnNotif->name}, melakukan update pemakaian barang dengan kode : {$updatePemakaian->kode}, dengan keperluan {$updatePemakaian->keperluan}, dengan biaya operasional {$updatePemakaian->biaya_operasional}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/backoffice/pemakaian-barang',
+                'route_name' => 'Pemakaian Barang'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return response()->json([
                 'success' => true,

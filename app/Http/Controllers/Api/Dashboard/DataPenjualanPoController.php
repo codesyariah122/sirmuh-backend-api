@@ -246,6 +246,15 @@ class DataPenjualanPoController extends Controller
 
             event(new EventNotification($data_event));
 
+            $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan transaksi penjualan purchase order [{$newPenjualan->kode}], sebesar {$this->helpers->format_uang($newPenjualan->jumlah)}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/transaksi/jual/penjualan-po',
+                'route_name' => 'Penjualan P.O'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
+
             return new RequestDataCollect($newPenjualanSaved);
         } catch (\Throwable $th) {
             throw $th;
@@ -582,6 +591,15 @@ class DataPenjualanPoController extends Controller
                 ];
 
                 event(new EventNotification($data_event));
+
+                $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan pengiriman penjualan purchase order [{$updatePenjualan->kode}], sebesar {$this->helpers->format_uang($updatePenjualan->jumlah)}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/transaksi/jual/penjualan-po',
+                    'route_name' => 'Penjualan P.O'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
 
                 return response()->json([
                     'success' => true,

@@ -333,6 +333,16 @@ class DataHutangController extends Controller
                 ];
 
                 event(new EventNotification($data_event));
+
+                $historyKeterangan = "{$userOnNotif->name}, melakukan pembayaran hutang kepada supplier {$updateHutang->supplier} dengan kode [{$updateHutang->kode}], sebesar {$this->helpers->format_uang($bayar)}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/transaksi/bayar-hutang',
+                    'route_name' => 'Bayar Hutang'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
+
                 return response()->json([
                     'success' => true,
                     'message' => "Hutang dengan kode {$hutang->kode}, dibayar {$bayar} 💸",

@@ -51,7 +51,8 @@ use App\Http\Controllers\Api\Dashboard\{
     DataLaporanPenjualanController,
     RajaOngkirController,
     DataJenisPemasukanController,
-    DataJenisKeperluanController
+    DataJenisKeperluanController,
+    DataHistoryController
 };
 
 class RouteSelection {
@@ -335,6 +336,11 @@ class RouteSelection {
             'endPoint' => '/laba-rugi/{jml_month}',
             'method' => 'get',
             'controllers' => [DataLabaRugiController::class, 'labaRugiLastMonth'],
+        ],
+        [
+            'endPoint' => '/laba-rugi-daily/{day}',
+            'method' => 'get',
+            'controllers' => [DataLabaRugiController::class, 'labaRugiDaily'],
         ],
         [
             'endPoint' => '/data-laba-rugi',
@@ -774,6 +780,13 @@ class RouteSelection {
             'endPoint' => '/jenis-keperluan',
             'method' => 'resource',
             'controllers' => DataJenisKeperluanController::class
+        ],
+
+        // Histori Programm
+        [
+            'endPoint' => '/history-programm',
+            'method' => 'resource',
+            'controllers' => DataHistoryController::class
         ]
     ];
 

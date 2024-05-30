@@ -274,10 +274,13 @@ class DataPenjualanPartaiController extends Controller
 
             $userOnNotif = Auth::user();
             $itemPenjualanBarang = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
+            $dataBarang = Barang::whereKode($itemPenjualanBarang->kode_barang)->first();
+            $barangById = Barang::findOrFail($dataBarang->id);
             $newPenjualanData = Penjualan::findOrFail($newPenjualanToko->id);
-            $hpp = $itemPenjualanBarang->harga * $data['qty'];
+            // $hpp = $itemPenjualanBarang->harga * $data['qty'];
+            $hpp = $barangById->hpp;
             $diskon = $newPenjualanToko->diskon;
-            $labarugi = ($newPenjualanToko->bayar - $hpp) - $diskon;
+            $labarugi = $newPenjualanToko->bayar - $hpp;
             $newLabaRugi = new LabaRugi;
             $newLabaRugi->tanggal = now()->toDateString();
             $newLabaRugi->kode = $newPenjualanData->kode;
@@ -343,6 +346,15 @@ class DataPenjualanPartaiController extends Controller
             ];
 
             event(new EventNotification($data_event));
+
+            $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan transaksi penjualan partai [{$newPenjualanToko->kode}], sebesar {$this->helpers->format_uang($newPenjualanToko->jumlah)}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/transaksi/jual/penjualan-partai',
+                'route_name' => 'Penjualan Partai'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return new RequestDataCollect($newPenjualanTokoSaved);
         } catch (\Throwable $th) {

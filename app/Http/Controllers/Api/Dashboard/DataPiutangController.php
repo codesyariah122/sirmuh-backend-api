@@ -294,6 +294,16 @@ class DataPiutangController extends Controller
                 ];
 
                 event(new EventNotification($data_event));
+
+                $historyKeterangan = "{$userOnNotif->name}, menerima pembayaran piutang pelanggan {$updatePiutang->pelanggan}, dengan kode [{$updatePiutang->kode}], sebesar {$this->helpers->format_uang($bayar)}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/transaksi/terima-piutang/piutang-pelanggan',
+                    'route_name' => 'Piutang Pelanggan'
+                ];
+                $createHistory = $this->helpers->createHistory($dataHistory);
+
                 return response()->json([
                     'success' => true,
                     'message' => "Piutang dengan kode {$piutang->kode}, dibayarkan {$bayar} 💸",

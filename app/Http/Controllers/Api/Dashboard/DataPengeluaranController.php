@@ -21,6 +21,11 @@ class DataPengeluaranController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -86,14 +91,14 @@ class DataPengeluaranController extends Controller
     public function store(Request $request)
     {
         try {
-           $validator = Validator::make($request->all(), [
+         $validator = Validator::make($request->all(), [
             'kode' => 'required',
             'kd_biaya' => 'required',
             'kode_kas' => 'required',
             'jumlah' => 'required'
         ]);
 
-           if ($validator->fails()) {
+         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
@@ -124,12 +129,24 @@ class DataPengeluaranController extends Controller
             ];
             event(new EventNotification($data_event));
 
-            $newDataPemasukan= Pengeluaran::findOrFail($newPemasukan->id);
+            $newDataPengeluaran = Pengeluaran::query()
+            ->select('pengeluaran.id', 'pengeluaran.kode', 'pengeluaran.tanggal', 'pengeluaran.kd_biaya', 'pengeluaran.keterangan', 'pengeluaran.kode_kas', 'pengeluaran.jumlah', 'pengeluaran.operator','biaya.kode as kode_biaya', 'biaya.nama as nama_biaya', 'biaya.saldo')
+            ->leftJoin('biaya', 'pengeluaran.kd_biaya', '=', 'biaya.kode')
+            ->findOrFail($newPemasukan->id);
+
+            $historyKeterangan = "{$userOnNotif->name}, menambahkan data pengeluaran {$newDataPengeluaran->nama_biaya} dengan kode [{$newDataPengeluaran->kode}], sebesar {$this->helpers->format_uang($newDataPengeluaran->jumlah)}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/backoffice/pengeluaran',
+                'route_name' => 'Data Pengeluaran'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return response()->json([
                 'success' => true,
                 'message' => "Pengeluaran dengan kode {$newPemasukan->kode}, successfully added✨!",
-                'data' => $newDataPemasukan
+                'data' => $newDataPengeluaran
             ]);
         }
 

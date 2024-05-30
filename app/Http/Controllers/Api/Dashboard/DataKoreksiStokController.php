@@ -21,6 +21,11 @@ class DataKoreksiStokController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function index(Request $request)
     {
       try {
@@ -141,6 +146,15 @@ class DataKoreksiStokController extends Controller
         ];
 
         event(new EventNotification($data_event));
+
+        $historyKeterangan = "{$userOnNotif->name}, melakukan koreksi stok untuk barang : {$updateStok->nama}, sebesar {$storeKoreksi->jumlah}";
+        $dataHistory = [
+            'user' => $userOnNotif->name,
+            'keterangan' => $historyKeterangan,
+            'routes' => '/dashboard/backoffice/koreksi-stok',
+            'route_name' => 'Koreksi Stok'
+        ];
+        $createHistory = $this->helpers->createHistory($dataHistory);
 
         return response()->json([
             'success' => true,

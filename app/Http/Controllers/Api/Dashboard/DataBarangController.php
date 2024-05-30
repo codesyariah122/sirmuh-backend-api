@@ -491,6 +491,15 @@ public function detail_by_barcode($barcode)
 
                 event(new EventNotification($data_event));
 
+                $historyKeterangan = "{$userOnNotif->name}, berhasil menambahkan barang baru : [{$newBarang->nama}], Dari supplier : {$supplierData->nama}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/master/barang/barang-by-suppliers',
+                    'route_name' => 'Data Barang'
+                ];
+                $createHistory = $this->feature_helpers->createHistory($dataHistory);
+
                 return new RequestDataCollect($newBarangSaved);
             } else {
                 return response()->json(['message' => 'Gagal menyimpan data barang.'], 500);
@@ -685,6 +694,7 @@ public function detail_by_barcode($barcode)
         public function update(Request $request, $id)
         {
             $barang_data = Barang::with('suppliers')
+            ->with('kategoris')
             ->findOrFail($id);
             $supplierId = NULL;
 
@@ -708,10 +718,11 @@ public function detail_by_barcode($barcode)
                         $kategori = Kategori::findOrFail($barang_data->kategoris[0]->id);
                     }
 
-                    $kategori = Kategori::whereKode($barang_data->kategori)->firstOrFail();
+                    $kategori = Kategori::whereKode($request->kategori ? $request->kategori : $barang_data->kategori)->firstOrFail();
+
 
                     $update_barang = Barang::findOrFail($barang_data->id);
-
+                    $update_barang->kode = $request->kode ? $request->kode : $update_barang->kode;
                     $update_barang->nama = $request->nama ? $request->nama : $update_barang->nama;
                     $update_barang->kategori_barang = $request->kategori_barang ? $request->kategori_barang : $update_barang->kategori_barang;
                     $update_barang->kategori = $request->kategori ? $request->kategori : $update_barang->kategori;
@@ -728,6 +739,7 @@ public function detail_by_barcode($barcode)
                     $update_barang->ada_expired_date = $request->ada_expired_date ? $request->ada_expired_date : $update_barang->ada_expired_date;
                     $update_barang->expired = $request->expired ? Carbon::parse($request->expired)->format('Y-m-d') : $update_barang->expired;
                     $update_barang->ket = $request->keterangan ? $request->keterangan : $update_barang->ket;
+                    $update_barang->kode_barcode = $request->kode_barcode ? $request->kode_barcode : $update_barang->kode_barcode;
 
                     $update_barang->save();
 
@@ -737,7 +749,8 @@ public function detail_by_barcode($barcode)
                     $data_event = [
                         'type' => 'updated',
                         'routes' => 'data-barang',
-                        'notif' => "{$update_barang->nama}, successfully update!"
+                        'notif' => "{$update_barang->nama}, successfully update!",
+                        'user' => $user
                     ];
 
                     event(new EventNotification($data_event));
@@ -747,6 +760,15 @@ public function detail_by_barcode($barcode)
                     ->with('suppliers')
                     ->whereId($update_barang->id)
                     ->get();
+
+                    $historyKeterangan = "{$user->name}, berhasil melakukan update data barang : [{$update_barang->nama}], Dari supplier : {$update_barang->supplier}";
+                    $dataHistory = [
+                        'user' => $user->name,
+                        'keterangan' => $historyKeterangan,
+                        'routes' => '/dashboard/master/barang/barang-by-suppliers',
+                        'route_name' => 'Data Barang'
+                    ];
+                    $createHistory = $this->feature_helpers->createHistory($dataHistory);
 
                     return response()->json([
                         'success' => true,

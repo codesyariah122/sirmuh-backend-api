@@ -16,11 +16,11 @@ return new class extends Migration
         Schema::create('itempemakaianorigin', function (Blueprint $table) {
             $table->id();
             $table->string('kode_pemakaian')->nullable();
-            $table->string('barang')->nullable();
+            $table->string('barang')->collation('utf8mb4_general_ci')->nullable();
             $table->decimal('qty', 15,2)->nullable();
             $table->decimal('harga', 15,2)->nullable();
             $table->decimal('total', 15,2)->nullable();
-            $table->string('supplier')->nullable();
+            $table->string('supplier')->collation('utf8mb4_general_ci')->nullable();
             $table->timestamps();
         });
     }

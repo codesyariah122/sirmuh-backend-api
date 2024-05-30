@@ -23,11 +23,12 @@ class DataSupplierController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    private $user_helpers;
+    private $user_helpers, $web_helpers;
 
     public function __construct()
     {
         $this->user_helpers = new UserHelpers;
+        $this->web_helpers = new WebFeatureHelpers;
     }
 
     public function supplier_for_lists(Request $request)
@@ -248,7 +249,17 @@ class DataSupplierController extends Controller
 
                 event(new EventNotification($data_event));
 
+                $historyKeterangan = "{$userOnNotif->name}, berhasil menambahkan supplier baru dengan kode : [{$new_supplier->kode}], {$new_supplier->nama}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/master/supplier',
+                    'route_name' => 'Data Supplier'
+                ];
+                $createHistory = $this->web_helpers->createHistory($dataHistory);
+
                 $newDataSupplier = Supplier::findOrFail($new_supplier->id);
+
                 return response()->json([
                     'success' => true,
                     'message' => "Supplier dengan nama {$newDataSupplier->nama}, successfully added✨!",
@@ -330,7 +341,7 @@ class DataSupplierController extends Controller
                 $updateKategori->save();
             } else {
                 $new_kategori_supplier = new Kategori;
-                $new_kategori_supplier->kode = $new_supplier->nama;
+                $new_kategori_supplier->kode = $update_supplier->nama;
                 $new_kategori_supplier->save();
             }
 
@@ -347,7 +358,17 @@ class DataSupplierController extends Controller
 
                 event(new EventNotification($data_event));
 
+                $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan update data supplier dengan kode : [{$update_supplier->kode}], {$update_supplier->nama}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/master/supplier',
+                    'route_name' => 'Data Supplier'
+                ];
+                $createHistory = $this->web_helpers->createHistory($dataHistory);
+
                 $newUpdateSupplier = Supplier::findOrFail($update_supplier->id);
+
                 return response()->json([
                     'success' => true,
                     'message' => "Supplier dengan nama {$newUpdateSupplier->nama}, successfully added✨!",

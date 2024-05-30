@@ -23,6 +23,11 @@ class DataPemasukanController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->helpers = new WebFeatureHelpers;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -128,7 +133,20 @@ class DataPemasukanController extends Controller
             ];
             event(new EventNotification($data_event));
 
-            $newDataPemasukan= Pemasukan::findOrFail($newPemasukan->id);
+
+            $newDataPemasukan = Pemasukan::query()
+            ->select('pemasukan.id', 'pemasukan.kode', 'pemasukan.tanggal', 'pemasukan.kd_biaya', 'pemasukan.keterangan', 'pemasukan.kode_kas', 'pemasukan.jumlah', 'pemasukan.operator', 'pemasukan.kode_pelanggan', 'pemasukan.nama_pelanggan', 'jenis_pemasukan.kode as kode_jenis_pemasukan', 'jenis_pemasukan.nama as nama_jenis_pemasukan')
+            ->leftJoin('jenis_pemasukan', 'pemasukan.kd_biaya', '=', 'jenis_pemasukan.kode')
+            ->findOrFail($newPemasukan->id);
+
+            $historyKeterangan = "{$userOnNotif->name}, menambahkan data pemasukan {$newDataPemasukan->nama_jenis_pemasukan} dengan kode [{$newDataPemasukan->kode}], sebesar {$this->helpers->format_uang($newDataPemasukan->jumlah)}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/backoffice/pemasukan',
+                'route_name' => 'Data Pemasukan'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return response()->json([
                 'success' => true,
@@ -150,7 +168,21 @@ class DataPemasukanController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $pemasukan = Pemasukan::query()
+            ->select('pemasukan.*', 'jenis_pemasukan.kode as kode_biaya', 'jenis_pemasukan.nama as biaya_nama', 'kas.kode as kas_kode', 'kas.nama as nama_kas')
+            ->leftJoin('jenis_pemasukan', 'pemasukan.kd_biaya', '=', 'jenis_pemasukan.kode')
+            ->leftJoin('kas', 'pemasukan.kode_kas', '=', 'kas.kode')
+            ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Detail Pemasukan",
+                'data' => $pemasukan
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

@@ -22,11 +22,12 @@ class DataPelangganController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    private $user_helpers;
+    private $user_helpers, $feature_helpers;
 
     public function __construct()
     {
         $this->user_helpers = new UserHelpers;
+        $this->feature_helpers = new WebFeatureHelpers;
     }
 
     public function list_normal(Request $request)
@@ -266,7 +267,17 @@ public function index(Request $request)
 
                 event(new EventNotification($data_event));
 
+                $historyKeterangan = "{$userOnNotif->name}, berhasil menambahkan pelanggan baru : [{$new_pelanggan->kode}], {$new_pelanggan->nama}";
+                $dataHistory = [
+                    'user' => $userOnNotif->name,
+                    'keterangan' => $historyKeterangan,
+                    'routes' => '/dashboard/master/data-pelanggan',
+                    'route_name' => 'Data Pelanggan'
+                ];
+                $createHistory = $this->feature_helpers->createHistory($dataHistory);
+                
                 $newDataPelanggan = Pelanggan::findOrFail($new_pelanggan->id);
+
                 return response()->json([
                     'success' => true,
                     'message' => "Pelanggan dengan nama {$newDataPelanggan->nama}, successfully added✨!",
@@ -330,6 +341,28 @@ public function index(Request $request)
             $update_pelanggan->alamat = $request->alamat ? strip_tags($request->alamat) : strip_tags($update_pelanggan->alamat);
             $update_pelanggan->pekerjaan = $request->pekerjaan ? $request->pekerjaan : $update_pelanggan->pekerjaan;
             $update_pelanggan->save();
+
+            $userOnNotif = Auth::user();
+
+            $data_event = [
+                'routes' => 'data-pelanggan',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "{$update_pelanggan->nama}, berhasil diupdate 🤙!",
+                'data' => $update_pelanggan->nama,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+
+            $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan update data pelanggan : [{$update_pelanggan->kode}], {$update_pelanggan->nama}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/master/data-pelanggan',
+                'route_name' => 'Data Pelanggan'
+            ];
+            $createHistory = $this->feature_helpers->createHistory($dataHistory);
 
             if($update_pelanggan) {
                 return response()->json([

@@ -15,7 +15,7 @@ use Picqer\Barcode\BarcodeGeneratorPNG;
 use \Milon\Barcode\DNS1D;
 use \Milon\Barcode\DNS2D;
 use Illuminate\Support\Facades\File;
-use App\Models\{User, Roles, Login};
+use App\Models\{User, Roles, Login, History};
 
 class WebFeatureHelpers
 {
@@ -295,6 +295,25 @@ class WebFeatureHelpers
         $acronym .= rand(10, 99);
 
         return $acronym;
+    }
+
+    public function createHistory($data)
+    {
+        try {
+            $currentDate = now('Asia/Jakarta')->toDateTimeString();
+
+            $newHistory = new History;
+            $newHistory->tanggal = $currentDate;
+            $newHistory->user = $data['user'];
+            $newHistory->keterangan = $data['keterangan'];
+            $newHistory->routes = $data['routes'];
+            $newHistory->route_name = $data['route_name'];
+            $newHistory->save();
+
+            return $newHistory;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
 }
