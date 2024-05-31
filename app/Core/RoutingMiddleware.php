@@ -10,7 +10,11 @@ class RoutingMiddleware extends RouteSelection {
 	{
 		$listRoutes = self::getListRoutes();
 		foreach ($listRoutes as $route) {
-			Route::{$route['method']}($route['endPoint'], $route['controllers']);
+			if ($route['method'] === 'resource') {
+				Route::resource($route['endPoint'], $route['controllers']);
+			} else {
+				Route::{$route['method']}($route['endPoint'], $route['controllers']);
+			}
 		}
 	}
 }

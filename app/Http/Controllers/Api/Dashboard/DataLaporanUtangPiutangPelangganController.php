@@ -30,7 +30,7 @@ class DataLaporanUtangPiutangPelangganController extends Controller
 
     public function laporanHutangPiutang()
     {
-        $tenggatWaktu = 7;
+        $tenggatWaktu = 30;
         $supplierList = [];
         $owner = User::where('role', 1)->first();
         $currentYear = date('Y');

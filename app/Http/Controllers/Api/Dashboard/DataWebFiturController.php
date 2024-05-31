@@ -72,6 +72,84 @@ class DataWebFiturController extends Controller
         }
     }
 
+    public function penjualanWeekly()
+    {
+        try {
+            $query = Penjualan::query()
+            ->select(
+                DB::raw('YEARWEEK(tanggal) as minggu'),
+                DB::raw('SUM(jumlah) as total_jumlah')
+            )
+            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->where('jenis', 'PENJUALAN TOKO');
+
+            $query->where('penjualan.po', '=', 'False')
+            ->groupBy('minggu')
+            ->orderBy('minggu', 'asc');
+
+            $penjualanPerMinggu = $query->get();
+
+            $chartData = $penjualanPerMinggu->map(function ($penjualan) {
+                $year = substr($penjualan->minggu, 0, 4);
+                $week = substr($penjualan->minggu, 4, 2);
+
+            // Mengonversi minggu dan tahun menjadi tanggal awal dan akhir dari minggu tersebut
+                $startOfWeek = date('Y-m-d', strtotime($year . 'W' . $week));
+                $endOfWeek = date('Y-m-d', strtotime($year . 'W' . $week . '7'));
+
+                return [
+                    'week_start' => $startOfWeek,
+                    'week_end' => $endOfWeek,
+                    'total_jumlah' => $penjualan->total_jumlah,
+                ];
+            });
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Grafik Penjualan Weekly',
+                'label' => 'Total Jumlah Penjualan',
+                'data' => $chartData
+            ]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function penjualanDaily()
+    {
+        try {
+            $query = Penjualan::query()
+            ->select(
+                'penjualan.tanggal',
+                DB::raw('SUM(penjualan.jumlah) as total_jumlah')
+            )
+            ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+            ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+            ->where('jenis', 'PENJUALAN TOKO');
+
+
+            $query->where('penjualan.po', '=', 'False')
+            ->groupBy('penjualan.tanggal')
+            ->orderBy('penjualan.tanggal', 'asc');
+
+            $penjualans = $query->get();
+
+            $chartData = $penjualans->map(function($penjualan) {
+                return [
+                    'label' => $penjualan->tanggal,
+                    'value' => $penjualan->total_jumlah,
+                ];
+            });
+
+            return response()->json(['data' => $chartData]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function trash(Request $request)
     {
         try {
@@ -943,6 +1021,25 @@ class DataWebFiturController extends Controller
                 default:
                 $totalData = [];
             }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => true,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
+
+    public function barangTerlarisWeekly()
+    {
+        try {
+            $result = ItemPenjualan::barangTerlarisWeekly();
+
+            return response()->json([
+                'success' => true,
+                'label' => 'Total Qty',
+                'message' => "10 Barang terlaris mingguan",
+                'data' => $result,
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => true,

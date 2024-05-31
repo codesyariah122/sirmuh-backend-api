@@ -84,6 +84,48 @@ class ItemPenjualan extends Model
 		return $result;
 	}
 
+	public static function barangTerlarisWeekly()
+	{
+    // Menghitung tanggal awal dan akhir dari minggu ini
+		$startOfWeek = now()->startOfWeek()->format('Y-m-d');
+		$endOfWeek = now()->endOfWeek()->format('Y-m-d');
+
+		$barangTerlaris = DB::table('itempenjualan')
+		->select('kode_barang', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_penjualan'))
+		->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+		->groupBy('kode_barang')
+		->orderByDesc('total_penjualan')
+		->limit(10)
+		->get();
+
+		$listBarangTerlaris = [];
+
+		foreach ($barangTerlaris as $barang) {
+			$kodeBarang = $barang->kode_barang;
+			$totalQty = $barang->total_qty;
+			$totalPenjualan = $barang->total_penjualan;
+
+			$barangDetail = DB::table('barang')
+			->select('barang.kode', 'barang.nama', 'barang.satuan', 'barang.satuanbeli', 'barang.toko', 'barang.supplier', 'supplier.nama as nama_supplier')
+			->leftJoin('supplier', 'barang.supplier', '=', 'supplier.kode')
+			->where('barang.kode', $kodeBarang)
+			->first();
+
+			$listBarangTerlaris[] = [
+				'kode' => $barangDetail->kode,
+				'nama' => $barangDetail->nama,
+				'satuan' => $barangDetail->satuan,
+				'satuanbeli' => $barangDetail->satuanbeli,
+				'toko' => $barangDetail->toko,
+				'supplier' => $barangDetail->nama_supplier,
+				'total_qty' => $totalQty,
+				'total_penjualan' => $totalPenjualan,
+			];
+		}
+
+		return $listBarangTerlaris;
+	}
+
 	public static function barangTerlaris()
 	{
 		$tanggalMulai = now();

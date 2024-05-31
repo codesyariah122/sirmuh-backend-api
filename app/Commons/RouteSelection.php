@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\Dashboard\{
     DataBarangController,
     DataPelangganController,
     DataKategoriBarangController,
-    DataBankController,
     DataBiayaController,
     DataCanvasController,
     DataItemCanvasController,
@@ -59,16 +58,16 @@ class RouteSelection {
 
     private static $listRoutes = [
         [
+            'endPoint' => '/logout',
+            'method' => 'post',
+            'controllers' => [LoginController::class, 'logout']
+        ],
+        [
             'endPoint' => '/ping-test',
             'method' => 'get',
             'controllers' => [DataWebFiturController::class, 'checkInternetConnection']
         ],
 
-        [
-            'endPoint' => '/logout',
-            'method' => 'post',
-            'controllers' => [LoginController::class, 'logout']
-        ],
         // User data management
         [
             'endPoint' => '/user-data',
@@ -169,11 +168,6 @@ class RouteSelection {
         ],
 
         // Data Bank
-        [
-            'endPoint' => '/data-bank',
-            'method' => 'get',
-            'controllers' => [DataBankController::class, 'index']
-        ],
         [
             'endPoint' => '/data-biaya',
             'method' => 'resource',
@@ -290,6 +284,18 @@ class RouteSelection {
         ],
 
         [
+            'endPoint' => '/penjualan-daily',
+            'method' => 'get',
+            'controllers' => [DataWebFiturController::class, 'penjualanDaily']
+        ],
+
+        [
+            'endPoint' => '/penjualan-weekly',
+            'method' => 'get',
+            'controllers' => [DataWebFiturController::class, 'penjualanWeekly']
+        ],
+
+        [
             'endPoint' => '/check-stok-barang/{id}',
             'method' => 'get',
             'controllers' => [DataWebFiturController::class, 'check_stok_barang']
@@ -351,6 +357,11 @@ class RouteSelection {
             'endPoint' => '/data-pemasukan',
             'method' => 'resource',
             'controllers' => DataPemasukanController::class, 'index'
+        ],
+        [
+            'endPoint' => '/pemasukan-weekly',
+            'method' => 'get',
+            'controllers' => [DataPemasukanController::class, 'pemasukanWeekly']
         ],
         [
             'endPoint' => '/data-jenis-pemasukan',
@@ -543,6 +554,12 @@ class RouteSelection {
         ],
 
         [
+            'endPoint' => '/barangterlaris-weekly',
+            'method' => 'get',
+            'controllers' => [DataWebFiturController::class, 'barangTerlarisWeekly']
+        ],
+
+        [
             'endPoint' => '/load-form/{diskon}/{ppn}/{total}',
             'method' => 'get',
             'controllers' => [DataWebFiturController::class, 'loadForm']
@@ -715,9 +732,9 @@ class RouteSelection {
         ],
 
         [
-        	'endPoint' => '/laporan-penjualan',
-        	'method' => 'resource',
-        	'controllers' => DataLaporanPenjualanController::class
+            'endPoint' => '/laporan-penjualan',
+            'method' => 'resource',
+            'controllers' => DataLaporanPenjualanController::class
         ],
 
         [
@@ -755,24 +772,24 @@ class RouteSelection {
 
         // Raja ongkir api
         [
-        	'endPoint' => '/province-lists',
-        	'method' => 'get',
-        	'controllers' => [RajaOngkirController::class, 'provinces']
+            'endPoint' => '/province-lists',
+            'method' => 'get',
+            'controllers' => [RajaOngkirController::class, 'provinces']
         ],
         [
-        	'endPoint' => '/citys/{id}',
-        	'method' => 'get',
-        	'controllers' => [RajaOngkirController::class, 'citys']
+            'endPoint' => '/citys/{id}',
+            'method' => 'get',
+            'controllers' => [RajaOngkirController::class, 'citys']
         ],
         [
-        	'endPoint' => '/ekspedisi-lists',
-        	'method' => 'get',
-        	'controllers' => [RajaOngkirController::class, 'ekspeditions']
+            'endPoint' => '/ekspedisi-lists',
+            'method' => 'get',
+            'controllers' => [RajaOngkirController::class, 'ekspeditions']
         ],
         [
-        	'endPoint' => '/check-ongkir',
-        	'method' => 'post',
-        	'controllers' => [RajaOngkirController::class, 'checkOngkir']
+            'endPoint' => '/check-ongkir',
+            'method' => 'post',
+            'controllers' => [RajaOngkirController::class, 'checkOngkir']
         ],
 
         // jenis kepeluan

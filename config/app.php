@@ -199,6 +199,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         // App\Providers\ControllersServiceProvider::class,
         // App\Providers\ControllersServiceProvider::class,
+        // App\Providers\DashboardServiceProvider::class,
     ],
 
     /*
