@@ -160,7 +160,8 @@ class DataPemakaianBarangController extends Controller
             ->select('itempemakaianorigin.id', 'itempemakaianorigin.kode_pemakaian', 'itempemakaianorigin.barang as barang_asal', 'itempemakaianorigin.qty as qty_asal', 'itempemakaianorigin.harga', 'itempemakaianorigin.total', 'itempemakaianorigin.supplier', 
                 'barang_asal.kode as kode_barang_asal',
                 'barang_asal.nama as nama_barang_asal', 
-                'barang_asal.toko as stok_barang_asal', 
+                'barang_asal.toko as stok_barang_asal',
+                'barang_asal.harga_toko as harga_barang_asal',
                 'barang_asal.satuan as satuan_barang_asal',
                 'barang_asal.supplier as barang_supplier_asal'
             )
@@ -172,9 +173,10 @@ class DataPemakaianBarangController extends Controller
             ->select('itempemakaiandest.id', 'itempemakaiandest.kode_pemakaian', 'itempemakaiandest.barang as barang_tujuan', 'itempemakaiandest.qty as qty_tujuan', 'itempemakaiandest.harga', 'itempemakaiandest.total', 'itempemakaiandest.supplier', 
                 'barang_dest.kode as kode_barang_dest',
                 'barang_dest.nama as nama_barang_dest', 
-                'barang_dest.toko as stok_barang_dest', 
+                'barang_dest.toko as stok_barang_dest',
+                'barang_dest.harga_toko as harga_barang_dest',
                 'barang_dest.satuan as satuan_barang_dest',
-                'barang_dest.supplier as barang_supplier_asal'
+                'barang_dest.supplier as barang_supplier_dest'
             )
             ->leftJoin('barang as barang_dest', 'itempemakaiandest.barang', '=', 'barang_dest.kode')
             ->where('itempemakaiandest.kode_pemakaian', '=', $pemakaian_barang->kode);
