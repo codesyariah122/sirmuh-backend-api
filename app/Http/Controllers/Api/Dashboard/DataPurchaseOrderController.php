@@ -484,8 +484,8 @@ class DataPurchaseOrderController extends Controller
                     $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
                     $updateKas->save();
                 }
-                $updatePembelian->lunas = "True";
-                $updatePembelian->visa = "LUNAS";
+                $updatePembelian->lunas = "False";
+                $updatePembelian->visa = "DP AWAL";
                 $updatePembelian->jt = 0;
                 $updatePembelian->hutang = 0;
             }
