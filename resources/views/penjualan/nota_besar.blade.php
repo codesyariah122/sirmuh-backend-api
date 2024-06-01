@@ -48,15 +48,15 @@
                 Kepada
             </td>
             <td rowspan="6" width="40%" style="vertical-align: top;">
-             <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
-             @else
-             <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
-             @endif
-             <br>
-             <span>{{ $toko['name'] }} </span>                
-             <br>
-             <address>
+               <span style="font-weight: 800; font-size: 14px;">{{ $toko['name'] }}</span>  @if($toko['name'] === 'CV Sangkuntala Jaya Sentosa')
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="60" />
+               @else
+               <img src="{{ public_path('storage/tokos/' . $toko['logo']) }}" alt="{{$toko['logo']}}" width="120" />
+               @endif
+               <br>
+               <span>{{ $toko['name'] }} </span>                
+               <br>
+               <address>
                 {{ $toko['address'] }}
             </address>
             <br>
@@ -88,8 +88,8 @@
             <th>No</th>
             <th>Tanggal Transaksi</th>
             <th>Barang / Harga Satuan</th>
-            <th>Saldo Piutang</th>
             <th>Jumlah</th>
+            <th>Saldo Piutang</th>
             <th>Biaya Kirim</th>
             <th>Sub Total</th>
         </tr>
@@ -102,8 +102,8 @@
                 {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}
             </td>
             <td class="text-right">{{$item->barang_nama}} / {{ $helpers->format_uang($item->harga) }}</td>
-            <td class="text-right">{{$helpers->format_uang($item->saldo_piutang)}}</td>
             <td class="text-center">{{ round($item->qty, 2)."".$item->satuan }}</td>
+            <td class="text-right">{{$helpers->format_uang($item->saldo_piutang)}}</td>
             @if(count($barangs) > 0)
             <td class="text-right"> {{$helpers->format_uang($penjualan->biayakirim)}} </td>
             @else

@@ -27,6 +27,89 @@ class WebFeatureHelpers
         $this->data = $data;
     }
 
+    public function formatTextForPenjualan($penjualan, $barangs, $toko)
+    {
+        // Lebar maksimum untuk kolom kiri dan kanan
+        $leftColWidth = 40;
+        $rightColWidth = 40;
+
+        // Header informasi pelanggan dan toko
+        $header = "";
+        $header .= "INVOICE\n";
+        $header .= "Kepada\n";
+        $header .= str_pad($penjualan->pelanggan_nama . " (" . $penjualan->pelanggan_nama . ")", $leftColWidth);
+        $header .= "\n";
+
+        $header .= str_pad("", 73);
+        $header .= str_pad($toko->name, 78). "\n";
+        $header .= str_pad("", 73);
+        $header .= str_pad($toko->address, 40, ' ', STR_PAD_RIGHT) . "\n";
+        $header .= str_pad("", 73);
+        $header .= str_pad($toko->kota . ", " . $toko->provinsi, 40);
+        $header .= str_pad("", 22) . "\n\n";
+        $header .= str_pad("", 14);
+        $header .= str_pad("Tanggal: " . now()->toDateString(), 78, ' ', STR_PAD_LEFT) . "\n";
+        $header .= str_pad("", 22);
+        $header .= str_pad("NO INVOICE: " . $penjualan->kode, 78, ' ', STR_PAD_LEFT) . "\n";
+
+        $headers = ["No", "Tanggal Transaksi","Barang", "Harga Satuan", "Qty", "Saldo Piutang", "Total"];
+        $data = [];
+
+        $data[] = $headers;
+
+        foreach ($barangs as $key => $barang) {
+            $data[] = [
+                $key += 1,
+                $this->format_tanggal_ascii($barang->tanggal),
+                $barang->barang_nama,
+                $this->format_uang($barang->harga_toko),
+                intval($barang->qty).$barang->satuan,
+                $this->format_uang($barang->saldo_piutang),
+                $this->format_uang($barang->subtotal)
+            ];
+        }
+
+        $colWidths = [];
+        foreach ($data as $row) {
+            foreach ($row as $i => $cell) {
+                $colWidths[$i] = max(isset($colWidths[$i]) ? $colWidths[$i] : 0, strlen($cell));
+            }
+        }
+
+        $line = '+';
+        foreach ($colWidths as $width) {
+            $line .= str_repeat('-', $width + 2) . '+';
+        }
+
+        $output = $header . $line . "\n|";
+        foreach ($data[0] as $i => $cell) {
+            $output .= ' ' . str_pad($cell, $colWidths[$i]) . ' |';
+        }
+        $output .= "\n" . $line;
+
+        for ($i = 1; $i < count($data); $i++) {
+            $output .= "\n|";
+            foreach ($data[$i] as $j => $cell) {
+                $output .= ' ' . str_pad($cell, $colWidths[$j]) . ' |';
+            }
+        }
+
+        $output .= "\n" . $line;
+
+        $output .= "\n";
+
+        $output .= str_pad("Total : ", 86, ' ', STR_PAD_RIGHT) . $this->format_uang($penjualan->jumlah) . "\n";
+        $output .= str_pad("Bayar : ", 86, ' ', STR_PAD_RIGHT) . $this->format_uang($penjualan->bayar) . "\n";
+        $output .= str_pad("", 86) . "\n"; 
+        $output .= str_pad("Kembali : ", 86, ' ', STR_PAD_RIGHT) . $this->format_uang($penjualan->kembali) . "\n";
+        $output .= "\n\n" . str_pad("Kasir", 96, ' ', STR_PAD_LEFT) . "\n";
+        $output .= "\n\n" . str_pad($penjualan->operator, 96, ' ', STR_PAD_LEFT) . "\n";
+
+        return $output;
+    }
+
+
+
     function convertCurrencyToInteger($currencyString) {
         $cleanedString = preg_replace('/[^0-9]/', '', $currencyString);
         return (int) $cleanedString;
@@ -40,6 +123,16 @@ class WebFeatureHelpers
         $formatIndonesia = $carbonDate->isoFormat('dddd, D MMMM YYYY');
 
         echo $formatIndonesia;
+    }
+
+    public function format_tanggal_ascii($tanggal)
+    {
+        $carbonDate = Carbon::parse($tanggal);
+        Carbon::setLocale('id');
+        // Format ke dalam bahasa Indonesia
+        $formatIndonesia = $carbonDate->isoFormat('D MMMM YYYY');
+
+        return $formatIndonesia;
     }
 
     public function format_tanggal_transaksi($tanggal)
@@ -61,7 +154,7 @@ class WebFeatureHelpers
 
         for ($i = 0; $i < strlen($numericString); $i++) {
             $formattedString .= $numericString[$i];
-            
+
             if (in_array($i, $dashPositions)) {
                 $formattedString .= "-";
             }

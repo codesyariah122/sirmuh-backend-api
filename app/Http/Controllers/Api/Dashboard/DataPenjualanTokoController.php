@@ -15,6 +15,7 @@ use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
 use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles, Pemasukan, SetupPerusahaan};
 use Auth;
 use PDF;
+use Smalot\PdfParser\Parser;
 
 class DataPenjualanTokoController extends Controller
 {
@@ -33,26 +34,26 @@ class DataPenjualanTokoController extends Controller
     public function index(Request $request)
     {
         try {
-           $keywords = $request->query('keywords');
-           $today = now()->toDateString();
-           $now = now();
-           $startOfMonth = $now->startOfMonth()->toDateString();
-           $endOfMonth = $now->endOfMonth()->toDateString();
-           $pelanggan = $request->query('pelanggan');
-           $dateTransaction = $request->query('date_transaction');
-           $viewAll = $request->query('view_all');
-           $user = Auth::user();
+         $keywords = $request->query('keywords');
+         $today = now()->toDateString();
+         $now = now();
+         $startOfMonth = $now->startOfMonth()->toDateString();
+         $endOfMonth = $now->endOfMonth()->toDateString();
+         $pelanggan = $request->query('pelanggan');
+         $dateTransaction = $request->query('date_transaction');
+         $viewAll = $request->query('view_all');
+         $user = Auth::user();
 
-           $query = Penjualan::query()
-           ->select(
+         $query = Penjualan::query()
+         ->select(
             'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar', 'penjualan.dikirim', 'penjualan.diskon', 'penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim','penjualan.status', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
-           ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-           ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-           ->where('jenis', 'PENJUALAN TOKO')
-           ->limit(10);
+         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+         ->where('jenis', 'PENJUALAN TOKO')
+         ->limit(10);
 
-           if ($dateTransaction) {
+         if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
         }
 
@@ -408,18 +409,50 @@ class DataPenjualanTokoController extends Controller
 
             $setting = "";
 
-            switch($type) {
+            switch ($type) {
                 case "nota-kecil":
                 return view('penjualan.nota_kecil', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
                 break;
+
                 case "nota-besar":
                 $pdf = PDF::loadView('penjualan.nota_besar', compact('penjualan', 'barangs', 'kode', 'toko', 'nota_type', 'helpers'));
                 $pdf->setPaper(0,0,350,440, 'potrait');
                 return $pdf->stream('Transaksi-'. $penjualan->kode .'.pdf');
+                // Storage::put("public/penjualan/Transaksi-{$penjualan->kode}.pdf", $pdf->output());
+
+                // $pdfPath = "public/penjualan/Transaksi-{$penjualan->kode}.pdf";
+
+                // if (Storage::exists($pdfPath)) {
+                //     $parser = new Parser();
+                //     $pdf = $parser->parseFile(storage_path("app/{$pdfPath}"));
+                //     $text = $pdf->getText();
+
+                //     $formattedText = $this->helpers->formatTextForPenjualan($penjualan, $barangs, $toko);
+
+                //     Storage::put("public/penjualan/Transaksi-{$penjualan->kode}.txt", $formattedText);
+
+                //     $txtPath = "public/penjualan/Transaksi-{$penjualan->kode}.txt";
+
+                //     if (Storage::exists($txtPath)) {
+                //         $txtFilePath = storage_path("app/{$txtPath}");
+
+                //         return response()->file($txtFilePath);
+
+                // // Uncomment the following line to send the file to the printer
+                // // exec("lp -d Your_Printer_Name $txtFilePath");
+
+                // // return response()->json(['message' => 'Nota printed successfully']);
+                //     } else {
+                //         return response()->json(['error' => 'Text file not found'], 404);
+                //     }
+                // } else {
+                //     return response()->json(['error' => 'PDF file not found'], 404);
+                // }
                 break;
             }
         } catch (\Throwable $th) {
-            return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
+            throw $th;
+            // return response()->view('errors.error-page', ['message' => "Error parameters !!"], 400);
         }
     }
 
@@ -625,11 +658,11 @@ class DataPenjualanTokoController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $deletePenjualan = Penjualan::findOrFail($id);
 
             $dataPiutang = Piutang::where('kode', $deletePenjualan->kode)->first();
