@@ -98,6 +98,48 @@ class DataLabaRugiController extends Controller
         //
     }
 
+    public function labaRugiWeekly()
+    {
+        try {
+            $query = LabaRugi::query()
+            ->select(
+                DB::raw('YEARWEEK(tanggal) as minggu'),
+                DB::raw('SUM(labarugi) as total_laba')
+            )
+            ->groupBy('minggu')
+            ->orderBy('minggu', 'asc');
+
+            $labaRugiPerMinggu = $query->get();
+
+            $chartData = $labaRugiPerMinggu->map(function ($labaRugi) {
+                $year = substr($labaRugi->minggu, 0, 4);
+                $week = substr($labaRugi->minggu, 4, 2);
+
+            // Mengonversi minggu dan tahun menjadi tanggal awal dan akhir dari minggu tersebut
+                $startOfWeek = date('Y-m-d', strtotime($year . 'W' . $week));
+                $endOfWeek = date('Y-m-d', strtotime($year . 'W' . $week . '7'));
+
+                return [
+                    'week_start' => $startOfWeek,
+                    'week_end' => $endOfWeek,
+                    'total_laba' => $labaRugi->total_laba,
+                ];
+            });
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Grafik Laba Rugi Weekly',
+                'label' => 'Total Laba Rugi',
+                'data' => $chartData
+            ]);
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+
     public function labaRugiDaily(int $day) 
     {
         try {

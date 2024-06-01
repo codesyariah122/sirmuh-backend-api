@@ -349,6 +349,11 @@ class RouteSelection {
             'controllers' => [DataLabaRugiController::class, 'labaRugiDaily'],
         ],
         [
+            'endPoint' => '/laba-rugi-weekly',
+            'method' => 'get',
+            'controllers' => [DataLabaRugiController::class, 'labaRugiWeekly'],
+        ],
+        [
             'endPoint' => '/data-laba-rugi',
             'method' => 'resource',
             'controllers' => DataLabaRugiController::class,
