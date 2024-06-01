@@ -515,11 +515,11 @@ class DataPurchaseOrderController extends Controller
                 $userOnNotif = Auth::user();
 
                 $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
-                foreach($dataItems as $item) {
-                    $updateItemPembelian = ItemPembelian::findOrFail($item->id);
-                    $updateItemPembelian->stop_qty = "True";
-                    $updateItemPembelian->save();
-                }
+                // foreach($dataItems as $item) {
+                //     $updateItemPembelian = ItemPembelian::findOrFail($item->id);
+                //     $updateItemPembelian->stop_qty = "True";
+                //     $updateItemPembelian->save();
+                // }
 
                 if(intval($data['biayabongkar']) > 0) {
                     $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
