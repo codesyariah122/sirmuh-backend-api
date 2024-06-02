@@ -204,6 +204,8 @@ class DataPiutangController extends Controller
 
                 $dataPenjualan = Penjualan::whereKode($piutang->kd_jual)->first();
                 $updatePenjualan = Penjualan::findOrFail($dataPenjualan->id);
+                $dataItemPenjualan = ItemPenjualan::whereKode($piutang->kd_jual)->first();
+                $updateItemPenjualan = ItemPenjualan::findOrFail($dataItemPenjualan->id);
                 $updatePenjualan->bayar = intval($dataPenjualan->bayar) + $bayar;
 
                 // var_dump($bayar);
@@ -223,6 +225,8 @@ class DataPiutangController extends Controller
                         $updatePenjualan->angsuran = $updatePenjualan->bayar;
                         $updatePenjualan->receive = "True";
                         $updatePenjualan->status = "DIKIRIM";
+                        $updateItemPenjualan->stop_qty = "True";
+                        $updateItemPenjualan->save();
                     }
                 } else {
                     $updatePenjualan->lunas = "False";
