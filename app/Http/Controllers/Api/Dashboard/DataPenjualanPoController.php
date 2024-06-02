@@ -556,11 +556,11 @@ class DataPenjualanPoController extends Controller
                 $userOnNotif = Auth::user();
 
                 $dataItems = ItemPenjualan::whereKode($updatePenjualan->kode)->get();
-                foreach($dataItems as $item) {
-                    $updateItemPenjualan = ItemPenjualan::findOrFail($item->id);
-                    $updateItemPenjualan->stop_qty = "False";
-                    $updateItemPenjualan->save();
-                }
+                // foreach($dataItems as $item) {
+                //     $updateItemPenjualan = ItemPenjualan::findOrFail($item->id);
+                //     $updateItemPenjualan->stop_qty = "False";
+                //     $updateItemPenjualan->save();
+                // }
 
                 if($data['ongkir']) {                    
                     $updateKas = Kas::findOrFail($kas->id);
