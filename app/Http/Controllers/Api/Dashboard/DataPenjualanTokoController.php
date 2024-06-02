@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles, Pemasukan, SetupPerusahaan};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles, Pemasukan, SetupPerusahaan, PemasukanPenjualan};
 use Auth;
 use PDF;
 use Smalot\PdfParser\Parser;
@@ -34,26 +34,26 @@ class DataPenjualanTokoController extends Controller
     public function index(Request $request)
     {
         try {
-         $keywords = $request->query('keywords');
-         $today = now()->toDateString();
-         $now = now();
-         $startOfMonth = $now->startOfMonth()->toDateString();
-         $endOfMonth = $now->endOfMonth()->toDateString();
-         $pelanggan = $request->query('pelanggan');
-         $dateTransaction = $request->query('date_transaction');
-         $viewAll = $request->query('view_all');
-         $user = Auth::user();
+           $keywords = $request->query('keywords');
+           $today = now()->toDateString();
+           $now = now();
+           $startOfMonth = $now->startOfMonth()->toDateString();
+           $endOfMonth = $now->endOfMonth()->toDateString();
+           $pelanggan = $request->query('pelanggan');
+           $dateTransaction = $request->query('date_transaction');
+           $viewAll = $request->query('view_all');
+           $user = Auth::user();
 
-         $query = Penjualan::query()
-         ->select(
+           $query = Penjualan::query()
+           ->select(
             'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar', 'penjualan.dikirim', 'penjualan.diskon', 'penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim','penjualan.status', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
-         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-         ->where('jenis', 'PENJUALAN TOKO')
-         ->limit(10);
+           ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+           ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+           ->where('jenis', 'PENJUALAN TOKO')
+           ->limit(10);
 
-         if ($dateTransaction) {
+           if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
         }
 
@@ -303,7 +303,6 @@ class DataPenjualanTokoController extends Controller
             $newLabaRugi->keterangan = "PENJUALAN TOKO";
             $newLabaRugi->pelanggan = $pelanggan->kode;
             $newLabaRugi->nama_pelanggan = $pelanggan->nama;
-
             $newLabaRugi->save();
 
             $simpanFaktur = new FakturTerakhir;
@@ -311,6 +310,15 @@ class DataPenjualanTokoController extends Controller
             $simpanFaktur->tanggal = $newPenjualanData->tanggal;
             $simpanFaktur->save();
 
+            // $pemasukanPenjualan = new PemasukanPenjualan;
+            // $pemasukanPenjualan->tanggal = $newPenjualanToko->tanggal;
+            // $pemasukanPenjualan->kd_transaksi = $newPenjualanToko->kode;
+            // $pemasukanPenjualan->keterangan = $newPenjualanToko->keterangan;
+            // $pemasukanPenjualan->kode_kas = $newPenjualanToko->kode_kas;
+            // $pemasukanPenjualan->jumlah = $newPenjualanToko->jumlah;
+            // $pemasukanPenjualan->operator = $newPenjualanToko->operator;
+            // $pemasukanPenjualan->pelanggan = $newPenjualanToko->pelanggan;
+            // $pemasukanPenjualan->save();
                 // $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 // $pemasukan = new Pemasukan;
                 // $pemasukan->kode = $newPenjualanToko->kode;
@@ -329,6 +337,7 @@ class DataPenjualanTokoController extends Controller
                 $dataItemPenjualan = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
                 $updateItem = ItemPenjualan::findOrFail($dataItemPenjualan->id);
                 $updateItem->qty_terima = $dataItemPenjualan->qty;
+                $updateItem->diskon = $newPenjualanToko->diskon;
                 $updateItem->save();              
                 $updateKas = Kas::findOrFail($kas->id);
                 $updateKas->saldo = $kas->saldo - intval($data['ongkir']);
@@ -406,7 +415,6 @@ class DataPenjualanTokoController extends Controller
 
             $barangs = $query->get();
             $penjualan = $query->get()[0];
-
             $setting = "";
 
             switch ($type) {
@@ -658,11 +666,11 @@ class DataPenjualanTokoController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $deletePenjualan = Penjualan::findOrFail($id);
 
             $dataPiutang = Piutang::where('kode', $deletePenjualan->kode)->first();

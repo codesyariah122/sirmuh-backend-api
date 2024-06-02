@@ -121,7 +121,7 @@
         @if($penjualan->lunas === "True")
         <tr>
             <td colspan="6" class="text-right">Total Bayar</td>
-            <td class="text-right">{{ $item->diskon ? $helpers->format_uang($item->diskon_rupiah) : $helpers->format_uang($penjualan->bayar) }}</td>
+            <td class="text-right">{{ $helpers->format_uang($penjualan->bayar) }}</td>
         </tr>
         @else
         <tr>
@@ -136,10 +136,22 @@
             </tr>
             @endif --}}
             @if($penjualan->lunas === "True")
+            @if(intval($item->diskon) === 0)
             <tr>
                 <td colspan="6" class="text-right">Kembali</td>
                 <td class="text-right">{{ $penjualan->kembali ? $helpers->format_uang($penjualan->kembali) : $helpers->format_uang($penjualan->bayar - $penjualan->jumlah) }}</td>
             </tr>
+            @else
+            <tr>
+                <td colspan="6" class="text-right">Diskon</td>
+                <td class="text-right">{{ $helpers->format_uang($penjualan->diskon) }}</td>
+            </tr>
+            <tr>
+                <td colspan="6" class="text-right">Kembali</td>
+                <td class="text-right">{{ $helpers->format_uang(($penjualan->bayar + $penjualan->diskon) - $penjualan->jumlah) }}</td>
+            </tr>
+            @endif
+
             @else
             <tr>
                 <td colspan="6" class="text-right">Masuk Piutang</td>

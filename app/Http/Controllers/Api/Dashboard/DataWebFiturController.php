@@ -38,7 +38,8 @@ use App\Models\{
     PurchaseOrder,
     JenisPemasukan,
     Pemasukan,
-    Pengeluaran
+    Pengeluaran,
+    PemasukanPenjualan
 };
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
@@ -66,6 +67,48 @@ class DataWebFiturController extends Controller
             return response()->json([
                 'message' => 'Owner data info',
                 'data' => $ownerInfo
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function pemasukanWeekly()
+    {
+        try {
+            $startOfMonth = now()->startOfMonth();
+            $endOfMonth = now()->endOfMonth();
+
+            $query = PemasukanPenjualan::query()
+            ->select(
+                DB::raw('YEARWEEK(tanggal) as minggu'),
+                DB::raw('SUM(jumlah) as total_pemasukan')
+            );
+
+            $pemasukanPerMinggu = $query->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+            ->groupBy('minggu')
+            ->orderBy('minggu', 'asc')
+            ->get();
+
+            $chartData = $pemasukanPerMinggu->map(function ($pemasukan) {
+                $year = substr($pemasukan->minggu, 0, 4);
+                $week = substr($pemasukan->minggu, 4, 2);
+
+                $startOfWeek = date('Y-m-d', strtotime($year . 'W' . $week));
+                $endOfWeek = date('Y-m-d', strtotime($year . 'W' . $week . '7'));
+
+                return [
+                    'week_start' => $startOfWeek,
+                    'week_end' => $endOfWeek,
+                    'total_pemasukan' => $pemasukan->total_pemasukan,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Total Pemasukan Mingguan',
+                'label' => 'Total Pemasukan',
+                'data' => $chartData
             ]);
         } catch (\Throwable $th) {
             throw $th;
