@@ -14,7 +14,7 @@ use Auth;
 use Carbon\Carbon;
 
 class SessionExpired {
-    protected $timeout = 1200;
+    protected $timeout = 28800;
 
     public function handle($request, $next){
         $user = Auth::user();
