@@ -265,7 +265,7 @@ class DataItemPembelianController extends Controller
                     } else {
                         $max_qty = 0;
                     }
-                    $max_qty = intval($dataPembelian->jumlah) / intval($updateItemPembelian->subtotal);
+                    $max_qty = $max_qty;
                     $updateItemPembelian->qty = $request->qty;
                     $updateItemPembelian->last_qty = $request->last_qty;
                     $updateItemPembelian->stop_qty = $request->stop_qty;
