@@ -111,16 +111,29 @@ class ItemPenjualan extends Model
 			->where('barang.kode', $kodeBarang)
 			->first();
 
-			$listBarangTerlaris[] = [
-				'kode' => $barangDetail->kode,
-				'nama' => $barangDetail->nama,
-				'satuan' => $barangDetail->satuan,
-				'satuanbeli' => $barangDetail->satuanbeli,
-				'toko' => $barangDetail->toko,
-				'supplier' => $barangDetail->nama_supplier,
-				'total_qty' => $totalQty,
-				'total_penjualan' => $totalPenjualan,
-			];
+			if ($barangDetail) {
+				$listBarangTerlaris[] = [
+					'kode' => $barangDetail->kode,
+					'nama' => $barangDetail->nama,
+					'satuan' => $barangDetail->satuan,
+					'satuanbeli' => $barangDetail->satuanbeli,
+					'toko' => $barangDetail->toko,
+					'supplier' => $barangDetail->nama_supplier,
+					'total_qty' => $totalQty,
+					'total_penjualan' => $totalPenjualan,
+				];
+			} else {
+				$listBarangTerlaris[] = [
+					'kode' => null,
+					'nama' => 'Barang tidak ditemukan',
+					'satuan' => null,
+					'satuanbeli' => null,
+					'toko' => null,
+					'supplier' => null,
+					'total_qty' => $totalQty,
+					'total_penjualan' => $totalPenjualan,
+				];
+			}
 		}
 
 		return $listBarangTerlaris;
@@ -152,16 +165,29 @@ class ItemPenjualan extends Model
 			->where('barang.kode', $kodeBarang)
 			->first();
 
-			$listBarangTerlaris[] = [
-				'kode' => $barangDetail->kode,
-				'nama' => $barangDetail->nama,
-				'satuan' => $barangDetail->satuan,
-				'satuanbeli' => $barangDetail->satuanbeli,
-				'toko' => $barangDetail->toko,
-				'supplier' => $barangDetail->nama_supplier,
-				'total_qty' => $totalQty,
-				'total_penjualan' => $totalPenjualan,
-			];
+			if ($barangDetail) {
+				$listBarangTerlaris[] = [
+					'kode' => $barangDetail->kode,
+					'nama' => $barangDetail->nama,
+					'satuan' => $barangDetail->satuan,
+					'satuanbeli' => $barangDetail->satuanbeli,
+					'toko' => $barangDetail->toko,
+					'supplier' => $barangDetail->nama_supplier,
+					'total_qty' => $totalQty,
+					'total_penjualan' => $totalPenjualan,
+				];
+			} else {
+				$listBarangTerlaris[] = [
+					'kode' => null,
+					'nama' => 'Barang tidak ditemukan',
+					'satuan' => null,
+					'satuanbeli' => null,
+					'toko' => null,
+					'supplier' => null,
+					'total_qty' => $totalQty,
+					'total_penjualan' => $totalPenjualan,
+				];
+			}
 		}
 
 		return $listBarangTerlaris;
