@@ -203,12 +203,14 @@
             </tr>
             <tr>
                 <td colspan="9" class="text-right">Total</td>
-                <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->diterima + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->diterima) }}</td>
+                <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->diterima - $pembelian->biayabongkar) : $helpers->format_uang($pembelian->diterima) }}</td>
             </tr>
+            @if($pembelian->kekurangan_sdh_dibayar !== "True")
             <tr>
                 <td colspan="9" class="text-right">Bayar Kekurangan</td>
                 <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->jumlah - $pembelian->biayabongkar) }}</td>
             </tr>
+            @endif
             {{-- <tr>
                 <td colspan="9" class="text-right">Grand Total Bayar</td>
                 <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->bayar + $pembelian->biayabongkar) : $helpers->format_uang($pembelian->bayar) }}</td>
@@ -216,13 +218,17 @@
             @endif
             <tr>
                 <td colspan="9" class="text-right">
-                    @if($pembelian->visa === "LUNAS")
+                    @if($pembelian->visa === "LUNAS" && $pembelian->kekurangan_sdh_dibayar === "False")
                     Kembali 
                     @else
                     Sisa DP
                     @endif
                 </td>
+                @if($pembelian->kekurangan_sdh_dibayar === "False")
                 <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }} </td>
+                @else
+                <td class="text-right">{{ $helpers->format_uang($pembelian->kembali) }} </td>
+                @endif
             </tr>
             @else
             <tr>
