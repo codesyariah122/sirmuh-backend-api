@@ -477,13 +477,19 @@ class DataPurchaseOrderController extends Controller
                 $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
                 $updatePembelian->hutang = 0;
+                // if($bayar > $data['jumlah_saldo']) {
+                //     $updateKas = Kas::findOrFail($kas->id);
+                //     $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
+                //     $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
+                //     $updateKas->save();
+                // }
             } else {
-                if($bayar > $data['jumlah_saldo']) {
-                    $updateKas = Kas::findOrFail($kas->id);
-                    $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
-                    $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
-                    $updateKas->save();
-                }
+                // if($bayar > $data['jumlah_saldo']) {
+                //     $updateKas = Kas::findOrFail($kas->id);
+                //     $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
+                //     $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
+                //     $updateKas->save();
+                // }
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
                 $updatePembelian->jt = 0;
@@ -512,67 +518,67 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->kekurangan_sdh_dibayar = "True";
 
             if($updatePembelian->save()) {
-                $userOnNotif = Auth::user();
+               $updateKas = Kas::findOrFail($kas->id);
+               $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
+               $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
+               $updateKas->save();
+               $userOnNotif = Auth::user();
 
-                $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
+               $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
                 // foreach($dataItems as $item) {
                 //     $updateItemPembelian = ItemPembelian::findOrFail($item->id);
                 //     $updateItemPembelian->stop_qty = "True";
                 //     $updateItemPembelian->save();
                 // }
 
-                if(intval($data['biayabongkar']) > 0) {
-                    $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
-                    $updateKasBiaya->saldo = intval($kasBiaya->saldo) - $data['biayabongkar'];
-                    $updateKasBiaya->save();
-                }
-
-                // $updateKas = Kas::findOrFail($kas->id);
-                // $updateKas->saldo = $kas->saldo - $updatePembelian->diterima;
-                // $updateKas->save();
-
-                $updatePembelianSaved =  Pembelian::query()
-                ->select(
-                    'pembelian.*',
-                    'itempembelian.*',
-                    'supplier.nama as nama_supplier',
-                    'supplier.alamat as alamat_supplier'
-                )
-                ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
-                ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-                ->where('pembelian.id', $updatePembelian->id)
-                ->first();
-
-                $data_event = [
-                    'routes' => 'purchase-order',
-                    'alert' => 'success',
-                    'type' => 'add-data',
-                    'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
-                    'data' => $updatePembelian->kode,
-                    'user' => $userOnNotif
-                ];
-
-                event(new EventNotification($data_event));
-
-                $historyKeterangan = "{$userOnNotif->name}, berhasil terima purchase orders [{$updatePembelian->kode}], sebesar {$this->helpers->format_uang($updatePembelian->diterima)}";
-                $dataHistory = [
-                    'user' => $userOnNotif->name,
-                    'keterangan' => $historyKeterangan,
-                    'routes' => '/dashboard/transaksi/beli/purchase-order',
-                    'route_name' => 'Purchase Order'
-                ];
-                $createHistory = $this->helpers->createHistory($dataHistory);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => "Data pembelian , berhasil diupdate 👏🏿",
-                    'data' => $updatePembelian
-                ]);
+               if(intval($data['biayabongkar']) > 0) {
+                $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
+                $updateKasBiaya->saldo = intval($kasBiaya->saldo) - $data['biayabongkar'];
+                $updateKasBiaya->save();
             }
-        } catch (\Throwable $th) {
-            throw $th;
+
+            $updatePembelianSaved =  Pembelian::query()
+            ->select(
+                'pembelian.*',
+                'itempembelian.*',
+                'supplier.nama as nama_supplier',
+                'supplier.alamat as alamat_supplier'
+            )
+            ->leftJoin('itempembelian', 'pembelian.kode', '=', 'itempembelian.kode')
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
+            ->where('pembelian.id', $updatePembelian->id)
+            ->first();
+
+            $data_event = [
+                'routes' => 'purchase-order',
+                'alert' => 'success',
+                'type' => 'add-data',
+                'notif' => "Pembelian dengan kode {$updatePembelian->kode}, berhasil diupdate 🤙!",
+                'data' => $updatePembelian->kode,
+                'user' => $userOnNotif
+            ];
+
+            event(new EventNotification($data_event));
+
+            $historyKeterangan = "{$userOnNotif->name}, berhasil terima purchase orders [{$updatePembelian->kode}], sebesar {$this->helpers->format_uang($updatePembelian->diterima)}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/transaksi/beli/purchase-order',
+                'route_name' => 'Purchase Order'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Data pembelian , berhasil diupdate 👏🏿",
+                'data' => $updatePembelian
+            ]);
         }
+    } catch (\Throwable $th) {
+        throw $th;
     }
+}
 
     /**
      * Remove the specified resource from storage.
@@ -583,11 +589,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
