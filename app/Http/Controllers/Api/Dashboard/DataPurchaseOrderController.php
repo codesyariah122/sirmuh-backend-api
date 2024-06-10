@@ -518,20 +518,21 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->kekurangan_sdh_dibayar = "True";
 
             if($updatePembelian->save()) {
-               $updateKas = Kas::findOrFail($kas->id);
-               $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
-               $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
-               $updateKas->save();
-               $userOnNotif = Auth::user();
+             $updateKas = Kas::findOrFail($kas->id);
+             $bindCalc = intval($bayar) - intval($data['jumlah_saldo']);
+             $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
+             $updateKas->save();
+             
+             $userOnNotif = Auth::user();
 
-               $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
+             $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
                 // foreach($dataItems as $item) {
                 //     $updateItemPembelian = ItemPembelian::findOrFail($item->id);
                 //     $updateItemPembelian->stop_qty = "True";
                 //     $updateItemPembelian->save();
                 // }
 
-               if(intval($data['biayabongkar']) > 0) {
+             if(intval($data['biayabongkar']) > 0) {
                 $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
                 $updateKasBiaya->saldo = intval($kasBiaya->saldo) - $data['biayabongkar'];
                 $updateKasBiaya->save();
@@ -589,11 +590,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
