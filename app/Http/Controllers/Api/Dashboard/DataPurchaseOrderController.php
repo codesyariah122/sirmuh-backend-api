@@ -410,6 +410,11 @@ class DataPurchaseOrderController extends Controller
             $updatePembelian->kode_kas = $kas->kode;
             $updatePembelian->keterangan = $data['keterangan'] !== NULL ? $data['keterangan'] : $updatePembelian->keterangan;
 
+            // var_dump($diterima);
+            // var_dump($bayar);
+            // var_dump($data['sisa_dp']);
+            // die;
+
             if($diterima > $bayar) {
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "HUTANG";
@@ -490,8 +495,8 @@ class DataPurchaseOrderController extends Controller
                     $updateKas->saldo = intval($kas->saldo) - intval($bindCalc);
                     $updateKas->save();
                 }
-                $updatePembelian->lunas = "False";
-                $updatePembelian->visa = "DP AWAL";
+                $updatePembelian->lunas = "True";
+                $updatePembelian->visa = "LUNAS";
                 $updatePembelian->jt = 0;
                 $updatePembelian->hutang = 0;
             }
@@ -520,12 +525,14 @@ class DataPurchaseOrderController extends Controller
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
 
-                $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
-                // foreach($dataItems as $item) {
-                //     $updateItemPembelian = ItemPembelian::findOrFail($item->id);
-                //     $updateItemPembelian->stop_qty = "True";
-                //     $updateItemPembelian->save();
-                // }
+                if($updatePembelian->lunas === "True") {                    
+                    $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
+                    foreach($dataItems as $item) {
+                        $updateItemPembelian = ItemPembelian::findOrFail($item->id);
+                        $updateItemPembelian->stop_qty = "True";
+                        $updateItemPembelian->save();
+                    }
+                }
 
                 if(intval($data['biayabongkar']) > 0) {
                     $updateKasBiaya = Kas::findOrFail($data['kas_biaya']);
@@ -585,11 +592,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();

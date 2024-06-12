@@ -205,10 +205,10 @@
                 <td colspan="9" class="text-right">Total</td>
                 <td class="text-right">{{ $pembelian->biayabongkar !== NULL ? $helpers->format_uang($pembelian->diterima - $pembelian->biayabongkar) : $helpers->format_uang($pembelian->diterima) }}</td>
             </tr>
-            @if($pembelian->kekurangan_sdh_dibayar !== "True")
+            @if($pembelian->kekurangan_sdh_dibayar === "True")
             <tr>
                 <td colspan="9" class="text-right">Bayar Kekurangan</td>
-                <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->jumlah - $pembelian->biayabongkar) }}</td>
+                <td class="text-right">{{ $helpers->format_uang($pembelian->kekurangan_deposit) }}</td>
             </tr>
             @endif
             {{-- <tr>
@@ -218,7 +218,7 @@
             @endif
             <tr>
                 <td colspan="9" class="text-right">
-                    @if($pembelian->visa === "LUNAS" && $pembelian->kekurangan_sdh_dibayar === "False")
+                    @if($pembelian->visa === "LUNAS" && $pembelian->kekurangan_sdh_dibayar === "True")
                     Kembali 
                     @else
                     Sisa DP
