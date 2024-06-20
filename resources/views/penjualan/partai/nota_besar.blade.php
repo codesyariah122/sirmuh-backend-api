@@ -11,7 +11,7 @@
             font-family: 'Draft Condensed', sans-serif; margin-top: .1rem;
             letter-spacing: 1.5px;
             font-size: 12px;
-            top: 25px;
+            top: 100px;
         }
         table.data th {
             background: rgb(239, 239, 240);
