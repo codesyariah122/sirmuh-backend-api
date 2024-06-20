@@ -1,16 +1,17 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}} 
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/> 
-    <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} - {{$kode}}</title> 
-    <style> 
-        * { 
-            font-family: 'Draft Condensed', sans-serif; margin-top: .1rem; 
-            letter-spacing: 1.5px; 
-            font-size: 12px; 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>{{$penjualan->visa !== "HUTANG" ? 'Nota Penjualan' : 'Nota Piutang Penjualan'}} - {{$kode}}</title>
+    <style>
+        * {
+            font-family: 'Draft Condensed', sans-serif; margin-top: .1rem;
+            letter-spacing: 1.5px;
+            font-size: 12px;
+            top: 25px;
         }
         table.data th {
             background: rgb(239, 239, 240);
@@ -39,10 +40,10 @@
             margin-left: -3rem;
         }
     </style>
-</head> 
-<body> 
-    <h1 style="margin-top: 2rem; font-size: 1.5rem;">INVOICE</h1> 
-    
+</head>
+<body>
+    <h1 style="margin-top: 2rem; font-size: 1.5rem;">INVOICE</h1>
+
     <table width="100%" style="border-collapse: collapse;">
         <tr>
             <td style="font-weight: 800;">Kepada</td>
@@ -64,7 +65,7 @@
             @endphp
             Tanggal : {{$helpers->format_tanggal_transaksi($currentDate)}}
             <br>
-            NO INVOICE : 
+            NO INVOICE :
             <b>{{$penjualan->kode}}</b>
         </td>
     </tr>
@@ -165,5 +166,5 @@
     </tr>
 </table>
 
-</body> 
+</body>
 </html>
