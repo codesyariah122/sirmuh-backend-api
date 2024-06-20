@@ -92,7 +92,7 @@ class DataPurchaseOrderController extends Controller
             ->where(function ($query) use ($user) {
                 if ($user->role !== 1) {
                     $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                } 
+                }
             })
             ->where('pembelian.po', '=', 'True')
             ->addSelect(DB::raw('(SELECT stop_qty FROM itempembelian WHERE itempembelian.kode = pembelian.kode ORDER BY id DESC LIMIT 1) as stop_qty'))
@@ -141,7 +141,7 @@ class DataPurchaseOrderController extends Controller
             $data = $request->all();
 
             $barangs = $data['barangs'];
-            
+
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
@@ -190,7 +190,7 @@ class DataPurchaseOrderController extends Controller
             $newPembelian->operator = $data['operator'];
 
             $newPembelian->save();
-            
+
             $updateDrafts = ItemPembelian::whereKode($newPembelian->kode)->get();
             foreach($updateDrafts as $idx => $draft) {
                 $updateDrafts[$idx]->draft = 0;
@@ -383,8 +383,8 @@ class DataPurchaseOrderController extends Controller
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
             $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
-            
-            if(isset($data['kembali'])) {                
+
+            if(isset($data['kembali'])) {
                 $kembali = $data['kembali'] ? intval(preg_replace("/[^0-9]/", "", $data['kembali'])) : 0;
             }
             $updatePembelian = Pembelian::where('po', 'True')
@@ -479,8 +479,8 @@ class DataPurchaseOrderController extends Controller
                 $updateSupplier->save();
             } else if($data['sisa_dp'] !== 0) {
                 $updatePembelian->kembali = $data['sisa_dp'];
-                $updatePembelian->lunas = "True";
-                $updatePembelian->visa = "LUNAS";
+                $updatePembelian->lunas = "False";
+                $updatePembelian->visa = "DP AWAL";
                 $updatePembelian->hutang = 0;
                 // if($bayar > $data['jumlah_saldo']) {
                 //     $updateKas = Kas::findOrFail($kas->id);
@@ -525,7 +525,7 @@ class DataPurchaseOrderController extends Controller
             if($updatePembelian->save()) {
                 $userOnNotif = Auth::user();
 
-                if($updatePembelian->lunas === "True") {                    
+                if($updatePembelian->lunas === "True") {
                     $dataItems = ItemPembelian::whereKode($updatePembelian->kode)->get();
                     foreach($dataItems as $item) {
                         $updateItemPembelian = ItemPembelian::findOrFail($item->id);
@@ -596,7 +596,7 @@ class DataPurchaseOrderController extends Controller
 
            $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {          
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
@@ -606,13 +606,13 @@ class DataPurchaseOrderController extends Controller
                 $delete_hutang->delete();
 
                 $hutangItems = ItemHutang::where('kode', $delete_pembelian->kode)->get();
-                foreach($hutangItems as $itemHutang) {                    
+                foreach($hutangItems as $itemHutang) {
                     $deleteItemHutang = ItemHutang::findOrFail($itemHutang->id);
                     $deleteItemHutang->delete();
                 }
 
                 $angsuranItems = PembayaranAngsuran::where('kode', $delete_pembelian->kode)->get();
-                foreach($angsuranItems as $itemAngsuran) {                    
+                foreach($angsuranItems as $itemAngsuran) {
                     $deleteAngsuran = PembayaranAngsuran::findOrFail($itemAngsuran->id);
                     $deleteAngsuran->delete();
                 }
@@ -621,7 +621,7 @@ class DataPurchaseOrderController extends Controller
             $delete_pembelian->delete();
 
             $pembelianItems = ItemPembelian::where('kode', $delete_pembelian->kode)->get();
-            foreach($pembelianItems as $itemPembelian) {                
+            foreach($pembelianItems as $itemPembelian) {
                 $deleteItem = ItemPembelian::findOrFail($itemPembelian->id);
                 $deleteItem->delete();
             }
@@ -637,9 +637,9 @@ class DataPurchaseOrderController extends Controller
             $updateKasBiaya->save();
 
             $orderItems = PurchaseOrder::where('kode_po', $delete_pembelian->kode)->get();
-            foreach($orderItems as $item) {                    
+            foreach($orderItems as $item) {
                 $barangItems = Barang::where('kode', $item->kode_barang)->get();
-                foreach($barangItems as $barang) {                        
+                foreach($barangItems as $barang) {
                     $updateStokBarang = Barang::findOrFail($barang->id);
                     $lastQty = $updateStokBarang->toko;
                     $updateStokBarang->toko = $updateStokBarang->toko - $item->qty;
