@@ -227,7 +227,11 @@
                 @if($pembelian->kekurangan_sdh_dibayar === "False")
                 <td class="text-right">{{ $helpers->format_uang($pembelian->bayar - $pembelian->diterima) }} </td>
                 @else
+                @if($pembelian->sisa_dp > 0)
+                <td class="text-right">{{ $helpers->format_uang($pembelian->sisa_dp) }}</td>
+                @else
                 <td class="text-right">{{ $helpers->format_uang($pembelian->kembali) }} </td>
+                @endif
                 @endif
             </tr>
             @else

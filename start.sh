@@ -1,4 +1,4 @@
 #!/bin/bash
-# php -S 192.168.9.221:4041 -t public
-php -S 192.168.1.8:4041 -t public 
-# && php artisan websockets:serve --host=192.168.1.8 --port=6001
+exec > /var/log/sirmuh-api-start.log 2>&1
+set -x
+php -S 192.168.1.10:4041 -t public
