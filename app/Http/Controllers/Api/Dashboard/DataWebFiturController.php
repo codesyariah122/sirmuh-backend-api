@@ -2183,11 +2183,7 @@ public function update_item_penjualan(Request $request)
             ->first();
             $existingItem = ItemPenjualan::findOrFail($dataItem->id);
 
-            if($existingItem) {
-                echo $existingItem->nama_barang;
-            } else {
-                echo "Non exists";
-            }
+            dd($existingItem);
 
             die;
 
