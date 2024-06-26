@@ -1,0 +1,7 @@
+My SMTP Server free trial :
+soap-vertical@s9dz4uxl.mailosaur.net
+email: temperature-push@s9dz4uxl.mailosaur.net 
+HOST :     smtp.mailosaur.net
+username :     s9dz4uxl@mailosaur.net
+port : 587
+password : 0wBUvdc8WW7KkfiJeeOUiPRZfNzV2zPh
