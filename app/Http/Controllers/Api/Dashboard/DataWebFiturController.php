@@ -2259,7 +2259,7 @@ public function check_stok_barang(Request $request, $id)
 {
     try {
         $barang = Barang::findOrFail($id);
-
+        var_dump($barang); die;
         if(intval($barang->toko) > 0) {
             return response()->json([
                 'success' => true,
