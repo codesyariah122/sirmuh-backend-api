@@ -2177,11 +2177,12 @@ public function update_item_penjualan(Request $request)
         foreach($barangs as $key => $barang) {
             $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
 
-            dd($dataBarang->kode);die;
 
             $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
             ->where('draft', 1)
             ->first();
+            
+            dd($existingItem);die;
 
             if($barang['harga_toko'] !== NULL) {
                 $harga = $barang['harga_toko'];
