@@ -2178,11 +2178,18 @@ public function update_item_penjualan(Request $request)
             $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
 
 
-            $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
+            $dataItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
             ->where('draft', 1)
             ->first();
-            
-            dd($existingItem);die;
+            $existingItem = ItemPenjualan::findOrFail($dataItem->id);
+
+            if($existingItem) {
+                echo $existingItem->nama_barang;
+            } else {
+                echo "Non exists";
+            }
+
+            die;
 
             if($barang['harga_toko'] !== NULL) {
                 $harga = $barang['harga_toko'];
