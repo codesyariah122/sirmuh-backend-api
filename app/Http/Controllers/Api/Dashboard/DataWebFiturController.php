@@ -2260,7 +2260,7 @@ public function check_stok_barang(Request $request, $id)
     try {
         $barang = Barang::findOrFail($id);
 
-        if($barang->toko > 0) {
+        if(intval($barang->toko) > 0) {
             return response()->json([
                 'success' => true,
                 'message' => 'Stok tersedia',
