@@ -2172,31 +2172,24 @@ public function update_item_penjualan(Request $request)
         $supplier = Supplier::findOrFail($supplierId);
         $checkingKas = Kas::findOrFail($kode_kas);
 
-        // var_dump($draft); die;
+        if($draft) {
+            foreach($barangs as $key => $barang) {
+                $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
 
-        foreach($barangs as $key => $barang) {
-            $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
+                $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
+                ->where('draft', 1)
+                ->first();
 
+                if($barang['harga_toko'] !== NULL) {
+                    $harga = $barang['harga_toko'];
+                } else {
+                    $harga = $barang['harga_partai'];
+                }
 
-            $dataItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
-            ->where('draft', 1)
-            ->first();
-            $existingItem = ItemPenjualan::findOrFail($dataItem->id);
-
-            dd($existingItem);
-
-            die;
-
-            if($barang['harga_toko'] !== NULL) {
-                $harga = $barang['harga_toko'];
-            } else {
-                $harga = $barang['harga_partai'];
-            }
-
-            if ($existingItem) {
-                $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
-                $updateExistingItem->qty = $barang['qty'];
-                $updateExistingItem->harga = intval($harga);
+                if ($existingItem) {
+                    $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
+                    $updateExistingItem->qty = $barang['qty'];
+                    $updateExistingItem->harga = intval($harga);
                     // if($barang['ppn'] > 0) {
                     //     $updateExistingItem->subtotal = (($barang['ppn'] / 100) * ($harga * $barang['qty']));
                     // } else if($barang['diskon'] > 0) {
@@ -2204,22 +2197,22 @@ public function update_item_penjualan(Request $request)
                     // } else {
                     //     $updateExistingItem->subtotal = intval($harga) * $barang['qty'];
                     // }
-                $updateExistingItem->subtotal = intval($harga) * $barang['qty'];
-                $updateExistingItem->save();
-                $lastItemPembelianId = $updateExistingItem->id;
-            } else {
-                $draftItemPembelian = new ItemPenjualan;
-                $draftItemPembelian->kode = $kode;
-                $draftItemPembelian->draft = $draft;
-                $draftItemPembelian->kode_barang = $dataBarang->kode;
-                $draftItemPembelian->nama_barang = $dataBarang->nama;
-                $draftItemPembelian->supplier = $supplier->kode;
-                $draftItemPembelian->pelanggan = $pelanggan->kode;
-                $draftItemPembelian->satuan = $dataBarang->satuan;
-                $draftItemPembelian->qty = $barang['qty'];
-                $draftItemPembelian->isi = $dataBarang->isi;
-                $draftItemPembelian->nourut = $barang['nourut'];
-                $draftItemPembelian->harga = $harga;
+                    $updateExistingItem->subtotal = intval($harga) * $barang['qty'];
+                    $updateExistingItem->save();
+                    $lastItemPembelianId = $updateExistingItem->id;
+                } else {
+                    $draftItemPembelian = new ItemPenjualan;
+                    $draftItemPembelian->kode = $kode;
+                    $draftItemPembelian->draft = $draft;
+                    $draftItemPembelian->kode_barang = $dataBarang->kode;
+                    $draftItemPembelian->nama_barang = $dataBarang->nama;
+                    $draftItemPembelian->supplier = $supplier->kode;
+                    $draftItemPembelian->pelanggan = $pelanggan->kode;
+                    $draftItemPembelian->satuan = $dataBarang->satuan;
+                    $draftItemPembelian->qty = $barang['qty'];
+                    $draftItemPembelian->isi = $dataBarang->isi;
+                    $draftItemPembelian->nourut = $barang['nourut'];
+                    $draftItemPembelian->harga = $harga;
 
                     // if($barang['ppn'] > 0) {
                     //     $draftItemPembelian->subtotal = (($barang['ppn'] / 100) * ($harga * $barang['qty']));
@@ -2228,33 +2221,110 @@ public function update_item_penjualan(Request $request)
                     // } else {
                     //     $draftItemPembelian->subtotal = $harga * $barang['qty'];
                     // }
-                $draftItemPembelian->subtotal = $harga * $barang['qty'];
-                $draftItemPembelian->isi = $dataBarang->isi;
-                $draftItemPembelian->ppn = $barang['ppn'] > 0 ? "True" : "False";
+                    $draftItemPembelian->subtotal = $harga * $barang['qty'];
+                    $draftItemPembelian->isi = $dataBarang->isi;
+                    $draftItemPembelian->ppn = $barang['ppn'] > 0 ? "True" : "False";
 
-                if($barang['diskon'] > 0) {
-                    $total = $harga * $barang['qty'];
-                    $diskonAmount = ($barang['diskon'] / 100) * $total;
-                    $totalSetelahDiskon = $total - $diskonAmount;
-                    $draftItemPembelian->diskon_rupiah = $totalSetelahDiskon;
-                }
+                    if($barang['diskon'] > 0) {
+                        $total = $harga * $barang['qty'];
+                        $diskonAmount = ($barang['diskon'] / 100) * $total;
+                        $totalSetelahDiskon = $total - $diskonAmount;
+                        $draftItemPembelian->diskon_rupiah = $totalSetelahDiskon;
+                    }
 
-                if($barang['ppn'] > 0) {
-                    $total = $harga * $barang['qty'];
-                    $ppnAmount = ($barang['ppn'] / 100) * $total;
-                    $totalSetelahDiskon = $total - $ppnAmount;
-                    $draftItemPembelian->jumlah_ppn = $totalSetelahDiskon;
+                    if($barang['ppn'] > 0) {
+                        $total = $harga * $barang['qty'];
+                        $ppnAmount = ($barang['ppn'] / 100) * $total;
+                        $totalSetelahDiskon = $total - $ppnAmount;
+                        $draftItemPembelian->jumlah_ppn = $totalSetelahDiskon;
+                    }
+                    $draftItemPembelian->save();
+                    $lastItemPembelianId = $draftItemPembelian->id;
                 }
-                $draftItemPembelian->save();
-                $lastItemPembelianId = $draftItemPembelian->id;
             }
+            return response()->json([
+                'draft' => true,
+                'message' => 'Draft item penjualan successfully updated!',
+                'data' => $kode,
+                'itempembelian_id' => $lastItemPembelianId
+            ], 200);
+        } else {
+            foreach($barangs as $key => $barang) {
+                $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
+
+                $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
+                ->where('draft', 1)
+                ->first();
+
+                if($barang['harga_toko'] !== NULL) {
+                    $harga = $barang['harga_toko'];
+                } else {
+                    $harga = $barang['harga_partai'];
+                }
+
+                if ($existingItem) {
+                    $updateExistingItem = ItemPenjualan::findOrFail($existingItem->id);
+                    $updateExistingItem->qty = $barang['qty'];
+                    $updateExistingItem->harga = $harga;
+                    // if($barang['ppn'] > 0) {
+                    //     $updateExistingItem->subtotal = (($barang['ppn'] / 100) * ($harga * $barang['qty']));
+                    // } else if($barang['diskon'] > 0) {
+                    //     $updateExistingItem->subtotal = (($barang['diskon'] / 100) * ($harga * $barang['qty']));
+                    // } else {
+                    //     $updateExistingItem->subtotal = intval($harga) * $barang['qty'];
+                    // }
+                    $updateExistingItem->subtotal = intval($harga) * $barang['qty'];
+                    $updateExistingItem->save();
+                    $lastItemPembelianId = $updateExistingItem->id;
+                } else {
+                    $draftItemPembelian = new ItemPenjualan;
+                    $draftItemPembelian->kode = $kode;
+                    $draftItemPembelian->draft = 1;
+                    $draftItemPembelian->kode_barang = $dataBarang->kode;
+                    $draftItemPembelian->nama_barang = $dataBarang->nama;
+                    $draftItemPembelian->supplier = $supplier->kode;
+                    $draftItemPembelian->pelanggan = $pelanggan->kode;
+                    $draftItemPembelian->satuan = $dataBarang->satuan;
+                    $draftItemPembelian->qty = $barang['qty'];
+                    $draftItemPembelian->isi = $dataBarang->isi;
+                    $draftItemPembelian->nourut = $barang['nourut'];
+                    $draftItemPembelian->harga = $harga;
+                    // if($barang['ppn'] > 0) {
+                    //     $draftItemPembelian->subtotal = (($barang['ppn'] / 100) * ($harga * $barang['qty']));
+                    // } else if($barang['diskon'] > 0) {
+                    //     $draftItemPembelian->subtotal = (($barang['diskon'] / 100) * ($harga * $barang['qty']));
+                    // } else {
+                    //     $draftItemPembelian->subtotal = $harga * $barang['qty'];
+                    // }
+                    $draftItemPembelian->subtotal = $harga * $barang['qty'];
+                    $draftItemPembelian->isi = $dataBarang->isi;
+                    $draftItemPembelian->ppn = $barang['ppn'] > 0 ? "True" : "False";
+
+                    if($barang['diskon'] > 0) {
+                        $total = $harga * $barang['qty'];
+                        $diskonAmount = ($barang['diskon'] / 100) * $total;
+                        $totalSetelahDiskon = $total - $diskonAmount;
+                        $draftItemPembelian->diskon_rupiah = $totalSetelahDiskon;
+                    }
+
+                    if($barang['ppn'] > 0) {
+                        $total = $harga * $barang['qty'];
+                        $ppnAmount = ($barang['ppn'] / 100) * $total;
+                        $totalSetelahPpn = $total - $ppnAmount;
+                        $draftItemPembelian->jumlah_ppn = $totalSetelahPpn;
+                    }
+
+                    $draftItemPembelian->save();
+                    $lastItemPembelianId = $draftItemPembelian->id;
+                }
+            }
+            return response()->json([
+                'failed' => true,
+                'message' => 'Draft item penjualan successfully updated!',
+                'data' => $kode,
+                'itempembelian_id' => $lastItemPembelianId
+            ], 203);
         }
-        return response()->json([
-            'draft' => true,
-            'message' => 'Draft item penjualan successfully updated!',
-            'data' => $kode,
-            'itempembelian_id' => $lastItemPembelianId
-        ], 200);
 
     } catch (\Throwable $th) {
         throw $th;
@@ -2265,8 +2335,8 @@ public function check_stok_barang(Request $request, $id)
 {
     try {
         $barang = Barang::findOrFail($id);
-        
-        if(intval($barang->toko) > 0) {
+
+        if($barang->toko > 0) {
             return response()->json([
                 'success' => true,
                 'message' => 'Stok tersedia',
