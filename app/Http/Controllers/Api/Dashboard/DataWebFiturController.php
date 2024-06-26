@@ -2161,8 +2161,6 @@ public function update_item_penjualan(Request $request)
         $supplierId = null;
         $barangs = $request->barangs;
 
-        dd($barangs); die;
-
         foreach($barangs as $barang) {
             $pelanggan = $barang['pelanggan'];
             $supplierId = $barang['supplier_id'];
@@ -2178,6 +2176,8 @@ public function update_item_penjualan(Request $request)
 
         foreach($barangs as $key => $barang) {
             $dataBarang = Barang::whereKode($barang['kode_barang'])->first();
+
+            dd($dataBarang->kode);die;
 
             $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
             ->where('draft', 1)
