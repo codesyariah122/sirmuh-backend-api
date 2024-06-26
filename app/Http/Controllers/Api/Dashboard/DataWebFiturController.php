@@ -2161,6 +2161,8 @@ public function update_item_penjualan(Request $request)
         $supplierId = null;
         $barangs = $request->barangs;
 
+        dd($barangs); die;
+
         foreach($barangs as $barang) {
             $pelanggan = $barang['pelanggan'];
             $supplierId = $barang['supplier_id'];
