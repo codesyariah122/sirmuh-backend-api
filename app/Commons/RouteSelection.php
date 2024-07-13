@@ -256,6 +256,11 @@ class RouteSelection {
             'method' => 'put',
             'controllers' => [DataPurchaseOrderController::class, 'tambah_dp_pembelian']
         ],
+        [
+            'endPoint' => '/tambah-dp-awal/{kode}',
+            'method' => 'put',
+            'controllers' => [DataPurchaseOrderController::class, 'tambah_dp_awal']
+        ],
         // End of pembelian
 
         // Item Pembelian

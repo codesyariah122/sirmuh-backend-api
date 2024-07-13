@@ -604,8 +604,33 @@ class DataPurchaseOrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil tambah DP 💸",
+                'message' => "Berhasil tambah DP 💸 {$request->tambah}",
                 'sisa_dp_update' => $pembelian->sisa_dp 
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function tambah_dp_awal(Request $request, $kode)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'tambah' => 'required'
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $dataPembelian = Pembelian::whereKode($kode)->first();
+            $pembelian = Pembelian::findOrFail($dataPembelian->id);
+            $pembelian->jumlah = intval($dataPembelian->jumlah) + $request->tambah;
+            $pembelian->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menambahkan DP 💸 sejumlah {$request->tambah}",
+                'total_dp' => $pembelian->jumlah
             ]);
         } catch (\Throwable $th) {
             throw $th;
@@ -621,11 +646,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
