@@ -625,6 +625,7 @@ class DataPurchaseOrderController extends Controller
             $dataPembelian = Pembelian::whereKode($kode)->first();
             $pembelian = Pembelian::findOrFail($dataPembelian->id);
             $pembelian->jumlah = intval($dataPembelian->jumlah) + $request->tambah;
+            $pembelian->count_tambah_dp = intval($dataPembelian->count_tambah_dp) + 1;
             $pembelian->save();
 
             return response()->json([
