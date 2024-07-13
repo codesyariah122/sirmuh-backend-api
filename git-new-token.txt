@@ -3,7 +3,7 @@ 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
 new_token = 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
 new_juga = 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
 
-glpat-rAfMt-7rx9g1jg9ekLz7
+glpat-zbSxsDLxkNbeKBNakL_T
 
 new token vps = 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
 
