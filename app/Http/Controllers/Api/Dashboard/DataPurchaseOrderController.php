@@ -622,11 +622,31 @@ class DataPurchaseOrderController extends Controller
                 return response()->json($validator->errors(), 400);
             }
 
+
             $dataPembelian = Pembelian::whereKode($kode)->first();
             $pembelian = Pembelian::findOrFail($dataPembelian->id);
+            if($request->kode_kas !== NULL) {
+                $dataKas = Kas::findOrFail($request->kode_kas);
+                $dataKas->saldo = intval($dataKas->saldo) - intval($request->tambah);
+            } else {
+                $kas = Kas::whereKodeKas($dataPembelian->kode_kas)->first();
+                $dataKas = Kas::findOrFail($kas->id);
+                $dataKas->saldo = intval($kas->saldo) - intval($request->tambah);
+            }
             $pembelian->jumlah = intval($dataPembelian->jumlah) + $request->tambah;
             $pembelian->count_tambah_dp = intval($dataPembelian->count_tambah_dp) + 1;
             $pembelian->save();
+            $dataKas->save();
+
+            $userOnNotif = Auth::user();
+            $historyKeterangan = "{$userOnNotif->name}, menambhakan DP Awal sebesar {$this->helpers->format_uang($request->tambah)}, dari kas {$dataKas->nama}, di pembelian dengan kode : {$pembelian->kode}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/transaksi/beli/purchase-order',
+                'route_name' => 'Purchase Order'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
 
             return response()->json([
                 'success' => true,
@@ -647,11 +667,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
