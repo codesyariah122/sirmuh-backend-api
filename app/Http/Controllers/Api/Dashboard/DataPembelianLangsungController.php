@@ -47,7 +47,8 @@ class DataPembelianLangsungController extends Controller
         try {
             $keywords = $request->query('keywords');
             $supplier = $request->query('supplier');
-            $viewAll = $request->query('view_all');
+            // Mengatur nilai default viewAll menjadi true jika tidak ada dalam request
+            $viewAll = $request->query('view_all', 'true');
             $today = now()->toDateString();
             $now = now();
             $startOfMonth = $now->startOfMonth()->toDateString();
@@ -74,7 +75,7 @@ class DataPembelianLangsungController extends Controller
                 $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
             }
 
-            if ($viewAll === false || $viewAll === "false") {
+            if($viewAll === 'false') {
                 // Jika viewAll tidak diaktifkan, batasi hasil berdasarkan bulan ini
                 $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
             }
@@ -95,6 +96,7 @@ class DataPembelianLangsungController extends Controller
             throw $th;
         }
     }
+
 
 
     /**
