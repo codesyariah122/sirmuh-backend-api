@@ -47,7 +47,7 @@ class DataPembelianLangsungController extends Controller
         try {
             $keywords = $request->query('keywords');
             $supplier = $request->query('supplier');
-            // Mengatur nilai default viewAll menjadi true jika tidak ada dalam request
+            $viewAll = $request->query('view_all'            // Mengatur nilai default viewAll menjadi true jika tidak ada dalam request
             $viewAll = $request->query('view_all', 'true');
             $today = now()->toDateString();
             $now = now();
@@ -78,11 +78,7 @@ class DataPembelianLangsungController extends Controller
             if ($viewAll !== 'false') {
                 // Jika viewAll tidak false, batasi hasil berdasarkan bulan ini
                 $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
-            }
-
-            $pembelians = $query
-<<<<<<< HEAD
-            ->where(function ($query) use ($user) {
+              ->where(function ($query) use ($user) {
                 if ($user->role !== 1) {
                     $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
                 }
@@ -90,16 +86,7 @@ class DataPembelianLangsungController extends Controller
             ->where('pembelian.po', '=', 'False')
             ->orderByDesc('pembelian.id')
             ->paginate(10);
-=======
-                ->where(function ($query) use ($user) {
-                    if ($user->role !== 1) {
-                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                    }
-                })
-                ->where('pembelian.po', '=', 'False')
-                ->orderByDesc('pembelian.id')
-                ->paginate(10);
->>>>>>> 9b4010c8581ae55fd1f3de357e8c5beb7ba425c4
+>>>>>> 9b4010c8581ae55fd1f3de357e8c5beb7ba425c4
 
             return new ResponseDataCollect($pembelians);
 
@@ -110,11 +97,7 @@ class DataPembelianLangsungController extends Controller
 
 
 
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+Response
      */
     public function create()
     {
