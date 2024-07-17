@@ -47,7 +47,8 @@ class DataPembelianLangsungController extends Controller
         try {
             $keywords = $request->query('keywords');
             $supplier = $request->query('supplier');
-            $viewAll = $request->query('view_all');
+            // Mengatur nilai default viewAll menjadi true jika tidak ada dalam request
+            $viewAll = $request->query('view_all', 'true');
             $today = now()->toDateString();
             $now = now();
             $startOfMonth = $now->startOfMonth()->toDateString();
@@ -57,11 +58,10 @@ class DataPembelianLangsungController extends Controller
             $user = Auth::user();
 
             $query = Pembelian::query()
-            ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.jumlah','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax','pembelian.supplier', 'pembelian.return', 'supplier.nama as nama_supplier'
-            )
-            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
-            ->limit(10);
+                ->select(
+                    'pembelian.id', 'pembelian.tanggal', 'pembelian.kode', 'pembelian.jumlah', 'pembelian.operator', 'pembelian.jt', 'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.keterangan', 'pembelian.diskon', 'pembelian.tax', 'pembelian.supplier', 'pembelian.return', 'supplier.nama as nama_supplier'
+                )
+                ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
 
             if ($dateTransaction) {
                 $query->whereDate('pembelian.tanggal', '=', $dateTransaction);
@@ -75,12 +75,13 @@ class DataPembelianLangsungController extends Controller
                 $query->where('pembelian.supplier', 'like', '%' . $supplier . '%');
             }
 
-            if($viewAll === false || $viewAll === "false") {
-                // $query->whereDate('pembelian.tanggal', '=', $today);
+            if ($viewAll !== 'false') {
+                // Jika viewAll tidak false, batasi hasil berdasarkan bulan ini
                 $query->whereBetween('pembelian.tanggal', [$startOfMonth, $endOfMonth]);
             }
 
             $pembelians = $query
+<<<<<<< HEAD
             ->where(function ($query) use ($user) {
                 if ($user->role !== 1) {
                     $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
@@ -89,6 +90,16 @@ class DataPembelianLangsungController extends Controller
             ->where('pembelian.po', '=', 'False')
             ->orderByDesc('pembelian.id')
             ->paginate(10);
+=======
+                ->where(function ($query) use ($user) {
+                    if ($user->role !== 1) {
+                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                    }
+                })
+                ->where('pembelian.po', '=', 'False')
+                ->orderByDesc('pembelian.id')
+                ->paginate(10);
+>>>>>>> 9b4010c8581ae55fd1f3de357e8c5beb7ba425c4
 
             return new ResponseDataCollect($pembelians);
 
@@ -96,6 +107,9 @@ class DataPembelianLangsungController extends Controller
             throw $th;
         }
     }
+
+
+
 
     /**
      * Show the form for creating a new resource.

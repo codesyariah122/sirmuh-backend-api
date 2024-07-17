@@ -65,7 +65,7 @@ class DataPurchaseOrderController extends Controller
 
             $query = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah', 'pembelian.bayar','pembelian.kembali', 'pembelian.diterima','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'pembelian.return', 'pembelian.biayabongkar', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
+                'pembelian.id','pembelian.tanggal','pembelian.kode','pembelian.kode_kas','pembelian.supplier','pembelian.jumlah', 'pembelian.bayar','pembelian.kembali', 'pembelian.sisa_dp', 'pembelian.diterima','pembelian.operator','pembelian.jt','pembelian.lunas', 'pembelian.visa', 'pembelian.hutang','pembelian.keterangan','pembelian.diskon','pembelian.tax', 'pembelian.return', 'pembelian.biayabongkar', 'supplier.kode as kode_supplier','supplier.nama as nama_supplier', 'kas.kode as kas_kode', 'kas.nama as kas_nama'
             )
             ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode')
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
@@ -306,7 +306,7 @@ class DataPurchaseOrderController extends Controller
         try {
             $pembelian = Pembelian::query()
             ->select(
-                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.kas_biaya', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'pembelian.biayabongkar', 'pembelian.kekurangan_deposit', 'pembelian.kekurangan_sdh_dibayar', 'pembelian.created_at', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan', 'supplier.kode as supplier_kode', 'supplier.nama as supplier_nama','supplier.saldo_hutang as saldo_hutang','supplier.alamat'
+                'pembelian.id','pembelian.kode', 'pembelian.tanggal', 'pembelian.supplier', 'pembelian.kode_kas', 'pembelian.kas_biaya', 'pembelian.keterangan', 'pembelian.diskon','pembelian.tax', 'pembelian.jumlah', 'pembelian.bayar', 'pembelian.diterima','pembelian.kembali', 'pembelian.sisa_dp','pembelian.operator', 'pembelian.jt as tempo' ,'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.po', 'pembelian.return', 'pembelian.biayabongkar', 'pembelian.kekurangan_deposit', 'pembelian.kekurangan_sdh_dibayar', 'pembelian.created_at', 'kas.id as kas_id', 'kas.kode as kas_kode', 'kas.nama as kas_nama','kas.saldo as kas_saldo','return_pembelian.kode as kode_return', 'return_pembelian.tanggal as tanggal_return','return_pembelian.qty','return_pembelian.satuan','return_pembelian.nama_barang','return_pembelian.harga','return_pembelian.jumlah as jumlah_return', 'return_pembelian.alasan', 'supplier.kode as supplier_kode', 'supplier.nama as supplier_nama','supplier.saldo_hutang as saldo_hutang','supplier.alamat'
             )
             ->leftJoin('kas', 'pembelian.kode_kas', '=', 'kas.kode')
             ->leftJoin('return_pembelian', 'pembelian.kode', '=', 'return_pembelian.no_faktur')
@@ -383,6 +383,7 @@ class DataPurchaseOrderController extends Controller
             $randomNumber = sprintf('%05d', mt_rand(0, 99999));
             $bayar = intval(preg_replace("/[^0-9]/", "", $data['bayar']));
             $diterima = intval(preg_replace("/[^0-9]/", "", $data['diterima']));
+            $sisa_dp = $data['sisa_dp'] < 0 ? 0 : $data['sisa_dp'];
 
             if(isset($data['kembali'])) {
                 $kembali = $data['kembali'] ? intval(preg_replace("/[^0-9]/", "", $data['kembali'])) : 0;
@@ -478,7 +479,7 @@ class DataPurchaseOrderController extends Controller
                 $updateSupplier->saldo_hutang = intval($data['biayabongkar']) > 0 ? intval($data['hutang']) - intval($data['biayabongkar']) : $data['hutang'];
                 $updateSupplier->save();
             } else if($data['sisa_dp'] !== 0) {
-                $updatePembelian->kembali = $data['sisa_dp'];
+                $updatePembelian->sisa_dp = $sisa_dp;
                 $updatePembelian->lunas = "False";
                 $updatePembelian->visa = "DP AWAL";
                 $updatePembelian->hutang = 0;
@@ -497,6 +498,7 @@ class DataPurchaseOrderController extends Controller
                 }
                 $updatePembelian->lunas = "True";
                 $updatePembelian->visa = "LUNAS";
+                $updatePembelian->sisa_dp = $sisa_dp;
                 $updatePembelian->jt = 0;
                 $updatePembelian->hutang = 0;
             }
@@ -518,8 +520,10 @@ class DataPurchaseOrderController extends Controller
             }
             $updatePembelian->return = "False";
             $updatePembelian->biayabongkar = $data['biayabongkar'];
-            $calculateKekurangan = ($bayar - intval($updatePembelian->jumlah)) - (intval($data['biayabongkar']) - intval($data['sisa_dp']));
-            $updatePembelian->kekurangan_deposit = $calculateKekurangan < 0 ? 0 : $calculateKekurangan;
+            if($sisa_dp === 0) {
+                $calculateKekurangan = ($bayar - intval($updatePembelian->jumlah)) - (intval($data['biayabongkar']) - intval($data['sisa_dp']));
+                $updatePembelian->kekurangan_deposit = $calculateKekurangan < 0 ? 0 : $calculateKekurangan;
+            }
             $updatePembelian->kekurangan_sdh_dibayar = "True";
 
             if($updatePembelian->save()) {
@@ -583,6 +587,77 @@ class DataPurchaseOrderController extends Controller
         }
     }
 
+    public function tambah_dp_pembelian(Request $request, $kode)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'tambah' => 'required'
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+            $dataPembelian = Pembelian::whereKode($kode)->first();
+            $pembelian = Pembelian::findOrFail($dataPembelian->id);
+            $pembelian->sisa_dp = intval($dataPembelian->sisa_dp) + $request->tambah;
+            $pembelian->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil tambah DP 💸 {$request->tambah}",
+                'sisa_dp_update' => $pembelian->sisa_dp 
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function tambah_dp_awal(Request $request, $kode)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'tambah' => 'required'
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+
+
+            $dataPembelian = Pembelian::whereKode($kode)->first();
+            $pembelian = Pembelian::findOrFail($dataPembelian->id);
+            if($request->kode_kas !== NULL) {
+                $dataKas = Kas::findOrFail($request->kode_kas);
+                $dataKas->saldo = intval($dataKas->saldo) - intval($request->tambah);
+            } else {
+                $kas = Kas::whereKodeKas($dataPembelian->kode_kas)->first();
+                $dataKas = Kas::findOrFail($kas->id);
+                $dataKas->saldo = intval($kas->saldo) - intval($request->tambah);
+            }
+            $pembelian->jumlah = intval($dataPembelian->jumlah) + $request->tambah;
+            $pembelian->count_tambah_dp = intval($dataPembelian->count_tambah_dp) + 1;
+            $pembelian->save();
+            $dataKas->save();
+
+            $userOnNotif = Auth::user();
+            $historyKeterangan = "{$userOnNotif->name}, menambhakan DP Awal sebesar {$this->helpers->format_uang($request->tambah)}, dari kas {$dataKas->nama}, di pembelian dengan kode : {$pembelian->kode}";
+            $dataHistory = [
+                'user' => $userOnNotif->name,
+                'keterangan' => $historyKeterangan,
+                'routes' => '/dashboard/transaksi/beli/purchase-order',
+                'route_name' => 'Purchase Order'
+            ];
+            $createHistory = $this->helpers->createHistory($dataHistory);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menambahkan DP 💸 sejumlah {$request->tambah}",
+                'total_dp' => $pembelian->jumlah
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -592,11 +667,11 @@ class DataPurchaseOrderController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
             $delete_pembelian = Pembelian::findOrFail($id);
 
             $dataHutang = Hutang::where('kode', $delete_pembelian->kode)->first();
