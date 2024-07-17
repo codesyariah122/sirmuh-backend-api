@@ -86,7 +86,6 @@ class DataPembelianLangsungController extends Controller
             ->where('pembelian.po', '=', 'False')
             ->orderByDesc('pembelian.id')
             ->paginate(10);
->>>>>> 9b4010c8581ae55fd1f3de357e8c5beb7ba425c4
 
             return new ResponseDataCollect($pembelians);
 
