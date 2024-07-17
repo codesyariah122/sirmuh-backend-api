@@ -433,7 +433,7 @@ class DataPurchaseOrderController extends Controller
                 $masuk_hutang = new Hutang;
                 $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang.'-'. $currentDate . $randomNumber;
                 $masuk_hutang->kd_beli = $updatePembelian->kode;
-                $masuk_hutang->tanggal = $currentDate;
+                $masuk_hutang->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;
                 $masuk_hutang->jumlah = intval($data['hutang']);
                 // $masuk_hutang->bayar = $totalSubtotal;
