@@ -271,11 +271,11 @@ class DataPenjualanTokoController extends Controller
 
         $newPenjualanToko->save();
 
-        $updateDrafts = ItemPenjualan::whereKode($newPenjualanToko->kode)->get();
-        foreach($updateDrafts as $idx => $draft) {
-            $updateDrafts[$idx]->draft = 0;
-            $updateDrafts[$idx]->save();
-        }
+        // $updateDrafts = ItemPenjualan::whereKode($newPenjualanToko->kode)->get();
+        // foreach($updateDrafts as $idx => $draft) {
+        //     $updateDrafts[$idx]->draft = 0;
+        //     $updateDrafts[$idx]->save();
+        // }
 
         $dikirim = intval($newPenjualanToko->bayar);
         $updateKas = Kas::findOrFail($data['kode_kas']);
@@ -369,6 +369,12 @@ class DataPenjualanTokoController extends Controller
         ];
 
         event(new EventNotification($data_event));
+
+        $updateDrafts = ItemPenjualan::whereKode($newPenjualanToko->kode)->get();
+        foreach($updateDrafts as $idx => $draft) {
+            $updateDrafts[$idx]->draft = 0;
+            $updateDrafts[$idx]->save();
+        }
 
         $historyKeterangan = "{$userOnNotif->name}, berhasil melakukan transaksi penjualan toko [{$newPenjualanToko->kode}], sebesar {$this->helpers->format_uang($newPenjualanToko->jumlah)}";
         $dataHistory = [
