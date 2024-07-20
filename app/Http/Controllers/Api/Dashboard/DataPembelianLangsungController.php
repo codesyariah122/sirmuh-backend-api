@@ -243,7 +243,7 @@ class DataPembelianLangsungController extends Controller
                 $angsuran->save();
 
                 $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
-                $updateSaldoSupplier->saldo_hutang = $supplier->saldo_hutang + $data['diterima'];
+                $updateSaldoSupplier->saldo_hutang = $supplier->saldo_hutang + $data['hutang'];
                 var_dump($data['diterima']); die;
                 $updateSaldoSupplier->save();
             } else {
