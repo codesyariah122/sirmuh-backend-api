@@ -243,7 +243,7 @@ class DataPembelianLangsungController extends Controller
                 $angsuran->save();
 
                 $updateSaldoSupplier = Supplier::findOrFail($supplier->id);
-                $updateSaldoSupplier->saldo_hutang = intval($data['bayar']) !== 0 ? $supplier->saldo_hutang + $data['hutang'] : $supplier->saldo_hutang + $data['diterima'];
+                $updateSaldoSupplier->saldo_hutang = $supplier->saldo_hutang + $data['diterima'];
                 $updateSaldoSupplier->save();
             } else {
                 $newPembelian->lunas = $data['pembayaran'] == 'cash' ? "True" : "False";
