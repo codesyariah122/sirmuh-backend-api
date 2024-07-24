@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Pemasukan, SetupPerusahaan, Kas, User, Roles};
+use App\Models\{Pemasukan, PemasukanPenjualan, SetupPerusahaan, Kas, User, Roles};
 use Auth;
 
 
@@ -34,7 +34,7 @@ class DataPemasukanController extends Controller
             $startOfMonth = now()->startOfMonth();
             $endOfMonth = now()->endOfMonth();
 
-            $query = Pemasukan::query()
+            $query = PemasukanPenjualan::query()
             ->select(
                 DB::raw('YEARWEEK(tanggal) as minggu'),
                 DB::raw('SUM(jumlah) as total_pemasukan')
@@ -135,14 +135,14 @@ class DataPemasukanController extends Controller
     public function store(Request $request)
     {
         try {
-           $validator = Validator::make($request->all(), [
+         $validator = Validator::make($request->all(), [
             'kode' => 'required',
             'jenis_pemasukan' => 'required',
             'kode_kas' => 'required',
             'jumlah' => 'required'
         ]);
 
-           if ($validator->fails()) {
+         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 

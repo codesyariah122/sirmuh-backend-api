@@ -252,9 +252,9 @@ class RouteSelection {
             'controllers' => [DataPurchaseOrderController::class, 'list_item_po']
         ],
         [
-            'endPoint' => '/tambah-dp/{kode}',
+            'endPoint' => '/tambah-sisa-dp/{kode}',
             'method' => 'put',
-            'controllers' => [DataPurchaseOrderController::class, 'tambah_dp_pembelian']
+            'controllers' => [DataPurchaseOrderController::class, 'tambah_sisa_dp']
         ],
         [
             'endPoint' => '/tambah-dp-awal/{kode}',

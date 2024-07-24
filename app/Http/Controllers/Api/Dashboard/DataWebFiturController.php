@@ -1642,8 +1642,8 @@ class DataWebFiturController extends Controller
             $type = $request->type;
 
             switch($type) {
-               case "pembelian":
-               foreach ($barangs as $barang) {
+             case "pembelian":
+             foreach ($barangs as $barang) {
                 $updateBarang = Barang::findOrFail($barang['id']);
                 if($barang['qty'] > $updateBarang->last_qty){
                     $bindStok = $barang['qty'] + $updateBarang->last_qty;
@@ -1742,8 +1742,8 @@ public function edit_stok_data_barang(Request $request)
         $type = $request->type;
 
         switch($type) {
-           case "pembelian":
-           foreach ($barangs as $barang) {
+         case "pembelian":
+         foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
                 // if($barang['qty'] > $updateBarang->last_qty){
                 //     $newStok = $updateBarang->toko + $barang['qty'];
@@ -1807,8 +1807,8 @@ public function update_stok_barang_all(Request $request)
         $type = $request->type;
 
         switch($type) {
-           case "pembelian":
-           foreach ($barangs as $barang) {
+         case "pembelian":
+         foreach ($barangs as $barang) {
             $updateBarang = Barang::findOrFail($barang['id']);
                 // if($barang['qty'] > $updateBarang->last_qty){
                 //     $newStok = $updateBarang->toko + $barang['qty'];
@@ -2129,6 +2129,9 @@ public function delete_item_pembelian_po($id)
         $udpateDataPembelian = Pembelian::findOrFail($dataPembelian->id);
         $udpateDataPembelian->diterima = 0;
         $udpateDataPembelian->jt = 0;
+        $udpateDataPembelian->sisa_dp = 0;
+        $udpateDataPembelian->jumlah = intval($dataPembelian->jumlah) + intval($dataPembelian->biayabongkar);
+        $udpateDataPembelian->biayabongkar = 0; 
         $udpateDataPembelian->save();
 
         $purchaseOrders = PurchaseOrder::where('kode_barang', $itemPembelian->kode_barang)
@@ -2257,6 +2260,13 @@ public function update_item_penjualan(Request $request)
                 ->where('draft', 1)
                 ->where('kode', $kode)
                 ->first();
+
+                // $beforeExisting = ItemPenjualan::where('kode_barang', $dataBarang->kode)
+                // ->where('draft', 1)
+                // ->first();
+                // var_dump($beforeExisting); die;
+                // $deletedBeforeExisting = ItemPenjualan::where('kode_barang', $beforeExisting->kode_barang);
+                // $deletedBeforeExisting->delete();
 
                 if($barang['harga_toko'] !== NULL) {
                     $harga = $barang['harga_toko'];
@@ -2480,18 +2490,18 @@ public function update_faktur_terakhir(Request $request)
             $updateFakturTerakhir->save();
 
         } else {
-           $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
-           ->first();
-           $updateFakturTerakhir->faktur = $request->faktur;
-           $updateFakturTerakhir->tanggal = $today;
-           $updateFakturTerakhir->save();
+         $updateFakturTerakhir = FakturTerakhir::whereFaktur($request->faktur)
+         ->first();
+         $updateFakturTerakhir->faktur = $request->faktur;
+         $updateFakturTerakhir->tanggal = $today;
+         $updateFakturTerakhir->save();
 
-       }
-       return response()->json([
+     }
+     return response()->json([
         'success' => true,
         'message' => 'Faktur terakhir terupdate!'
     ], 200);
-   } catch (\Throwable $th) {
+ } catch (\Throwable $th) {
     throw $th;
 }
 }
