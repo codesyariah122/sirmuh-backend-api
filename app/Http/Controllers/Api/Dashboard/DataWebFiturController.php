@@ -2178,7 +2178,7 @@ public function update_item_penjualan(Request $request)
 
                 $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
                 ->where('draft', 1)
-                ->where('kode', $kode)
+                // ->where('kode', $kode)
                 ->first();
 
                 if($barang['harga_toko'] !== NULL) {
@@ -2255,7 +2255,7 @@ public function update_item_penjualan(Request $request)
 
                 $existingItem = ItemPenjualan::where('kode_barang', $dataBarang->kode)
                 ->where('draft', 1)
-                ->where('kode', $kode)
+                // ->where('kode', $kode)
                 ->first();
 
                 if($barang['harga_toko'] !== NULL) {
