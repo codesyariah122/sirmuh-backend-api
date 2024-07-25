@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Events\{EventNotification};
 use App\Helpers\{WebFeatureHelpers};
 use App\Http\Resources\{ResponseDataCollect, RequestDataCollect};
-use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles,SetupPerusahaan,Pemasukan};
+use App\Models\{Penjualan,ItemPenjualan,Pelanggan,Barang,Kas,Toko,LabaRugi,Piutang,ItemPiutang,FakturTerakhir,PembayaranAngsuran,Roles,SetupPerusahaan,Pemasukan, PemasukanPenjualan};
 use Auth;
 use PDF;
 
@@ -33,27 +33,27 @@ class DataPenjualanPartaiController extends Controller
     public function index(Request $request)
     {
         try {
-         $keywords = $request->query('keywords');
-         $today = now()->toDateString();
-         $now = now();
-         $startOfMonth = $now->startOfMonth()->toDateString();
-         $endOfMonth = $now->endOfMonth()->toDateString();
-         $pelanggan = $request->query('pelanggan');
-         $dateTransaction = $request->query('date_transaction');
-         $viewAll = $request->query('view_all');
-         $user = Auth::user();
+           $keywords = $request->query('keywords');
+           $today = now()->toDateString();
+           $now = now();
+           $startOfMonth = $now->startOfMonth()->toDateString();
+           $endOfMonth = $now->endOfMonth()->toDateString();
+           $pelanggan = $request->query('pelanggan');
+           $dateTransaction = $request->query('date_transaction');
+           $viewAll = $request->query('view_all');
+           $user = Auth::user();
 
-         $query = Penjualan::query()
-         ->select(
-            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.tax', 'penjualan.tax_rupiah', 'penjualan.jumlah','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.biayakirim', 'penjualan.status', 'penjualan.receive', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
+           $query = Penjualan::query()
+           ->select(
+            'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.diskon', 'penjualan.tax', 'penjualan.tax_rupiah', 'penjualan.jumlah', 'penjualan.bayar','penjualan.dikirim','penjualan.lunas','penjualan.operator', 'penjualan.biayakirim', 'penjualan.status', 'penjualan.receive', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
-         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-         ->orderByDesc('penjualan.id')
-         ->where('penjualan.jenis', 'PENJUALAN PARTAI')
-         ->limit(10);
+           ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+           ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+           ->orderByDesc('penjualan.id')
+           ->where('penjualan.jenis', 'PENJUALAN PARTAI')
+           ->limit(10);
 
-         if ($dateTransaction) {
+           if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
         }
 
@@ -118,7 +118,7 @@ class DataPenjualanPartaiController extends Controller
 
             $data = $request->all();
             $barangs = $data['barangs'];
-            
+            $bayar = $this->helpers->convertCurrencyToInteger($data['bayar']);
             $dataBarangs = json_decode($barangs, true);
 
             $currentDate = now()->format('ymd');
@@ -170,10 +170,11 @@ class DataPenjualanPartaiController extends Controller
                 $newPenjualanToko->jumlah = 0;
             }
             
-            $newPenjualanToko->bayar = $data['bayar'];
+            $newPenjualanToko->bayar = $bayar;
+            $newPenjualanToko->diskon = $data['diskon'];
 
             if($data['piutang'] !== 'undefined') {
-                $newPenjualanToko->angsuran = $data['bayar'];
+                $newPenjualanToko->angsuran = $bayar;
                 $newPenjualanToko->lunas = "False";
                 $newPenjualanToko->visa = 'PIUTANG';
                 $newPenjualanToko->piutang = $data['piutang'];
@@ -222,18 +223,18 @@ class DataPenjualanPartaiController extends Controller
                 $angsuran->keterangan = "Pembayaran angsuran awal melalui kas : {$newPenjualanToko->kode_kas}";
                 $angsuran->save();
             } else {
-                if(intval($data['bayar']) >= intval($data['jumlah'])) {
+                if(intval($bayar) >= intval($data['jumlah'])) {
                     $newPenjualanToko->visa = "LUNAS";
-                    $newPenjualanToko->kembali = intval($data['bayar']) - intval($data['jumlah']);
+                    $newPenjualanToko->kembali = intval($bayar) - intval($data['jumlah']);
                 } else {
                     $newPenjualanToko->visa = "LUNAS";
-                    $newPenjualanToko->kembali = intval($data['jumlah']) - intval($data['bayar']);
+                    $newPenjualanToko->kembali = intval($data['jumlah']) - intval($bayar);
                 }
 
-                if(intval($data['bayar']) > intval($data['jumlah'])) {
+                if(intval($bayar) > intval($data['jumlah'])) {
                     $newPenjualanToko->lunas = "True";
                     $newPenjualanToko->visa = "LUNAS";
-                } else if(intval($data['bayar']) == intval($data['jumlah'])) {
+                } else if(intval($bayar) == intval($data['jumlah'])) {
                     $newPenjualanToko->lunas = "True";
                     $newPenjualanToko->visa = "UANG PAS";
                 } else {
@@ -303,18 +304,27 @@ class DataPenjualanPartaiController extends Controller
             $simpanFaktur->tanggal = $newPenjualanData->tanggal;
             $simpanFaktur->save();
 
-            // $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
-            // $pemasukan = new Pemasukan;
-            // $pemasukan->kode = $newPenjualanToko->kode;
-            // $pemasukan->tanggal = $newPenjualanToko->tanggal;
-            // $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko."-PRT";
-            // $pemasukan->keterangan = "PENJUALAN TOKO";
-            // $pemasukan->kode_kas = $newPenjualanToko->kode_kas;
-            // $pemasukan->jumlah = $newPenjualanToko->jumlah;
-            // $pemasukan->operator = $newPenjualanToko->operator;
-            // $pemasukan->kode_pelanggan = $pelanggan->kode;
-            // $pemasukan->nama_pelanggan = $pelanggan->nama;
-            // $pemasukan->save();
+            $pemasukanPenjualan = new PemasukanPenjualan;
+            $pemasukanPenjualan->tanggal = $newPenjualanToko->tanggal;
+            $pemasukanPenjualan->kd_transaksi = $newPenjualanToko->kode;
+            $pemasukanPenjualan->keterangan = $newPenjualanToko->keterangan;
+            $pemasukanPenjualan->kode_kas = $newPenjualanToko->kode_kas;
+            $pemasukanPenjualan->jumlah = $newPenjualanToko->jumlah;
+            $pemasukanPenjualan->operator = $newPenjualanToko->operator;
+            $pemasukanPenjualan->pelanggan = $newPenjualanToko->pelanggan;
+            $pemasukanPenjualan->save();
+            $perusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
+            $pemasukan = new Pemasukan;
+            $pemasukan->kode = $newPenjualanToko->kode;
+            $pemasukan->tanggal = $newPenjualanToko->tanggal;
+            $pemasukan->kd_biaya = $perusahaan->kd_penjualan_toko;
+            $pemasukan->keterangan = "PENJUALAN PARTAI";
+            $pemasukan->kode_kas = $newPenjualanToko->kode_kas;
+            $pemasukan->jumlah = $newPenjualanToko->jumlah;
+            $pemasukan->operator = $newPenjualanToko->operator;
+            $pemasukan->kode_pelanggan = $pelanggan->kode;
+            $pemasukan->nama_pelanggan = $pelanggan->nama;
+            $pemasukan->save();
 
             if($data['status_kirim'] === "DIKIRIM") {     
                 $dataItemPenjualan = ItemPenjualan::whereKode($newPenjualanToko->kode)->first();
@@ -616,11 +626,11 @@ class DataPenjualanPartaiController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {                
             $delete_penjualan = Penjualan::whereNull('deleted_at')
             ->where('jenis', 'PENJUALAN PARTAI')
             ->findOrFail($id);
