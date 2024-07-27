@@ -432,7 +432,7 @@ class DataPurchaseOrderController extends Controller
                 // Masuk ke hutang
                 $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_hutang = new Hutang;
-                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang.'-'. $currentDate . $randomNumber;
+                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang.'-'. str_replace('-', '', $updatePembelian->tanggal) . $randomNumber;
                 $masuk_hutang->kd_beli = $updatePembelian->kode;
                 $masuk_hutang->tanggal = $data['tanggal'] ? $data['tanggal'] : $currentDate;
                 $masuk_hutang->supplier = $updatePembelian->supplier;

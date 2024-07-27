@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
-use App\Models\{Pembelian, Toko, Hutang, Penjualan, Piutang};
+use App\Models\{Pembelian, Toko, Hutang, Penjualan, Piutang, Supplier, Pelanggan};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
@@ -75,6 +75,160 @@ class DataLaporanView extends Controller
     //     return $pdf->stream('filename.pdf');
     // }
 
+    // Laporan piutang
+    public function laporan_piutang_by_pelanggan(Request $request, $id_perusahaan)
+    {
+        try {
+            $pelanggan = $request->pelanggan;
+            $helpers = $this->helpers;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'penjualan.visa', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+            ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
+            ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('penjualan', 'piutang.kd_jual', 'penjualan.kode');
+
+            $dataPelanggan = Pelanggan::whereKode($pelanggan)->first();
+
+            if($pelanggan) {
+                $query->where('piutang.pelanggan', '=', $pelanggan);
+            }
+
+            $piutangs = $query
+            ->orderByDesc('piutang.tanggal')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.piutang.pelanggan.download', compact('piutangs','perusahaan', 'dataPelanggan', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+
+            return $pdf->stream("laporan-piutang-pelanggan-{$pelanggan}.pdf");
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function laporan_piutang_by_date(Request $request, $id_perusahaan)
+    {
+        try {
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+            $pelanggan = $request->pelanggan;
+            $helpers = $this->helpers;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Piutang::select('piutang.id','piutang.kode', 'piutang.tanggal', 'piutang.jumlah', 'piutang.operator', 'itempiutang.jumlah_piutang', 'itempiutang.return','itempiutang.jumlah as piutang_jumlah', 'penjualan.id as id_penjualan', 'penjualan.kode as kode_penjualan','penjualan.tanggal as tanggal_penjualan', 'penjualan.jt as jatuh_tempo', 'penjualan.lunas', 'penjualan.visa', 'pelanggan.kode as kode_pelanggan', 'pelanggan.nama as nama_pelanggan')
+            ->leftJoin('itempiutang', 'piutang.kode', '=', 'itempiutang.kode_piutang')
+            ->leftJoin('pelanggan', 'piutang.pelanggan', '=', 'pelanggan.kode')
+            ->leftJoin('penjualan', 'piutang.kd_jual', 'penjualan.kode');
+
+            if ($startDate || $endDate) {
+                $periode = [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ];
+                $query->whereBetween('piutang.tanggal', [$startDate, $endDate]);
+            }
+
+            if($pelanggan) {
+                $query->where('piutang.pelanggan', '=', $pelanggan);
+            }
+
+            $piutangs = $query
+            ->orderByDesc('piutang.tanggal')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.piutang.download', compact('piutangs','perusahaan', 'periode', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+
+            return $pdf->stream("laporan-piutang-{$startDate}/{$endDate}.pdf");
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+    // End of laporan piutang
+
+    // Laporan hutang
+    public function laporan_bayar_hutang_by_supplier(Request $request, $id_perusahaan)
+    {
+        try {
+            $supplier = $request->supplier;
+            $helpers = $this->helpers;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.kd_beli', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.kode as kode_pembelian', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.kode as kode_item_hutang', 'itemhutang.kode_hutang','itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
+            ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
+            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+            ->leftJoin('pembelian', 'hutang.kd_beli', 'pembelian.kode');
+
+            if($supplier) {
+                $query->where('hutang.supplier', '=', $supplier);
+            }
+
+            $hutangs = $query
+            ->orderByDesc('hutang.tanggal')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.hutang.supplier.download', compact('hutangs','perusahaan', 'supplier', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+
+            return $pdf->stream("laporan-hutang-supplier-{$supplier}.pdf");
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function laporan_bayar_hutang_by_date(Request $request, $id_perusahaan)
+    {
+        try {
+            $startDate = $request->start_date;
+            $endDate = $request->end_date;
+            $supplier = $request->query('supplier');
+            $helpers = $this->helpers;
+
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.kd_beli', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.kode as kode_pembelian', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.kode as kode_item_hutang', 'itemhutang.kode_hutang','itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
+            ->leftJoin('itemhutang', 'hutang.kode', '=', 'itemhutang.kode_hutang')
+            ->leftJoin('supplier', 'hutang.supplier', '=', 'supplier.kode')
+            ->leftJoin('pembelian', 'hutang.kd_beli', 'pembelian.kode');
+
+            if ($startDate || $endDate) {
+                $periode = [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ];
+                $query->whereBetween('hutang.tanggal', [$startDate, $endDate]);
+            }
+
+            if($supplier) {
+                $query->where('hutang.supplier', '=', $supplier);
+            }
+
+            $hutangs = $query
+            ->orderByDesc('hutang.tanggal')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.hutang.download', compact('hutangs','perusahaan', 'periode', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+
+            return $pdf->stream("laporan-hutang-{$startDate}/{$endDate}.pdf");
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+    // End of laporang hutang
+
     public function laporan_pembelian_periode(Request $request, $id_perusahaan)
     {
         try {
@@ -123,11 +277,11 @@ class DataLaporanView extends Controller
             ->orderByDesc('pembelian.tanggal')
             ->get();
 
-            $pdf = PDF::loadView('laporan.laporan-pembelian-periode.download', compact('pembelians','perusahaan', 'periode', 'helpers'));
+            $pdf = PDF::loadView('laporan.hutang.download', compact('pembelians','perusahaan', 'periode', 'helpers'));
 
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
 
-            return $pdf->stream("laporan-periode-{$startDate}/{$endDate}.pdf");
+            return $pdf->stream("laporan-hutang-{$startDate}/{$endDate}.pdf");
 
         } catch (\Throwable $th) {
             throw $th;

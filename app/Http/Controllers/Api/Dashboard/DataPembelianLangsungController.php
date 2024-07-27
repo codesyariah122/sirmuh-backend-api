@@ -58,10 +58,10 @@ class DataPembelianLangsungController extends Controller
             $user = Auth::user();
 
             $query = Pembelian::query()
-                ->select(
-                    'pembelian.id', 'pembelian.tanggal', 'pembelian.kode', 'pembelian.jumlah', 'pembelian.operator', 'pembelian.jt', 'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.keterangan', 'pembelian.diskon', 'pembelian.tax', 'pembelian.supplier', 'pembelian.return', 'supplier.nama as nama_supplier'
-                )
-                ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
+            ->select(
+                'pembelian.id', 'pembelian.tanggal', 'pembelian.kode', 'pembelian.jumlah', 'pembelian.operator', 'pembelian.jt', 'pembelian.lunas', 'pembelian.visa', 'pembelian.hutang', 'pembelian.keterangan', 'pembelian.diskon', 'pembelian.tax', 'pembelian.supplier', 'pembelian.return', 'supplier.nama as nama_supplier'
+            )
+            ->leftJoin('supplier', 'pembelian.supplier', '=', 'supplier.kode');
 
             if ($dateTransaction) {
                 $query->whereDate('pembelian.tanggal', '=', $dateTransaction);
@@ -81,14 +81,14 @@ class DataPembelianLangsungController extends Controller
             }
 
             $pembelians = $query
-                ->where(function ($query) use ($user) {
-                    if ($user->role !== 1) {
-                        $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
-                    }
-                })
-                ->where('pembelian.po', '=', 'False')
-                ->orderByDesc('pembelian.id')
-                ->paginate(10);
+            ->where(function ($query) use ($user) {
+                if ($user->role !== 1) {
+                    $query->whereRaw('LOWER(pembelian.operator) like ?', [strtolower('%' . $user->name . '%')]);
+                }
+            })
+            ->where('pembelian.po', '=', 'False')
+            ->orderByDesc('pembelian.id')
+            ->paginate(10);
 
             return new ResponseDataCollect($pembelians);
 
@@ -202,7 +202,7 @@ class DataPembelianLangsungController extends Controller
                 // Masuk ke hutang
                 $dataPerusahaan = SetupPerusahaan::with('tokos')->findOrFail(1);
                 $masuk_hutang = new Hutang;
-                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang. '-'. $newPembelian->tanggal . $randomNumber;
+                $masuk_hutang->kode = $dataPerusahaan->kd_bayar_hutang. '-'. str_replace('-', '', $newPembelian->tanggal) . $randomNumber;
                 $masuk_hutang->kd_beli = $data['ref_code'];
                 $masuk_hutang->tanggal = $newPembelian->tanggal;
                 $masuk_hutang->supplier = $supplier->kode;
@@ -566,11 +566,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-           $user = Auth::user();
+         $user = Auth::user();
 
-           $userRole = Roles::findOrFail($user->role);
+         $userRole = Roles::findOrFail($user->role);
 
-           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);

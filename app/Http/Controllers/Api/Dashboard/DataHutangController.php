@@ -79,6 +79,8 @@ class DataHutangController extends Controller
             $startOfMonth = $now->startOfMonth()->toDateString();
             $endOfMonth = $now->endOfMonth()->toDateString();
             $dateTransaction = $request->query('date_transaction');
+            $start_date = $request->query('start_date');
+            $end_date = $request->query('end_date');
             $user = Auth::user();
             
             $query = Hutang::select('hutang.id', 'hutang.kode', 'hutang.kd_beli', 'hutang.tanggal', 'hutang.supplier', 'hutang.jumlah', 'hutang.bayar', 'hutang.operator', 'pembelian.id as id_pembelian', 'pembelian.kode as kode_pembelian', 'pembelian.tanggal as tanggal_pembelian', 'pembelian.jt as jatuh_tempo', 'pembelian.kode as kode_pembelian', 'pembelian.lunas', 'pembelian.visa', 'itemhutang.kode as kode_item_hutang', 'itemhutang.kode_hutang','itemhutang.jumlah_hutang as jumlah_hutang', 'supplier.nama as nama_supplier')
@@ -103,6 +105,10 @@ class DataHutangController extends Controller
 
             if ($dateTransaction) {
                 $query->whereDate('hutang.tanggal', '=', $dateTransaction);
+            }
+
+            if($start_date && $end_date) {
+                $query->whereBetween('hutang.tanggal', [$start_date, $end_date]);
             }
 
             $query->orderByDesc('hutang.id')
