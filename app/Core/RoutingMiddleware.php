@@ -1,4 +1,8 @@
 <?php
+/**
+ * @author: Puji Ermanto
+ * Build from scratch
+ * */
 namespace App\Core;
 
 use Illuminate\Support\Facades\Route;

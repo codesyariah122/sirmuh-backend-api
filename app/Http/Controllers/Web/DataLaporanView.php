@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Exports\CampaignDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ContextData;
-use App\Models\{Pembelian, Toko, Hutang, Penjualan, Piutang, Supplier, Pelanggan};
+use App\Models\{Barang, Pembelian, Kas, Toko, Hutang, Penjualan, Piutang, Supplier, Pelanggan};
 use App\Events\{EventNotification};
 use App\Helpers\{UserHelpers, WebFeatureHelpers};
 use App\Http\Resources\ResponseDataCollect;
@@ -356,6 +356,7 @@ class DataLaporanView extends Controller
             $keywords = $request->keywords;
             $startDate = $request->start_date;
             $endDate = $request->end_date;
+            $helpers = $this->helpers;
 
             $perusahaan = Toko::with('setup_perusahaan')
             ->findOrFail($id_perusahaan);
@@ -387,6 +388,32 @@ class DataLaporanView extends Controller
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
 
             return $pdf->stream("laporan-hutang-{$startDate}/{$endDate}.pdf");
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
+    // Laporan kas
+    public function laporan_kas_all(Request $request, $id_perusahaan)
+    {
+        try {
+            $param = $request->param;
+            $helpers = $this->helpers;
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Kas::whereNull('deleted_at')
+            ->select('kas.id', 'kas.kode', 'kas.nama', 'kas.saldo as saldo_kas', 'kas_awal.saldo as saldo_awal')
+            ->leftJoin('kas_awal', 'kas.kode', '=', 'kas_awal.kode_kas')
+            ->orderBy('kas.saldo', 'DESC');
+
+            $cashes = $query->get();
+            $pdf = PDF::loadView('laporan.kas.download', compact('cashes','perusahaan', 'param', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+            return $pdf->stream("laporan-kas-{$param}.pdf");
 
         } catch (\Throwable $th) {
             throw $th;
@@ -490,4 +517,58 @@ class DataLaporanView extends Controller
             throw $th;
         }
     }
+    // End of laporan kas
+
+    // Laporan Barang & Stok Barang
+    public function laporan_barang_all(Request $request, $id_perusahaan)
+    {
+        try {
+            $param = $request->param;
+            $helpers = $this->helpers;
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Barang::join('supplier', 'barang.supplier', '=', 'supplier.kode')
+            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko', 'barang.last_qty', 'barang.hpp','barang.harga_toko', 'barang.harga_partai', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'barang.kode_barcode', 'barang.ada_expired_date', 'barang.expired','barang.tgl_terakhir','supplier.kode as kode_supplier','supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat');
+
+            $barangs = $query->orderByDesc('barang.id')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.barang.download', compact('barangs','perusahaan', 'param', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+            return $pdf->stream("laporan-barang-{$param}.pdf");
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+    public function laporan_barang_by_keywords(Request $request, $id_perusahaan)
+    {
+        try {
+            $keywords = $request->keywords;
+            $helpers = $this->helpers;
+            $perusahaan = Toko::with('setup_perusahaan')
+            ->findOrFail($id_perusahaan);
+
+            $query = Barang::join('supplier', 'barang.supplier', '=', 'supplier.kode')
+            ->select('barang.id', 'barang.kode', 'barang.nama', 'barang.toko', 'barang.last_qty', 'barang.hpp','barang.harga_toko', 'barang.harga_partai', 'barang.toko', 'barang.satuan', 'barang.kategori', 'barang.supplier', 'barang.kode_barcode', 'barang.ada_expired_date', 'barang.expired','barang.tgl_terakhir','supplier.kode as kode_supplier','supplier.nama as supplier_nama', 'supplier.alamat as supplier_alamat')
+            ->when($keywords, function ($query) use ($keywords) {
+                return $query->where(function ($query) use ($keywords) {
+                    $query->where('barang.nama', 'like', '%' . $keywords . '%')
+                    ->orWhere('barang.kode', 'like', '%' . $keywords . '%');
+                });
+            });
+
+            $barangs = $query->orderByDesc('barang.id')
+            ->get();
+
+            $pdf = PDF::loadView('laporan.barang.keywords.download', compact('barangs','perusahaan', 'keywords', 'helpers'));
+
+            $pdf->setPaper(0, 0, 800, 800, 'landscape');
+            return $pdf->stream("laporan-barang-keywords-{$keywords}.pdf");
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+    // End of laporan barang
 }

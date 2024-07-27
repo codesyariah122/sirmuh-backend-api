@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @author: Puji Ermanto
+ * Build from scratch
+ * */
 namespace App\Commons;
 
 use App\Http\Controllers\Api\{
