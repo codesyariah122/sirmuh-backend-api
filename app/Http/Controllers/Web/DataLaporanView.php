@@ -277,11 +277,11 @@ class DataLaporanView extends Controller
             ->orderByDesc('pembelian.tanggal')
             ->get();
 
-            $pdf = PDF::loadView('laporan.hutang.download', compact('pembelians','perusahaan', 'periode', 'helpers'));
+            $pdf = PDF::loadView('laporan.laporan-pembelian-periode.download', compact('pembelians','perusahaan', 'periode', 'helpers'));
 
             $pdf->setPaper(0, 0, 800, 800, 'landscape');
 
-            return $pdf->stream("laporan-hutang-{$startDate}/{$endDate}.pdf");
+            return $pdf->stream("laporan-laporan-pembelian-periode-{$startDate}/{$endDate}.pdf");
 
         } catch (\Throwable $th) {
             throw $th;

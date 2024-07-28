@@ -75,8 +75,11 @@ Route::get('/laporan/penjualan/laporan-penjualan-periode/{id_perusahaan}/{start_
 // Hutang & Piutang
 Route::get('/laporan/bayar-hutang-by-date/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_bayar_hutang_by_date']);
 Route::get('/laporan/bayar-hutang-by-supplier/{id_perusahaan}/{supplier}', [DataLaporanView::class, 'laporan_bayar_hutang_by_supplier']);
+
+// Piutang
 Route::get('/laporan/piutang-by-date/{id_perusahaan}/{start_date}/{end_date}', [DataLaporanView::class, 'laporan_piutang_by_date']);
 Route::get('/laporan/piutang-by-pelanggan/{id_perusahaan}/{pelanggan}', [DataLaporanView::class, 'laporan_piutang_by_pelanggan']);
+// End Piutang
 
 // Laporan kas
 Route::get('/laporan/kas/by-kode/{id_perusahaan}/{kode_kas}', [DataLaporanView::class, 'laporan_kas_by_kode']);
