@@ -87,6 +87,7 @@
             <th>Barang</th>
             <th>Harga</th>
             <th>Jumlah</th>
+            <th>PPN</th>
             <th>Total</th>
         </tr>
     </thead>
@@ -100,12 +101,13 @@
             <td class="text-center">{{$item->barang_nama}}</td>
             <td class="text-right">{{ $helpers->format_uang($item->harga) }}</td>
             <td class="text-center">{{ sprintf("%.2f", $item->qty)." ".$item->satuan }}</td>
+            <td class="text-center">{{$penjualan->tax}}%</td>
             <td class="text-right">{{ $helpers->format_uang($item->jumlah) }}</td>
         </tr>
         @endforeach
         <tr>
-            <td class="text-center" style="border-right: 0; border-right: none;"></td>
-            <td class="text-left" colspan="3">
+            <td class="text-center" style="border-right: 0; border-right: none; height: 80px;"></td>
+            <td class="text-left" colspan="4" style="top: 0; bottom: 0;">
                 <span>PO. NO : {{$penjualan->no_po}}</span> <br>
                 <span>Date: {{$helpers->format_tanggal_transaksi($penjualan['tanggal'])}}</span>
             </td>
@@ -114,13 +116,13 @@
     </tbody>
 </table>
 
-<table class="data" width="100%" style="margin-top:-.1rem; border-collapse: collapse;">
+<table class="data" width="100%" style="margin-top:-.2rem; border-collapse: collapse;">
     <tfoot>
         <tr>
             <!-- Bagian kiri -->
-            <td style="text-align: left; padding: 17px; border: none;" colspan="4">
+            <td style="text-align: left; padding: 17px; border: none; margin-top: -1rem;" colspan="4">
                 <h3>Pembayaran</h3>
-                <ul>
+                <ul style="margin-top: -2rem;">
                     <li>Nama : {{$penjualan['nama_kas']}} </li>
                     <li>No. Rek : {{$helpers->generate_norek($penjualan['no_rek'])}} </li>
                 </ul>
@@ -129,7 +131,7 @@
             <!-- Bagian kanan -->
             <td style="border: none; text-align: right;" colspan="6">
                 <!-- Konten bagian kanan -->
-                <table width="90%" style="margin-right: -.3rem; border-collapse: collapse;  margin-top: -.2rem; float: right;">
+                <table width="75%" style="margin-right: -.3rem; border-collapse: collapse;  margin-top: -.2rem; float: right; ">
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Subtotal</td>
                         <td class="text-right" style="height: 20px; border-top: 0;">{{ $helpers->format_uang($penjualan->jumlah) }}</td>
@@ -142,7 +144,7 @@
                     </tr>
                     <tr>
                         <td style="border: none;" colspan="8" class="text-right">Total</td>
-                        <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->bayar) }}</td>
+                        <td class="text-right" style="height: 20px;">{{ $helpers->format_uang($penjualan->jumlah + $penjualan->tax_rupiah) }}</td>
                     </tr>
                 </table>
             </td>
