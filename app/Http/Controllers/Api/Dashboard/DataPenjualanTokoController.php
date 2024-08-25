@@ -34,26 +34,26 @@ class DataPenjualanTokoController extends Controller
     public function index(Request $request)
     {
         try {
-           $keywords = $request->query('keywords');
-           $today = now()->toDateString();
-           $now = now();
-           $startOfMonth = $now->startOfMonth()->toDateString();
-           $endOfMonth = $now->endOfMonth()->toDateString();
-           $pelanggan = $request->query('pelanggan');
-           $dateTransaction = $request->query('date_transaction');
-           $viewAll = $request->query('view_all');
-           $user = Auth::user();
+         $keywords = $request->query('keywords');
+         $today = now()->toDateString();
+         $now = now();
+         $startOfMonth = $now->startOfMonth()->toDateString();
+         $endOfMonth = $now->endOfMonth()->toDateString();
+         $pelanggan = $request->query('pelanggan');
+         $dateTransaction = $request->query('date_transaction');
+         $viewAll = $request->query('view_all');
+         $user = Auth::user();
 
-           $query = Penjualan::query()
-           ->select(
+         $query = Penjualan::query()
+         ->select(
             'penjualan.id','penjualan.tanggal', 'penjualan.kode', 'penjualan.pelanggan','penjualan.keterangan', 'penjualan.kode_kas', 'penjualan.jumlah','penjualan.bayar', 'penjualan.dikirim', 'penjualan.diskon', 'penjualan.lunas','penjualan.operator', 'penjualan.receive', 'penjualan.biayakirim','penjualan.status', 'penjualan.return', 'kas.nama as nama_kas', 'pelanggan.nama as nama_pelanggan'
         )
-           ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
-           ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
-           ->where('jenis', 'PENJUALAN TOKO')
-           ->limit(10);
+         ->leftJoin('kas', 'penjualan.kode_kas', '=', 'kas.kode')
+         ->leftJoin('pelanggan', 'penjualan.pelanggan', '=', 'pelanggan.kode')
+         ->where('jenis', 'PENJUALAN TOKO')
+         ->limit(10);
 
-           if ($dateTransaction) {
+         if ($dateTransaction) {
             $query->whereDate('penjualan.tanggal', '=', $dateTransaction);
         }
 
@@ -236,9 +236,9 @@ class DataPenjualanTokoController extends Controller
                 $updateSaldoPelanggan->save();
             } else {
                 if($bayar >= intval($data['jumlah'])) {
-                 $newPenjualanToko->visa = "LUNAS";
-                 $newPenjualanToko->kembali = $bayar - intval($data['jumlah']);
-             } else {
+                   $newPenjualanToko->visa = "LUNAS";
+                   $newPenjualanToko->kembali = $bayar - intval($data['jumlah']);
+               } else {
                 $newPenjualanToko->visa = "LUNAS";
                 $newPenjualanToko->kembali = intval($data['jumlah']) - $bayar;
             }
@@ -675,11 +675,11 @@ public function cetak_nota($type, $kode, $id_perusahaan)
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN" || $userRole->name === "KASIR") {
             $deletePenjualan = Penjualan::findOrFail($id);
 
             $dataPiutang = Piutang::where('kode', $deletePenjualan->kode)->first();
