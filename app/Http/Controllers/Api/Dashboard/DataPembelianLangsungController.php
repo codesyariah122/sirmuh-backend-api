@@ -87,6 +87,7 @@ class DataPembelianLangsungController extends Controller
                 }
             })
             ->where('pembelian.po', '=', 'False')
+            ->addSelect(DB::raw('(SELECT stop_qty FROM itempembelian WHERE itempembelian.kode = pembelian.kode ORDER BY id DESC LIMIT 1) as stop_qty'))
             ->orderByDesc('pembelian.id')
             ->paginate(10);
 
@@ -566,11 +567,11 @@ class DataPembelianLangsungController extends Controller
     public function destroy($id)
     {
         try {
-         $user = Auth::user();
+           $user = Auth::user();
 
-         $userRole = Roles::findOrFail($user->role);
+           $userRole = Roles::findOrFail($user->role);
 
-         if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
+           if($userRole->name === "MASTER" || $userRole->name === "ADMIN") {
                 // $delete_pembelian = Pembelian::whereNull('deleted_at')
                 // ->findOrFail($id);
             $delete_pembelian = Pembelian::findOrFail($id);
