@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Dashboard;
 
 use Illuminate\Support\Facades\Cache;
+use \Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -28,31 +29,32 @@ class DataUserDataController extends Controller
     {
         $this->helpers = new WebFeatureHelpers(null);
     }
-    
+
     public function index(Request $request)
     {
         try {
             $user = $request->user();
+            // var_dump($request->user());
+            // die;
             $minutes = 60;
-            
             $user_login = Cache::remember('user:' . $user->email, $minutes, function () use ($user) {
-                return User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
-                ->whereEmail($user->email)
-                ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level,alamat'])
-                ->first();
+                return User::select('id', 'name', 'photo', 'role', 'email', 'phone', 'is_login', 'expires_at', 'last_login')
+                    ->whereEmail($user->email)
+                    ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level,alamat'])
+                    ->first();
             });
 
             $menus = Cache::remember('menus:' . $user_login->role, $minutes, function () use ($user_login) {
                 return Menu::whereJsonContains('roles', $user_login->role)
-                ->with([
-                    'sub_menus' => function ($query) use ($user_login) {
-                        $query->whereJsonContains('roles', $user_login->role)
-                        ->with(['child_sub_menus' => function ($query) use ($user_login) {
-                            $query->whereJsonContains('roles', $user_login->role);
-                        }]);
-                    }
-                ])
-                ->get();
+                    ->with([
+                        'sub_menus' => function ($query) use ($user_login) {
+                            $query->whereJsonContains('roles', $user_login->role)
+                                ->with(['child_sub_menus' => function ($query) use ($user_login) {
+                                    $query->whereJsonContains('roles', $user_login->role);
+                                }]);
+                        }
+                    ])
+                    ->get();
             });
 
             $karyawans = Cache::remember('karyawans:' . $user->name, $minutes, function () use ($user) {
@@ -75,6 +77,7 @@ class DataUserDataController extends Controller
                 'karyawans' => $karyawans
             ], 200);
         } catch (\Throwable $th) {
+            Log::error($th->getMessage());
             throw $th;
         }
     }
@@ -102,11 +105,12 @@ class DataUserDataController extends Controller
                 'nama' => 'required',
                 'email' => 'required|email|unique:users',
                 'password'  => [
-                    'required',  Password::min(8)
-                    ->mixedCase()
-                    ->letters()
-                    ->numbers()
-                    ->symbols()
+                    'required',
+                    Password::min(8)
+                        ->mixedCase()
+                        ->letters()
+                        ->numbers()
+                        ->symbols()
                 ],
                 'role' => 'required'
             ]);
@@ -119,8 +123,8 @@ class DataUserDataController extends Controller
             $roleName = substr($roleUser->name, 0, 3);
 
             $lastRecord = Karyawan::where('kode', 'like', $roleName . '%')
-            ->orderBy('kode', 'desc')
-            ->first();
+                ->orderBy('kode', 'desc')
+                ->first();
 
             $lastNumber = 0;
 
@@ -133,7 +137,7 @@ class DataUserDataController extends Controller
             $newCode = strtoupper($roleName) . sprintf('%03d', $newNumber);
 
             $initial = $this->helpers->initials($request->nama);
-            $path = public_path().'/thumbnail_images/users/';
+            $path = public_path() . '/thumbnail_images/users/';
             $fontPath = public_path('fonts/Oliciy.ttf');
             $char = $initial;
             $newAvatarName = rand(12, 34353) . time() . '_avatar.png';
@@ -168,9 +172,9 @@ class DataUserDataController extends Controller
             event(new EventNotification($data_event));
 
             $newUserCreated = User::whereId($newUser->id)
-            ->with('roles')
-            ->with('karyawans')
-            ->get();
+                ->with('roles')
+                ->with('karyawans')
+                ->get();
 
             return response()->json([
                 'success' => true,
@@ -192,8 +196,12 @@ class DataUserDataController extends Controller
     {
         try {
             $user = User::with('karyawans')
-            ->with('roles')
-            ->findOrFail($id);
+                ->with('roles')
+                ->findOrFail($id);
+
+            // var_dump($user);
+            // die;
+
             return response()->json([
                 'success' => true,
                 'message' => 'User detail 🧑🏻‍💻',
