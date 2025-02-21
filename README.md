@@ -69,7 +69,7 @@ for php artisan db:seed , check seeder file before start seeder process
 ### Requirements Development
 
 -   PHP 8.2
--   Laravel 9.1
+-   Laravel >= 9.1
 -   Environment :
     Laradock / docker / container
     nginx / mariaDB
