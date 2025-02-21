@@ -11,7 +11,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\{User, Login};
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class ForceJsonResponse
 {

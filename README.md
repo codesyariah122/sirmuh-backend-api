@@ -1,8 +1,44 @@
-### With new websockets development : 
+### With new websockets development :
+
 ![Screenshot_20240501_202155](https://github.com/codesyariah122/sirmuh-pos-api/assets/13291805/e39374bb-69fc-4dbf-bec5-8172f287c73d)
 
+#### Using mysql db on container :
+
+```
+/etc/mysql/mysql.conf.d/mysqld.cnf
+bind-address = 0.0.0.0
+```
+
+```
+docker inspect f0c628010661 | grep "IPAddress"
+output : "IPAddress": "172.17.0.3"
+```
+
+```
+mysql -u root -p
+GRANT ALL PRIVILEGES ON *.* TO 'dksindo'@'172.17.0.3' IDENTIFIED BY 'Bismillah@321';
+FLUSH PRIVILEGES;
+```
+
+#### If Error setup grant in host
+
+```
+DROP USER IF EXISTS 'dksindo'@'172.17.0.3';
+CREATE USER 'youruser'@'172.17.0.3' IDENTIFIED BY 'your@password';
+GRANT ALL PRIVILEGES ON *.* TO 'youruser'@'172.17.0.3' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+```
+
+#### Check DB Access on container
+
+```
+docker ps
+docker exec -it your-container-name /bin/bash
+mysql -u youruser -p -h your-public-ip -P 3306
+```
 
 ### Development Process
+
 ```
 composer update
 composer install
@@ -13,8 +49,8 @@ php artisan migrate
 php artisan db:seed
 ```
 
+##### New Environment
 
-##### New Environment  
 ```
 BROADCAST_DRIVER=pusher
 
@@ -26,17 +62,18 @@ PUSHER_SCHEME=https
 PUSHER_APP_CLUSTER=mt1
 ```
 
-***Check seeder***  
-for php artisan db:seed , check seeder file before start seeder process  
+**_Check seeder_**  
+for php artisan db:seed , check seeder file before start seeder process
 
-### Requirements Development  
-- PHP 8.2
-- Laravel 9.1
-- Environment : 
+### Requirements Development
+
+-   PHP 8.2
+-   Laravel 9.1
+-   Environment :
     Laradock / docker / container
-    nginx / mariaDB  
+    nginx / mariaDB
 
-### sirmuh-api.service 
+### sirmuh-api.service
 
 ```
 [Service]
@@ -51,14 +88,16 @@ WantedBy=multi-user.target
 
 ```
 
+**Start System Service**
 
-**Start System Service**  
 ```
 systemctl daemon-reload
 systemctl start sirmuh-api
 systemctl status sirmuh-api
-```  
-**Output:**  
+```
+
+**Output:**
+
 ```
 ● sirmuh-api.service
      Loaded: loaded (/etc/systemd/system/sirmuh-api.service; enabled; vendor preset: enabled)
@@ -73,7 +112,8 @@ systemctl status sirmuh-api
 Nov 17 20:01:17 xyz-DreamSys systemd[1]: Started sirmuh-api.service.
 Nov 17 20:01:17 xyz-DreamSys start.sh[18206]: [Fri Nov 17 20:01:17 2023] PHP 8.2.12 Development Server (http://localhost:4041)
 
-```  
+```
+
 ========================================================================================
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
@@ -89,13 +129,13 @@ Nov 17 20:01:17 xyz-DreamSys start.sh[18206]: [Fri Nov 17 20:01:17 2023] PHP 8.2
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   [Simple, fast routing engine](https://laravel.com/docs/routing).
+-   [Powerful dependency injection container](https://laravel.com/docs/container).
+-   Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+-   Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+-   Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+-   [Robust background job processing](https://laravel.com/docs/queues).
+-   [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
@@ -113,19 +153,19 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 
 ### Premium Partners
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+-   **[Vehikl](https://vehikl.com/)**
+-   **[Tighten Co.](https://tighten.co)**
+-   **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+-   **[64 Robots](https://64robots.com)**
+-   **[Cubet Techno Labs](https://cubettech.com)**
+-   **[Cyber-Duck](https://cyber-duck.co.uk)**
+-   **[Many](https://www.many.co.uk)**
+-   **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
+-   **[DevSquad](https://devsquad.com)**
+-   **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
+-   **[OP.GG](https://op.gg)**
+-   **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
+-   **[Lendio](https://lendio.com)**
 
 ## Contributing
 

@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\{Hash, Validator, Http};
 use App\Models\{User, Login, Menu};
 use App\Events\{EventNotification, ForbidenLoginEvent, LogoutEvent, LoginEvent};
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -37,20 +37,20 @@ class LoginController extends Controller
             }
 
             $check_userRole = User::whereNull('deleted_at')
-            // ->whereDoesntHave('roles', function($query) {
-            //     $query->where('roles.id', 3)
-            //     ->whereNull('roles.deleted_at');
-            // })
-            ->where('email', $request->email)
-            ->with('roles')
-            ->get();
-
-            if(count($check_userRole) > 0) {
-                $user = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login','password')
-                ->whereNull('deleted_at')
+                // ->whereDoesntHave('roles', function($query) {
+                //     $query->where('roles.id', 3)
+                //     ->whereNull('roles.deleted_at');
+                // })
                 ->where('email', $request->email)
-                ->with(['roles:id,name', 'logins:id,user_token_login'])
-                ->first();
+                ->with('roles')
+                ->get();
+
+            if (count($check_userRole) > 0) {
+                $user = User::select('id', 'name', 'photo', 'role', 'email', 'phone', 'is_login', 'expires_at', 'last_login', 'password')
+                    ->whereNull('deleted_at')
+                    ->where('email', $request->email)
+                    ->with(['roles:id,name', 'logins:id,user_token_login'])
+                    ->first();
 
                 if (!$user) {
                     return response()->json([
@@ -67,9 +67,9 @@ class LoginController extends Controller
                         if ($this->forbidenIsUserLogin($user->is_login)) {
                             $last_login = Carbon::parse($user->last_login)->locale('id')->diffForHumans();
                             $login_data = Login::where('user_id', $user->id)
-                            ->first();
+                                ->first();
 
-                            if($login_data === NULL) {
+                            if ($login_data === NULL) {
                                 $removeUserIsLogin = User::findOrFail($user->id);
                                 $removeUserIsLogin->is_login = 0;
                                 $removeUserIsLogin->expires_at = NULL;
@@ -92,19 +92,20 @@ class LoginController extends Controller
                                 'user' => $user
                             ];
 
-                            $users = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
-                            ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
-                            ->where('email', $request->email)
-                            ->whereIsLogin($user->is_login)
-                            ->firstOrFail();
+                            $users = User::select('id', 'name', 'photo', 'role', 'email', 'phone', 'is_login', 'expires_at', 'last_login')
+                                ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
+                                ->where('email', $request->email)
+                                ->whereIsLogin($user->is_login)
+                                ->firstOrFail();
 
                             $menus = Menu::whereJsonContains('roles', $users->role)
-                            ->with([
-                                'sub_menus' => function ($query) use ($users) {
-                                    $query->whereJsonContains('roles', $users->role)
-                                    ->with('child_sub_menus');
-                                }])
-                            ->get();
+                                ->with([
+                                    'sub_menus' => function ($query) use ($users) {
+                                        $query->whereJsonContains('roles', $users->role)
+                                            ->with('child_sub_menus');
+                                    }
+                                ])
+                                ->get();
 
                             event(new ForbidenLoginEvent($data_event));
 
@@ -142,18 +143,19 @@ class LoginController extends Controller
 
                             $user->logins()->sync($login_id);
 
-                            $userIsLogin = User::select('id','name','photo','role','email','phone','is_login','expires_at','last_login')
-                            ->whereId($user_login->id)
-                            ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
-                            ->first();
+                            $userIsLogin = User::select('id', 'name', 'photo', 'role', 'email', 'phone', 'is_login', 'expires_at', 'last_login')
+                                ->whereId($user_login->id)
+                                ->with(['roles:id,name', 'logins:id,user_token_login', 'karyawans:id,nama,level'])
+                                ->first();
 
                             $menus = Menu::whereJsonContains('roles', $userIsLogin->role)
-                            ->with([
-                                'sub_menus' => function ($query) use ($userIsLogin) {
-                                    $query->whereJsonContains('roles', $userIsLogin->role)
-                                    ->with('child_sub_menus');
-                                }])
-                            ->get();
+                                ->with([
+                                    'sub_menus' => function ($query) use ($userIsLogin) {
+                                        $query->whereJsonContains('roles', $userIsLogin->role)
+                                            ->with('child_sub_menus');
+                                    }
+                                ])
+                                ->get();
 
                             $data_event = [
                                 'alert' => 'success',
@@ -179,10 +181,10 @@ class LoginController extends Controller
                 }
             } else {
                 $user = User::whereNull('deleted_at')
-                ->where('email', $request->email)
-                ->get();
+                    ->where('email', $request->email)
+                    ->get();
 
-                if(count($user) === 0) {
+                if (count($user) === 0) {
                     return response()->json([
                         'error' => true,
                         'message' => 'User not registered!'
@@ -208,10 +210,10 @@ class LoginController extends Controller
             $delete_login->delete();
 
             $userLogout = User::whereNull('deleted_at')
-            ->with(['logins:id,user_token_login'])
-            ->where('id', $user->id)
-            ->first();
-            
+                ->with(['logins:id,user_token_login'])
+                ->where('id', $user->id)
+                ->first();
+
             $data_event = [
                 'alert' => 'info',
                 'type' => 'logout',
@@ -225,11 +227,11 @@ class LoginController extends Controller
 
             if ($removeToken) {
                 $userIsLogout = User::whereId($user->id)
-                ->select('users.id', 'users.name', 'users.email', 'users.is_login', 'users.expires_at', 'users.last_login')
-                ->with(['roles' => function ($query) {
-                    $query->select('roles.id', 'roles.name');
-                }])
-                ->get();
+                    ->select('users.id', 'users.name', 'users.email', 'users.is_login', 'users.expires_at', 'users.last_login')
+                    ->with(['roles' => function ($query) {
+                        $query->select('roles.id', 'roles.name');
+                    }])
+                    ->get();
                 return response()->json([
                     'success' => true,
                     'message' => 'Logout Success 🔐',
@@ -257,10 +259,10 @@ class LoginController extends Controller
             $delete_login->delete();
 
             $userLogout = User::whereNull('deleted_at')
-            ->with(['logins:id,user_token_login'])
-            ->where('id', $user->id)
-            ->first();
-            
+                ->with(['logins:id,user_token_login'])
+                ->where('id', $user->id)
+                ->first();
+
             $data_event = [
                 'alert' => 'info',
                 'type' => 'logout',
@@ -273,11 +275,11 @@ class LoginController extends Controller
             event(new LogoutEvent($data_event));
 
             $userIsLogout = User::whereId($user->id)
-            ->select('users.id', 'users.name', 'users.email', 'users.is_login', 'users.expires_at', 'users.last_login')
-            ->with(['roles' => function ($query) {
-                $query->select('roles.id', 'roles.name');
-            }])
-            ->get();
+                ->select('users.id', 'users.name', 'users.email', 'users.is_login', 'users.expires_at', 'users.last_login')
+                ->with(['roles' => function ($query) {
+                    $query->select('roles.id', 'roles.name');
+                }])
+                ->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Logout Success 🔐',

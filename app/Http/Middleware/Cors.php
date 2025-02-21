@@ -7,11 +7,10 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
 use Closure;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use App\Models\{ApiKey, Login};
+
 
 class Cors
 {
@@ -33,12 +32,12 @@ class Cors
 
                 if ($response !== null) {
                     return $response
-                    ->header('Access-Control-Allow-Origin', '*')
-                    ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                    ->header('Access-Control-Allow-Headers', 'Authorization')
-                    ->header('Access-Control-Allow-Headers', 'Content-Type');
+                        ->header('Access-Control-Allow-Origin', '*')
+                        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                        ->header('Access-Control-Allow-Headers', 'Authorization')
+                        ->header('Access-Control-Allow-Headers', 'Content-Type');
                 } else {
-                // Jika $response null, Anda bisa mengembalikan respons yang sesuai
+                    // Jika $response null, Anda bisa mengembalikan respons yang sesuai
                     $userData = Auth::user();
 
                     Login::whereUserId($userData->id)->delete();
